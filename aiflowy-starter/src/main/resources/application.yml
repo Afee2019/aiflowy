@@ -13,6 +13,9 @@ spring:
       max-file-size: 100MB
       max-request-size: 100MB
 aiflowy:
+  storage:
+    local:
+      root: 'D'
   jwt:
     secret: 123123sdfjlakjdfadsafwoieurew
   ollama:
