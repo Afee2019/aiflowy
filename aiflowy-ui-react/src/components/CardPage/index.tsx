@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {ColumnsConfig} from "../AntdCrud";
 import {Avatar, Button, Card, Col, Dropdown, Modal, Row, Spin} from "antd";
 import {
@@ -6,15 +6,19 @@ import {
     EditOutlined, EllipsisOutlined,
     PlusOutlined,
 } from "@ant-design/icons";
-import {useList, useRemove} from "../../hooks/useApis.ts";
+import {usePage, useRemove} from "../../hooks/useApis.ts";
 import EditPage from "../EditPage";
 import {useBreadcrumbRightEl} from "../../hooks/useBreadcrumbRightEl.tsx";
 import {EditLayout} from "../AntdCrud/EditForm.tsx";
-import { Empty } from "antd";
+import {Empty} from "antd";
 import "./card_page.less"
+import SearchForm from "../AntdCrud/SearchForm.tsx";
+import {Page} from "../../types/Page.ts";
+import {useUrlParams} from "../../hooks/useUrlParams.ts";
 
 export type CardPageProps = {
     tableAlias: string,
+    defaultPageSize?: number,
     editModalTitle?: string,
     editLayout?: EditLayout
     addButtonText?: string,
@@ -28,6 +32,7 @@ export type CardPageProps = {
 
 const CardPage: React.FC<CardPageProps> = ({
                                                tableAlias
+                                               , defaultPageSize = 10
                                                , editModalTitle
                                                , editLayout
                                                , addButtonText = "新增"
@@ -39,11 +44,27 @@ const CardPage: React.FC<CardPageProps> = ({
                                                , customActions = (_data, existNodes) => existNodes,
                                            }) => {
 
-    const {doGet,loading, result} = useList(tableAlias);
+    const {
+        loading,
+        result,
+        doGet
+    } = usePage(tableAlias, {}, {manual: true})
+
     const {doRemove} = useRemove(tableAlias);
 
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [editData, setEditData] = useState(null);
+
+    const [urlParams, setUrlParams] = useUrlParams();
+    const pageNumber = +(urlParams.pageNumber || ((result?.data) as Page<any>)?.pageNumber || 1)
+    let pageSize = +(urlParams.pageSize || ((result?.data) as Page<any>)?.pageSize || defaultPageSize)
+
+
+    const [localPageNumber, setLocalPageNumber] = useState(pageNumber)
+    const [searchParams, setSearchParams] = useState(urlParams)
+
+    // const [sortKey, setSortKey] = useState<string | undefined>()
+    // const [sortType, setSortType] = useState<"asc" | "desc" | undefined>()
 
     useBreadcrumbRightEl(<Button type={"primary"} onClick={() => setIsEditOpen(true)}>
         <PlusOutlined/>{addButtonText}</Button>)
@@ -52,6 +73,18 @@ const CardPage: React.FC<CardPageProps> = ({
         setIsEditOpen(false)
         setEditData(null)
     }
+
+
+    useEffect(() => {
+        doGet({
+            params: {
+                ...searchParams,
+                pageNumber: localPageNumber,
+                pageSize,
+            }
+        })
+    }, [localPageNumber, searchParams])
+
 
     return (
         <>
@@ -67,8 +100,18 @@ const CardPage: React.FC<CardPageProps> = ({
                       layout={editLayout}
             />
             <Spin spinning={loading}>
+
+                <SearchForm columns={columnsConfig} colSpan={6}
+                            onSearch={(values: any) => {
+                                setLocalPageNumber(1)
+                                setSearchParams(values)
+                                setUrlParams(values)
+                            }}
+                            onSearchValueInit={(key) => urlParams[key]}
+                />
+
                 <Row className={"card-row"} gutter={[16, 16]}>
-                    {result?.data.length > 0 ? result?.data.map((item: any) => (
+                    {result?.data?.records?.length > 0 ? result?.data?.records?.map((item: any) => (
                         <Col span={6} key={item.id}>
                             <Card actions={[
                                 ...customActions(item, [
@@ -114,7 +157,7 @@ const CardPage: React.FC<CardPageProps> = ({
                                 />
                             </Card>
                         </Col>
-                    )):(<><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} className={"empty-container"} /></>)}
+                    )) : (<><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} className={"empty-container"}/></>)}
                 </Row>
             </Spin>
         </>
