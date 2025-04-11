@@ -14,7 +14,7 @@
 
 ### 基本对话
 
-```
+```java
 OpenAiLlmConfig config = new OpenAiLlmConfig();
 config.setApiKey("sk-rts5NF6n*******");
 
@@ -25,7 +25,7 @@ System.out.println(response);
 
 ### Embedding
 
-```
+```java
 Llm llm = OpenAiLlm.of("sk-rts5NF6n*******");
 VectorData embeddings = llm.embed(Document.of("some document text"));
 System.out.println(Arrays.toString(embeddings.getVector()));
@@ -33,7 +33,7 @@ System.out.println(Arrays.toString(embeddings.getVector()));
 
 ### Function Calling
 
-```
+```java
 OpenAiLlmConfig config = new OpenAiLlmConfig();
 config.setApiKey("sk-rts5NF6n*******");
 

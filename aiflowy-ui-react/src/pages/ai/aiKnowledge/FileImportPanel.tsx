@@ -22,7 +22,7 @@ interface AiDocumentType {
     overlapSize: string, // 分段重叠大小
 }
 // 文件导入页面组件
-const FileImportPanel: React.FC<FileImportPanelProps> = ({ data, maxCount = 10, action }) => {
+const FileImportPanel: React.FC<FileImportPanelProps> = ({ data, maxCount = 1, action }) => {
     const token = isBrowser ? localStorage.getItem(authKey) : null;
     const [aiDocument, setAiDocument] = useState<AiDocumentType>({
         chunkSize: '200', // 分段大小
@@ -67,10 +67,7 @@ const FileImportPanel: React.FC<FileImportPanelProps> = ({ data, maxCount = 10, 
     };
     // 定义文件上传前的校验逻辑
     const beforeUpload = (file: File) => {
-        setPreviewListLoading({
-            spinning: true,
-            tip: '正在加载数据，请稍候...'
-        })
+
         const isAllowedType =
             file.type === "text/plain" ||
             file.type === "application/pdf" ||
@@ -84,6 +81,12 @@ const FileImportPanel: React.FC<FileImportPanelProps> = ({ data, maxCount = 10, 
         }
         if (!isLt15M) {
             message.error("单个文件大小不能超过 15MB！");
+        }
+        if (isAllowedType && isLt15M){
+            setPreviewListLoading({
+                spinning: true,
+                tip: '正在加载数据，请稍候...'
+            })
         }
 
         return isAllowedType && isLt15M;

@@ -187,7 +187,6 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
         if (StringUtils.isEmpty(fileTypeByExtension)){
             return Result.fail(1,"不支持的文档类型");
         }
-        String originalFilename = file.getOriginalFilename();
         DocumentParser documentParser = DocumentParserFactory.getDocumentParser(file.getOriginalFilename());
         if (documentParser == null) {
             return Result.fail(1, "can not support the file type: " + file.getOriginalFilename());

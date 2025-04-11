@@ -54,12 +54,12 @@ function sidebarDevelopment(): DefaultTheme.SidebarItem[] {
       text: '后端相关',
       collapsed: false,
       items: [
-        { text: 'Controller', link: 'custom-theme' },
-        { text: '权限管理', link: 'extending-default-theme' },
-        { text: '验证码', link: 'data-loading' },
-        { text: '数据字典', link: 'ssr-compat' },
-        { text: '文件管理', link: 'cms' },
-        { text: '其他', link: 'cms' }
+        { text: 'Controller', link: '/backend/controller' },
+        { text: '权限管理', link: '/backend/permission_management' },
+        { text: '验证码', link: '/backend/captcha' },
+        { text: '数据字典', link: '/backend/data_dictionary' },
+        { text: '文件管理', link: '/backend/file_management' },
+        { text: '其他', link: '/backend/other' }
       ]
     },
     {
@@ -68,9 +68,9 @@ function sidebarDevelopment(): DefaultTheme.SidebarItem[] {
       items: [
         { text: '大语言模型', link: '/ai/language-model' },
         { text: 'Bot 应用', link: '/ai/bot-application' },
-        { text: '插件', link: 'sitemap-generation' },
-        { text: '知识库', link: 'sitemap-generation' },
-        { text: 'Ollama', link: 'sitemap-generation' },
+        { text: '插件', link: '/ai/plugin' },
+        { text: '知识库', link: '/ai/knowledge' },
+        { text: 'Ollama', link: '/ai/ollama' },
       ]
     },
   ]
