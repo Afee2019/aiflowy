@@ -1,6 +1,15 @@
 package tech.aiflowy.ai.controller;
 
+import com.agentsflex.core.llm.Llm;
+import com.agentsflex.llm.spark.SparkLlm;
+import com.agentsflex.llm.spark.SparkLlmConfig;
+import dev.tinyflow.core.Tinyflow;
+import dev.tinyflow.core.knowledge.Knowledge;
+import dev.tinyflow.core.provider.KnowledgeProvider;
+import dev.tinyflow.core.provider.LlmProvider;
+import tech.aiflowy.ai.entity.AiLlm;
 import tech.aiflowy.ai.entity.AiWorkflow;
+import tech.aiflowy.ai.service.AiLlmService;
 import tech.aiflowy.ai.service.AiWorkflowService;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.web.controller.BaseCurdController;
@@ -21,8 +30,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/aiWorkflow")
 public class AiWorkflowController extends BaseCurdController<AiWorkflowService, AiWorkflow> {
-    public AiWorkflowController(AiWorkflowService service) {
+    private final AiLlmService aiLlmService;
+
+    public AiWorkflowController(AiWorkflowService service, AiLlmService aiLlmService) {
         super(service);
+        this.aiLlmService = aiLlmService;
     }
 
 
@@ -47,7 +59,26 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
             return Result.fail(1, "can not find the workflow by id: " + id);
         }
 
-        Chain chain = workflow.toTinyflow().toChain();
+        Tinyflow tinyflow = workflow.toTinyflow();
+        tinyflow.setLlmProvider(new LlmProvider() {
+            @Override
+            public Llm getLlm(Object id) {
+                AiLlm byId = aiLlmService.getById(new BigInteger(id.toString()));
+               return byId.toLlm();
+            }
+        });
+
+        tinyflow.setKnowledgeProvider(new KnowledgeProvider() {
+            @Override
+            public Knowledge getKnowledge(Object o) {
+                return null;
+            }
+        });
+
+
+
+
+        Chain chain = tinyflow.toChain();
         chain.addEventListener(new ChainEventListener() {
             @Override
             public void onEvent(ChainEvent event, Chain chain) {

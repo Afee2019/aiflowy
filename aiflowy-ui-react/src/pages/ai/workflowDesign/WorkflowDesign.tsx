@@ -4,11 +4,10 @@ import  {useEffect, useState, useRef} from 'react';
 import {useLayout} from '../../../hooks/useLayout.tsx';
 import {App, Button, Drawer, Form, Input} from "antd";
 import {useParams} from "react-router-dom";
-import {useDetail, useGetManual, usePostManual, useUpdate} from "../../../hooks/useApis.ts";
+import {useDetail, useGet, useGetManual, usePostManual, useUpdate} from "../../../hooks/useApis.ts";
 import {FormOutlined, SendOutlined} from "@ant-design/icons";
 import { Tinyflow, TinyflowHandle } from '@tinyflow-ai/react';
 import '@tinyflow-ai/react/dist/index.css'
-
 
 
 export const WorkflowDesign = () => {
@@ -20,11 +19,27 @@ export const WorkflowDesign = () => {
 
     const {result: workflow} = useDetail("aiWorkflow", params.id);
     const {doUpdate} = useUpdate("aiWorkflow");
-
+    const {result: llms} = useGet('/api/v1/aiLlm/list')
     const [parameters, setParameters] = useState<any[]>()
 
+    const getLlms : () => (any) = ():any => {
+        if (llms?.data) {
+            return llms.data.map((item: any) => {
+                return {
+                    value: item.id,
+                    label: item.title,
+                }
+            })
+        }
+        return []
+    }
     const [executeResult, setExecuteResult] = useState<string>('')
 
+    const provider = {
+        llm: ()  => getLlms(),
+        knowledge: () => [],
+    }
+    console.log('provider, ', provider)
     const {setOptions} = useLayout();
     useEffect(() => {
         setOptions({leftMenuCollapsed: true, showBreadcrumb: false})
@@ -189,6 +204,7 @@ export const WorkflowDesign = () => {
                         </div>
                     </div>
                     <Tinyflow ref={tinyflowRef} data={JSON.parse(workflow?.data?.content||'{}')}
+                              provider={provider}
                     style={{height: 'calc(100vh - 110px)'}}/>
                 </div>
             </div>
