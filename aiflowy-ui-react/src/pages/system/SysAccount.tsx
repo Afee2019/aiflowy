@@ -88,7 +88,8 @@ export const SysAccount: React.FC = () => {
 
         {
             form: {
-                type: "input"
+                type: "input",
+                rules: [{required: true, message: '请输入登录账号'}]
             },
             dataIndex: "loginName",
             title: "登录账号",
@@ -96,13 +97,14 @@ export const SysAccount: React.FC = () => {
             supportSearch: true,
             editCondition: (data) => {
                 return !data?.id;
-            },
+            }
         },
 
         {
             hidden: true,
             form: {
-                type: "password"
+                type: "password",
+                rules: [{required: true, message: '请输入登录密码'}]
             },
             dataIndex: "password",
             title: "密码",
