@@ -59,3 +59,10 @@ https://aiflowy.tech (官网正在备案中... 暂未上线)
 Star 本项目后，截图发给微信： fuh99888，拉您进群，讨论 AIFlowy 技术以及场景落地等话题。
 
 
+## 产品图片
+
+截图 1：
+![](./docs/assets/images/screenshot_1.png)
+
+截图 2：
+![](./docs/assets/images/screenshot_2.png)
