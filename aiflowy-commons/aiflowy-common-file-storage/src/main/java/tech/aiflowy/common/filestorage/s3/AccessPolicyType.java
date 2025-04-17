@@ -1,4 +1,4 @@
-package tech.aiflowy.common.filestorage;
+package tech.aiflowy.common.filestorage.s3;
 
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 

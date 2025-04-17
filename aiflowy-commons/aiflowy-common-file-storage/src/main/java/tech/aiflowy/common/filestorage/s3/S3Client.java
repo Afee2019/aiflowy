@@ -1,4 +1,4 @@
-package tech.aiflowy.common.filestorage;
+package tech.aiflowy.common.filestorage.s3;
 
 
 import cn.hutool.core.date.DateField;
@@ -7,12 +7,10 @@ import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.io.file.FileNameUtil;
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.Protocol;
-import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -25,6 +23,7 @@ import com.amazonaws.services.s3.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
+import tech.aiflowy.common.filestorage.StorageConfig;
 
 import java.io.*;
 import java.net.URL;
@@ -33,22 +32,20 @@ import java.util.Date;
 
 /**
  * S3 存储协议 所有兼容S3协议的云厂商均支持 阿里云 腾讯云 七牛云 minio
- *
- *
  */
-public class OssClient {
-    private static final Logger log = LoggerFactory.getLogger(OssClient.class);
+public class S3Client {
+    private static final Logger log = LoggerFactory.getLogger(S3Client.class);
     /**
      * https 状态
      */
-    private final String[] CLOUD_SERVICE = new String[] {"aliyun", "qcloud", "qiniu", "obs"};
+    private final String[] CLOUD_SERVICE = new String[]{"aliyun", "qcloud", "qiniu", "obs"};
     private static final int IS_HTTPS = 1;
-    private final StorageConfig properties;
+    private final S3StorageConfig properties;
 
     private final AmazonS3 client;
 
-    public OssClient(StorageConfig ossProperties) {
-        this.properties = ossProperties;
+    public S3Client() {
+        this.properties = S3StorageConfig.getInstance();
         try {
             AwsClientBuilder.EndpointConfiguration endpointConfig =
                     new AwsClientBuilder.EndpointConfiguration(properties.getEndpoint(), properties.getRegion());
@@ -79,6 +76,7 @@ public class OssClient {
         return !StrUtil.containsAny(endpoint,
                 CLOUD_SERVICE);
     }
+
     public void createBucket() {
         try {
             String bucketName = properties.getBucketName();
@@ -98,6 +96,7 @@ public class OssClient {
     public void upload(byte[] data, String objectPath, String contentType) {
         upload(new ByteArrayInputStream(data), objectPath, contentType);
     }
+
     public void upload(InputStream inputStream, String objectPath, String contentType) {
         if (!(inputStream instanceof ByteArrayInputStream)) {
             inputStream = new ByteArrayInputStream(IoUtil.readBytes(inputStream));
@@ -152,11 +151,11 @@ public class OssClient {
         }
         return hexString.toString(); // 返回字符串类型的哈希值
     }
+
     /**
      * 根据OSS对象存储路径, 从OSS存储删除文件
-     * 
-     * @param objectPath
-     *            文件访问路径
+     *
+     * @param objectPath 文件访问路径
      */
     public void delete(String objectPath) {
         try {
@@ -169,9 +168,8 @@ public class OssClient {
 
     /**
      * 根据OSS对象存储路径, 获取文件元数据
-     * 
-     * @param objectPath
-     *            文件访问路径(对应OSS存储数据的key)
+     *
+     * @param objectPath 文件访问路径(对应OSS存储数据的key)
      */
     public ObjectMetadata getObjectMetadata(String objectPath) {
         return client.getObjectMetadata(properties.getBucketName(), objectPath);
@@ -179,9 +177,8 @@ public class OssClient {
 
     /**
      * 根据OSS对象存储路径, 获取文件内容
-     * 
-     * @param objectPath
-     *            文件访问路径
+     *
+     * @param objectPath 文件访问路径
      * @return 文件内容
      */
     public InputStream getObjectContent(String objectPath) {
@@ -190,13 +187,10 @@ public class OssClient {
 
     /**
      * 根据OSS对象存储路径, 获取文件内容(指定文件字节范围)
-     * 
-     * @param objectPath
-     *            文件访问路径
-     * @param start
-     *            起始字节
-     * @param end
-     *            结束字节
+     *
+     * @param objectPath 文件访问路径
+     * @param start      起始字节
+     * @param end        结束字节
      * @return 文件内容(指定文件字节范围)
      */
     public InputStream getObjectContent(String objectPath, Long start, Long end) {
@@ -219,7 +213,7 @@ public class OssClient {
 
     /**
      * 获取OSS基础路径
-     * 
+     *
      * @return 基础路径
      */
     public String getBasePath() {
@@ -235,7 +229,7 @@ public class OssClient {
 
     /**
      * 根据访问url, 获取OSS对象存储路径
-     * 
+     *
      * @return OSS对象存储路径
      */
     public String getObjectPath(String url) {
@@ -247,9 +241,8 @@ public class OssClient {
 
     /**
      * 根据OSS对象存储路径, 获取访问url
-     * 
-     * @param objectPath
-     *            文件访问路径
+     *
+     * @param objectPath 文件访问路径
      * @return 访问url
      */
     public String getUrl(String objectPath) {
@@ -269,11 +262,9 @@ public class OssClient {
 
     /**
      * 根据前缀和后缀, 生成OSS对象存储路径
-     * 
-     * @param prefix
-     *            前缀
-     * @param suffix
-     *            后缀
+     *
+     * @param prefix 前缀
+     * @param suffix 后缀
      * @return OSS对象存储路径
      */
     public String getObjectPath(String prefix, String suffix) {
@@ -290,15 +281,13 @@ public class OssClient {
     /**
      * 获取私有URL链接
      *
-     * @param objectKey
-     *            对象KEY
-     * @param second
-     *            授权时间
+     * @param objectKey 对象KEY
+     * @param second    授权时间
      */
     public String getPrivateUrl(String objectKey, Integer second) {
         GeneratePresignedUrlRequest generatePresignedUrlRequest =
-            new GeneratePresignedUrlRequest(properties.getBucketName(), objectKey).withMethod(HttpMethod.GET)
-                .withExpiration(new Date(System.currentTimeMillis() + 1000L * second));
+                new GeneratePresignedUrlRequest(properties.getBucketName(), objectKey).withMethod(HttpMethod.GET)
+                        .withExpiration(new Date(System.currentTimeMillis() + 1000L * second));
         URL url = client.generatePresignedUrl(generatePresignedUrlRequest);
         return url.toString();
     }
@@ -334,7 +323,7 @@ public class OssClient {
         builder.append("\"\n},\n");
         if (policyType == PolicyType.READ) {
             builder.append(
-                "{\n\"Action\": [\n\"s3:ListBucket\"\n],\n\"Effect\": \"Deny\",\n\"Principal\": \"*\",\n\"Resource\": \"arn:aws:s3:::");
+                    "{\n\"Action\": [\n\"s3:ListBucket\"\n],\n\"Effect\": \"Deny\",\n\"Principal\": \"*\",\n\"Resource\": \"arn:aws:s3:::");
             builder.append(bucketName);
             builder.append("\"\n},\n");
         }
@@ -342,11 +331,11 @@ public class OssClient {
         switch (policyType) {
             case WRITE:
                 builder.append(
-                    "[\n\"s3:AbortMultipartUpload\",\n\"s3:DeleteObject\",\n\"s3:ListMultipartUploadParts\",\n\"s3:PutObject\"\n],\n");
+                        "[\n\"s3:AbortMultipartUpload\",\n\"s3:DeleteObject\",\n\"s3:ListMultipartUploadParts\",\n\"s3:PutObject\"\n],\n");
                 break;
             case READ_WRITE:
                 builder.append(
-                    "[\n\"s3:AbortMultipartUpload\",\n\"s3:DeleteObject\",\n\"s3:GetObject\",\n\"s3:ListMultipartUploadParts\",\n\"s3:PutObject\"\n],\n");
+                        "[\n\"s3:AbortMultipartUpload\",\n\"s3:DeleteObject\",\n\"s3:GetObject\",\n\"s3:ListMultipartUploadParts\",\n\"s3:PutObject\"\n],\n");
                 break;
             default:
                 builder.append("\"s3:GetObject\",\n");
@@ -360,8 +349,7 @@ public class OssClient {
 
 
     /**
-     * @param path
-     *            相对路径
+     * @param path 相对路径
      * @return 文件内容
      * @throws Exception
      * @description 获取文件内容
@@ -383,13 +371,12 @@ public class OssClient {
     /**
      * 获取私有URL链接
      *
-     * @param objectKey
-     *            对象KEY
+     * @param objectKey 对象KEY
      */
     public String getPreSignedAccessUrl(String objectKey, DateField dateField, Integer time) {
         GeneratePresignedUrlRequest generatePresignedUrlRequest =
-            new GeneratePresignedUrlRequest(properties.getBucketName(), objectKey).withMethod(HttpMethod.GET)
-                .withExpiration(DateUtil.offset(DateUtil.date(), dateField, time));
+                new GeneratePresignedUrlRequest(properties.getBucketName(), objectKey).withMethod(HttpMethod.GET)
+                        .withExpiration(DateUtil.offset(DateUtil.date(), dateField, time));
         URL url = client.generatePresignedUrl(generatePresignedUrlRequest);
         return url.toString();
     }

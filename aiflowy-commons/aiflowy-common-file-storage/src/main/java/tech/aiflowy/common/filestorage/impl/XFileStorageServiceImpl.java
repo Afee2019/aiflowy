@@ -12,11 +12,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import tech.aiflowy.common.filestorage.FileStorageService;
 
+import javax.annotation.Resource;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 
-@Component("xFileStorageServiceImpl")
+@Component("xfile")
 @ConditionalOnBean(org.dromara.x.file.storage.core.FileStorageService.class)
 public class XFileStorageServiceImpl implements FileStorageService {
 
@@ -26,7 +27,7 @@ public class XFileStorageServiceImpl implements FileStorageService {
     @Value("${aiflowy.storage.x-file-storage.platform}")
     private String platform;
 
-    @Autowired
+    @Resource
     private org.dromara.x.file.storage.core.FileStorageService xFileStorageService;
 
     @EventListener(ApplicationReadyEvent.class)
