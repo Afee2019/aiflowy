@@ -56,10 +56,10 @@ export default defineConfig({
 
     footer: {
       copyright:
-          'Copyright © 2022-present AIFlowy.tech ' +
+          'Copyright © 2022-present <a style="color:#777;text-decoration: none;font-size: 12px;margin-right:10px;" target="_blank" href="https://AIFlowy.tech">AIFlowy.tech</a> ' +
           '<a style="color:#777;text-decoration: none;font-size: 12px;margin-right:10px;" target="_blank" rel="noopener" href="http://beian.miit.gov.cn/"> 黔ICP备19009310号-17 </a>'+
           '<span style="display: flex;align-items: center;justify-content: center;">' +
-          '<span style="font-size: 12px;margin-right:10px;">贵州小码科技有限公司，深圳新篇智能科技有限公司（代理）</span>' +
+          '<span style="font-size: 12px;margin-right:10px;"> 深圳新篇智能科技有限公司 & 贵州小码科技有限公司（运营）</span>' +
           '</span>'
     }
 
