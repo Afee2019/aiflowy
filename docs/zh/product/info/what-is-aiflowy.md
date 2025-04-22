@@ -2,7 +2,7 @@
 
 ## 关于 AIFlowy
 
-AIFlowy 是一个使用 Java 开发的 AI 产品的底座和基石，对标字节 Coze、腾讯元器和 Dify 等产品，但更加注重 toB 端的相关场景。
+AIFlowy 是一个使用 Java 开发的 AI 产品的底座和基石，对标字节 Coze、腾讯元宝和 Dify 等产品，但更加注重 toB 端的相关场景。
 
 
 - 开源地址：https://gitee.com/aiflowy/aiflowy
