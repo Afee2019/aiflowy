@@ -1,9 +1,9 @@
 export default {
     'document-node': {
-        title: '获取文档中的内容',
+        title: '文件内容提取',
         group: 'base',
-        description: '提取PDF中的文字内容',
-        icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M9 2.00318V2H19.9978C20.5513 2 21 2.45531 21 2.9918V21.0082C21 21.556 20.5551 22 20.0066 22H3.9934C3.44476 22 3 21.5501 3 20.9932V8L9 2.00318ZM5.82918 8H9V4.83086L5.82918 8ZM11 4V9C11 9.55228 10.5523 10 10 10H5V20H19V4H11Z"></path></svg>',
+        description: '提取 PDF 或者 Word 等文件中的文字内容',
+        icon:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21 4V18.7215C21 18.9193 20.8833 19.0986 20.7024 19.1787L12 23.0313L3.29759 19.1787C3.11667 19.0986 3 18.9193 3 18.7215V4H1V2H23V4H21ZM5 4V17.7451L12 20.8441L19 17.7451V4H5ZM8 8H16V10H8V8ZM8 12H16V14H8V12Z"></path></svg>',
         sortNo: 801,
         parametersAddEnable: false,
         outputDefsAddEnable: false,
@@ -20,12 +20,13 @@ export default {
         outputDefs: [
             {
                 name: 'content',
-                nameDisabled: true,
                 title: '解析后的文本',
                 dataType: 'String',
+                dataTypeDisabled:true,
                 required: true,
                 parametersAddEnable: false,
                 description: '解析后的文本内容',
+                deleteDisabled:true,
             },
         ]
     }
