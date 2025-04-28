@@ -18,6 +18,7 @@ import com.mybatisflex.annotation.Table;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * 实体类。
@@ -125,6 +126,12 @@ public class AiLlm extends AiLlmBase {
         openAiLlmConfig.setEndpoint(getLlmEndpoint());
         openAiLlmConfig.setApiKey(getLlmApiKey());
         openAiLlmConfig.setModel(getLlmModel());
+        String llmExtraConfig = getLlmExtraConfig();
+        Properties prop = PropertiesUtil.textToProperties(llmExtraConfig);
+        String chatPath = prop.getProperty("chatPath");
+        if (chatPath != null && !chatPath.isEmpty()) {
+            openAiLlmConfig.setChatPath(chatPath);
+        }
         return new OpenAILlm(openAiLlmConfig);
     }
 

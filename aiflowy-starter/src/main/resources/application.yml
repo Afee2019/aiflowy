@@ -18,6 +18,11 @@ spring:
       static-locations: classpath:/public
   mvc:
     static-path-pattern: /static/**
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: pwd
+    database: 0
 aiflowy:
   storage:
     type: local
@@ -31,3 +36,5 @@ aiflowy:
     host: http://127.0.0.1:11434
   login:
     excludes: /api/v1/auth/**, /static/**
+gitee:
+  appKey: 'xxx'

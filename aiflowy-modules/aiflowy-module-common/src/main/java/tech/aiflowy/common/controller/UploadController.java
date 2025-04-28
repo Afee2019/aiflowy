@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/commons/")
@@ -24,5 +26,13 @@ public class UploadController {
         return Result.success("path", path);
     }
 
-
+    @PostMapping(value = "/uploadAntd", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result uploadAntd(MultipartFile file) {
+        String path = storageService.save(file);
+        Map<String,String> data = new HashMap<>();
+        data.put("url", path);
+        return Result.success()
+                .set("status", "success")
+                .set("response", data);
+    }
 }

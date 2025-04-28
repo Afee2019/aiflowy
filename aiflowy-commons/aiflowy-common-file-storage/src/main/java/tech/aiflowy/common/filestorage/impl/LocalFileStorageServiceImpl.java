@@ -1,5 +1,8 @@
 package tech.aiflowy.common.filestorage.impl;
 
+import cn.hutool.core.io.FileTypeUtil;
+import cn.hutool.core.io.file.FileNameUtil;
+import cn.hutool.core.util.StrUtil;
 import tech.aiflowy.common.util.DateUtil;
 import tech.aiflowy.common.filestorage.FileStorageService;
 import org.slf4j.Logger;
@@ -14,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.security.MessageDigest;
 import java.util.Date;
 import java.util.UUID;
 
@@ -34,7 +38,8 @@ public class LocalFileStorageServiceImpl implements FileStorageService {
     @Override
     public String save(MultipartFile file) {
         try {
-            String path = newFile(getExtName(file.getOriginalFilename()));
+            byte[] bytes = file.getBytes();
+            String path = generatePath(bytes, file.getOriginalFilename());
             File target = getLocalFile(path);
             if (!target.getParentFile().exists() && !target.getParentFile().mkdirs()) {
                 LOG.error("Can not mkdirs: {} ", target.getParentFile());
@@ -75,6 +80,33 @@ public class LocalFileStorageServiceImpl implements FileStorageService {
         return "/attachment/"
                 + DateUtil.toString(new Date(), "yyyy/MM-dd") + "/"
                 + UUID.randomUUID() + "." + extName;
+    }
+
+    public static String generatePath(byte[] content, String originalName) throws Exception {
+        // 计算文件内容的 SHA256 哈希值
+        String sha256Hex = sha256Hex(content);
+        // 情况一：如果存在原始文件名，优先使用其后缀
+        if (StrUtil.isNotBlank(originalName)) {
+            // 提取文件后缀
+            String extName = FileNameUtil.extName(originalName);
+            // 如果后缀存在，返回 "哈希值.后缀"，否则返回 "哈希值"
+            return "/attachment/" + (StrUtil.isBlank(extName) ? sha256Hex : sha256Hex + "." + extName);
+        }
+        // 情况二：如果原始文件名为空，基于文件内容推断文件类型
+        return "/attachment/" + sha256Hex + '.' + FileTypeUtil.getType(new ByteArrayInputStream(content));
+    }
+
+    public static String sha256Hex(byte[] input) throws Exception {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(input);
+
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) hexString.append('0');
+            hexString.append(hex);
+        }
+        return hexString.toString(); // 返回字符串类型的哈希值
     }
 
     private String getDefaultRoot() throws IOException {

@@ -1,16 +1,15 @@
-import {useEffect, useState, useRef} from 'react';
+import {useEffect, useRef, useState} from 'react';
 
 
 import {useLayout} from '../../../hooks/useLayout.tsx';
 import {App, Button, Drawer, Form, Input} from "antd";
 import {useParams} from "react-router-dom";
 import {useDetail, useGet, useGetManual, usePostManual, useUpdate} from "../../../hooks/useApis.ts";
-import {FormOutlined, SendOutlined} from "@ant-design/icons";
+import {FormOutlined, SendOutlined, UploadOutlined} from "@ant-design/icons";
 import {Tinyflow, TinyflowHandle} from '@tinyflow-ai/react';
 import '@tinyflow-ai/react/dist/index.css'
-
-
-
+import {Uploader} from "../../../components/Uploader";
+import customNode from './customNode/index.ts'
 
 export const WorkflowDesign = () => {
 
@@ -22,7 +21,6 @@ export const WorkflowDesign = () => {
     const {result: llms} = useGet('/api/v1/aiLlm/list')
     const {result: knowledge} = useGet('/api/v1/aiKnowledge/list')
     const [parameters, setParameters] = useState<any[]>()
-
     const getOptions = (options: { id: any; title: any }[]): { value: any; label: any }[] => {
         if (options) {
             return options.map((item) => ({
@@ -48,7 +46,7 @@ export const WorkflowDesign = () => {
     const tinyflowRef = useRef<TinyflowHandle>(null);
 
     const saveHandler = () => {
-        console.log("data: ",tinyflowRef.current!.getData())
+        console.log("data: ", tinyflowRef.current!.getData())
         doUpdate({
             data: {
                 id: params.id,
@@ -107,25 +105,38 @@ export const WorkflowDesign = () => {
     };
 
     const onFinish = (values: any) => {
+        //console.log('submit', values)
+        setSubmitLoading(true)
         tryRunning({
             data: {
                 id: params.id,
                 variables: values
             }
         }).then((resp) => {
-            message.success("提交成功")
+            message.success("成功")
+            setSubmitLoading(false)
             setExecuteResult(JSON.stringify(resp.data))
         })
     };
 
     const onFinishFailed = (errorInfo: any) => {
+        setSubmitLoading(false)
+        message.error("失败：" + errorInfo)
         console.log('Failed:', errorInfo);
     };
 
+    const customNodes: any = {
+        ...customNode
+    };
+
+    const [form] = Form.useForm();
+
+    const [submitLoading, setSubmitLoading] = useState(false);
 
     return (
         <>
             <Drawer
+                width={640}
                 title="请输入参数"
                 placement="right"
                 closable={false}
@@ -134,29 +145,58 @@ export const WorkflowDesign = () => {
             >
 
                 <Form
+                    form={form}
                     name="basic"
-                    labelCol={{span: 4}}
+                    labelCol={{span: 6}}
                     wrapperCol={{span: 18}}
                     onFinish={onFinish}
                     onFinishFailed={onFinishFailed}
                     autoComplete="off"
                 >
 
-                    {parameters && parameters.map((item) => (
-                        <Form.Item
-                            key={item.name}
-                            label={item.name}
-                            name={item.name}
-                            rules={[{required: item.required}]}
-                            extra={item.description}
-                        >
-                            <Input/>
-                        </Form.Item>
-                    ))}
+                    {parameters && parameters.map((item) => {
+                        let inputComponent;
+                        switch (item.dataType) {
+                            case "File":
+                                inputComponent = (
+                                    <Uploader
+                                        maxCount={1}
+                                        action={'/api/v1/commons/uploadAntd'}
+                                        children={<Button icon={<UploadOutlined/>}>上传</Button>}
+                                        onChange={({file}) => {
+                                            console.log(window.location.origin);
+                                            if (file.status === 'done') {
+                                                let url = file.response?.response.url;
+                                                if (url.indexOf('http') < 0) {
+                                                    url  = window.location.origin + url;
+                                                }
+                                                form.setFieldsValue({
+                                                    [item.name]: url,
+                                                });
+                                            }
+                                        }}
+                                    />);
+                                break;
+                            default:
+                                inputComponent = <Input/>;
+                        }
+
+                        return (
+                            <Form.Item
+                                key={item.name}
+                                label={item.name}
+                                name={item.name}
+                                rules={[{required: item.required}]}
+                                extra={item.description}
+                            >
+                                {inputComponent}
+                            </Form.Item>
+                        );
+                    })}
 
 
                     <Form.Item wrapperCol={{offset: 4, span: 18}}>
-                        <Button type="primary" htmlType="submit">
+                        <Button loading={submitLoading} type="primary" htmlType="submit">
                             <SendOutlined/> 开始运行
                         </Button>
                     </Form.Item>
@@ -172,7 +212,7 @@ export const WorkflowDesign = () => {
                         borderRadius: "7px",
                         overflowY: "scroll"
                     }}>
-                        {executeResult || '暂无输出'}
+                        <pre>{executeResult || '暂无输出'}</pre>
                     </div>
                 </div>
 
@@ -205,17 +245,17 @@ export const WorkflowDesign = () => {
                     </div>
                     <Tinyflow ref={tinyflowRef} data={JSON.parse(workflow?.data?.content || '{}')}
                               provider={provider}
-                              // onChange={(data: any) => {
-                              //     console.log(data)
-                              //     setWorkflow({
-                              //         ...workflow,
-                              //         data: {
-                              //             ...workflow?.data,
-                              //             content: JSON.stringify(data)
-                              //         }
-                              //     })
-                              // }}
-                              style={{height: 'calc(100vh - 110px)'}}/>
+                              onChange={(data: any) => {
+                                  console.log(data)
+                                  setWorkflow({
+                                      ...workflow,
+                                      data: {
+                                          ...workflow?.data,
+                                          content: JSON.stringify(data)
+                                      }
+                                  })
+                              }}
+                              style={{height: 'calc(100vh - 110px)'}} customNodes={customNodes}/>
                 </div>
             </div>
         </>

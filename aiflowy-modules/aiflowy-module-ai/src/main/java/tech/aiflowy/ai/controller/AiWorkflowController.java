@@ -8,15 +8,21 @@ import com.agentsflex.core.store.StoreOptions;
 import dev.tinyflow.core.Tinyflow;
 import dev.tinyflow.core.knowledge.Knowledge;
 import dev.tinyflow.core.node.KnowledgeNode;
+import dev.tinyflow.core.parser.ChainParser;
 import dev.tinyflow.core.provider.KnowledgeProvider;
 import dev.tinyflow.core.provider.LlmProvider;
+import org.springframework.beans.factory.annotation.Value;
 import tech.aiflowy.ai.entity.AiKnowledge;
 import tech.aiflowy.ai.entity.AiLlm;
 import tech.aiflowy.ai.entity.AiWorkflow;
+import tech.aiflowy.ai.node.DocNodeParser;
+import tech.aiflowy.ai.node.GiteeParseService;
+import tech.aiflowy.ai.node.MakeFileNodeParser;
 import tech.aiflowy.ai.service.AiKnowledgeService;
 import tech.aiflowy.ai.service.AiLlmService;
 import tech.aiflowy.ai.service.AiWorkflowService;
 import tech.aiflowy.common.domain.Result;
+import tech.aiflowy.common.filestorage.FileStorageService;
 import tech.aiflowy.common.web.controller.BaseCurdController;
 import tech.aiflowy.common.web.jsonbody.JsonBody;
 import com.agentsflex.core.chain.*;
@@ -40,6 +46,10 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
 
     @Resource
     private AiKnowledgeService aiKnowledgeService;
+    @Resource(name = "default")
+    FileStorageService storageService;
+    @Value("${gitee.appKey}")
+    private String giteeKey;
 
     public AiWorkflowController(AiWorkflowService service, AiLlmService aiLlmService) {
         super(service);
@@ -74,6 +84,14 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
         }
 
         Tinyflow tinyflow = workflow.toTinyflow();
+
+        DocNodeParser docNodeParser = new DocNodeParser(new GiteeParseService(giteeKey));
+        MakeFileNodeParser makeFileNodeParser = new MakeFileNodeParser(storageService);
+
+        ChainParser chainParser = tinyflow.getChainParser();
+        chainParser.addNodeParser(docNodeParser.getNodeName(),docNodeParser);
+        chainParser.addNodeParser(makeFileNodeParser.getNodeName(),makeFileNodeParser);
+
         tinyflow.setLlmProvider(new LlmProvider() {
             @Override
             public Llm getLlm(Object id) {
@@ -115,14 +133,14 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
         chain.addEventListener(new ChainEventListener() {
             @Override
             public void onEvent(ChainEvent event, Chain chain) {
-                System.out.println("onEvent : " + event);
+                //System.out.println("onEvent : " + event);
             }
         });
 
         chain.addOutputListener(new ChainOutputListener() {
             @Override
             public void onOutput(Chain chain, ChainNode node, Object outputMessage) {
-                System.out.println("output : " + node.getId() + " : " + outputMessage);
+                //System.out.println("output : " + node.getId() + " : " + outputMessage);
             }
         });
 
