@@ -1,0 +1,3 @@
+# Depends On Database Initialization Detectors
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  tech.aiflowy.common.satoken.config.SaTokenDaoForRedisTemplate
