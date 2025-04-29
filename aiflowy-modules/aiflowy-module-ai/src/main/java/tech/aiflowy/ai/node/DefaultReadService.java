@@ -1,9 +1,11 @@
 package tech.aiflowy.ai.node;
 
+import org.springframework.stereotype.Component;
 import tech.aiflowy.ai.utils.DocUtil;
 
 import java.io.InputStream;
 
+@Component("defaultReader")
 public class DefaultReadService implements ReadDocService {
 
     @Override

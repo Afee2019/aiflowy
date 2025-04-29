@@ -6,15 +6,17 @@ import com.agentsflex.core.llm.client.OkHttpClientUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.alicp.jetcache.Cache;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import tech.aiflowy.ai.utils.DocUtil;
 import tech.aiflowy.common.constant.RedisKey;
 import tech.aiflowy.common.util.SpringContextUtil;
 
+import javax.annotation.Resource;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -22,16 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
+@Component("giteeReader")
 public class GiteeParseService implements ReadDocService {
 
-    private final String appKey;
+    @Value("${node.gitee.appKey}")
+    private String appKey;
     private static final Logger log = LoggerFactory.getLogger(GiteeParseService.class);
-    private final StringRedisTemplate redisTemplate;
-
-    public GiteeParseService(String appKey) {
-        this.appKey = appKey;
-        this.redisTemplate = SpringContextUtil.getBean(StringRedisTemplate.class);
-    }
+    @Resource(name = "defaultCache")
+    private Cache<String, Object> defaultCache;
 
     @Override
     public String read(String fileName, InputStream is) {
@@ -39,10 +39,11 @@ public class GiteeParseService implements ReadDocService {
     }
 
     private String getDocContent(String fileName, InputStream is) {
-        ValueOperations<String, String> ops = redisTemplate.opsForValue();
-        String cache = ops.get(RedisKey.DOC_NODE_CONTENT_KEY + fileName);
-        if (cache != null && !cache.isEmpty()) {
-            return cache;
+
+        Object cache = defaultCache.get(RedisKey.DOC_NODE_CONTENT_KEY + fileName);
+
+        if (cache != null) {
+            return cache.toString();
         }
         String content;
         ExecutorService executor = Executors.newFixedThreadPool(5);
@@ -68,7 +69,7 @@ public class GiteeParseService implements ReadDocService {
             }
             content = res.toString();
 
-            ops.set(RedisKey.DOC_NODE_CONTENT_KEY + fileName, content);
+            defaultCache.put(RedisKey.DOC_NODE_CONTENT_KEY + fileName, content);
         } catch (Exception e) {
             log.error("读取文档内容失败：", e);
             throw new RuntimeException("读取文档内容失败：", e);
@@ -113,6 +114,10 @@ public class GiteeParseService implements ReadDocService {
             String jsonStr = response.body().string();
             JSONObject object = JSON.parseObject(jsonStr);
             log.info("读取文件接口返回：{}", jsonStr);
+            String error = object.getString("error");
+            if (StrUtil.isNotEmpty(error)) {
+                throw new RuntimeException(object.getString("message"));
+            }
             if ("failure".equals(object.getString("status"))) {
                 String msg = "请求读取文件[" + fileName + "],失败：" + jsonStr;
                 log.info(msg);
@@ -175,8 +180,6 @@ public class GiteeParseService implements ReadDocService {
         String taskId = giteeParse(fileName, b);
         while (true) {
             ThreadUtil.sleep(1000);
-            ValueOperations<String, String> ops = redisTemplate.opsForValue();
-            ops.get("key");
             String result = giteeParseResult(taskId);
             if (!"waiting".equals(result)) {
                 // 去掉 HTML 标签，![images/xx](xxx)的内容，提取纯文本

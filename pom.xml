@@ -38,6 +38,13 @@
     </properties>
     <dependencyManagement>
         <dependencies>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-redis</artifactId>
+                <version>${spring-boot.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>cn.hutool</groupId>
                 <artifactId>hutool-core</artifactId>

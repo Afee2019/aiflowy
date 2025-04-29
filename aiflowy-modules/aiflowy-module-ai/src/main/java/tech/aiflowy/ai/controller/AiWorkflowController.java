@@ -15,14 +15,13 @@ import org.springframework.beans.factory.annotation.Value;
 import tech.aiflowy.ai.entity.AiKnowledge;
 import tech.aiflowy.ai.entity.AiLlm;
 import tech.aiflowy.ai.entity.AiWorkflow;
-import tech.aiflowy.ai.node.DocNodeParser;
-import tech.aiflowy.ai.node.GiteeParseService;
-import tech.aiflowy.ai.node.MakeFileNodeParser;
+import tech.aiflowy.ai.node.*;
 import tech.aiflowy.ai.service.AiKnowledgeService;
 import tech.aiflowy.ai.service.AiLlmService;
 import tech.aiflowy.ai.service.AiWorkflowService;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.filestorage.FileStorageService;
+import tech.aiflowy.common.util.SpringContextUtil;
 import tech.aiflowy.common.web.controller.BaseCurdController;
 import tech.aiflowy.common.web.jsonbody.JsonBody;
 import com.agentsflex.core.chain.*;
@@ -48,8 +47,8 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
     private AiKnowledgeService aiKnowledgeService;
     @Resource(name = "default")
     FileStorageService storageService;
-    @Value("${gitee.appKey}")
-    private String giteeKey;
+    @Resource
+    private ReaderManager readerManager;
 
     public AiWorkflowController(AiWorkflowService service, AiLlmService aiLlmService) {
         super(service);
@@ -85,7 +84,8 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
 
         Tinyflow tinyflow = workflow.toTinyflow();
 
-        DocNodeParser docNodeParser = new DocNodeParser(new GiteeParseService(giteeKey));
+        ReadDocService readService = readerManager.getReader();
+        DocNodeParser docNodeParser = new DocNodeParser(readService);
         MakeFileNodeParser makeFileNodeParser = new MakeFileNodeParser(storageService);
 
         ChainParser chainParser = tinyflow.getChainParser();

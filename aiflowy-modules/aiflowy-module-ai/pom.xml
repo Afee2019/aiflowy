@@ -16,6 +16,11 @@
     <dependencies>
         <dependency>
             <groupId>tech.aiflowy</groupId>
+            <artifactId>aiflowy-common-cache</artifactId>
+            <version>1.0.0-alpha.1</version>
+        </dependency>
+        <dependency>
+            <groupId>tech.aiflowy</groupId>
             <artifactId>aiflowy-common-base</artifactId>
             <version>1.0.0-alpha.1</version>
         </dependency>
