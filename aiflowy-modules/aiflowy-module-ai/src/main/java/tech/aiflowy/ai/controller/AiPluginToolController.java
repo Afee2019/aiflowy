@@ -10,6 +10,7 @@ import tech.aiflowy.common.web.controller.BaseCurdController;
 import tech.aiflowy.common.web.jsonbody.JsonBody;
 
 import javax.annotation.Resource;
+import java.math.BigInteger;
 
 /**
  *  控制层。
@@ -35,7 +36,7 @@ public class AiPluginToolController extends BaseCurdController<AiPluginToolServi
 
     // 插件工具修改页面查询
     @PostMapping("/tool/search")
-    public Result searchPlugin(@JsonBody(value = "aiPluginToolId", required = true) String aiPluginToolId){
+    public Result searchPlugin(@JsonBody(value = "aiPluginToolId", required = true) BigInteger aiPluginToolId){
         return aiPluginToolService.searchPlugin(aiPluginToolId);
     }
 

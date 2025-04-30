@@ -4,6 +4,7 @@ import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Date;
 
 
@@ -15,7 +16,7 @@ public class AiPluginBase implements Serializable {
      * 插件id
      */
     @Id(keyType = KeyType.Generator, value = "snowFlakeId", comment = "插件id")
-    private Long id;
+    private BigInteger id;
 
     /**
      * 图标地址
@@ -84,11 +85,11 @@ public class AiPluginBase implements Serializable {
     @Column(comment = "创建时间")
     private Date created;
 
-    public Long getId() {
+    public BigInteger getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(BigInteger id) {
         this.id = id;
     }
 

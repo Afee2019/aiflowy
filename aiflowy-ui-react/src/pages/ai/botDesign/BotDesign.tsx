@@ -170,6 +170,8 @@ const BotDesign: React.FC = () => {
         botId: params.id,
         sessionId: getSessionId()
     });
+    console.log('pluginResult')
+    console.log(pluginResult)
     useEffect(() => {
         setChats(messageResult?.data)
     }, [messageResult]);
@@ -340,8 +342,8 @@ const BotDesign: React.FC = () => {
                                 children:
                                     <div>
                                         {pluginResult?.data?.map((item: any) => {
-                                            return <ListItem key={item.id} title={item.aiPlugins.title}
-                                                             description={item.aiPlugins.description}
+                                            return <ListItem key={item.id} title={item.aiPlugin.name}
+                                                             description={item.aiPlugin.description}
                                                              onButtonClick={() => {
                                                                  Modal.confirm({
                                                                      title: '确定要删除该插件吗？',

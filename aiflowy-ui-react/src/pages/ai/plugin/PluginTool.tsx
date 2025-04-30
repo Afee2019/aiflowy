@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from 'react';
-import {Button, Form, FormProps, Input, message, Modal, Space, Table, TableProps, Tag} from 'antd';
+import {Button, Form, FormProps, Input, message, Modal, Space, Table, TableProps, Tooltip} from 'antd';
 import {useLocation, useNavigate} from "react-router-dom";
 import {useLayout} from "../../../hooks/useLayout.tsx";
 import {useBreadcrumbRightEl} from "../../../hooks/useBreadcrumbRightEl.tsx";
-import {EditOutlined, PlusOutlined, RestOutlined} from "@ant-design/icons";
+import {ArrowLeftOutlined, EditOutlined, PlusOutlined, RestOutlined} from "@ant-design/icons";
 import TextArea from "antd/es/input/TextArea";
 import {usePage, usePostManual} from "../../../hooks/useApis.ts";
 import {convertDatetimeUtil} from "../../../libs/changeDatetimeUtil.tsx";
@@ -39,10 +39,21 @@ const PluginTool: React.FC = () =>{
 
     // 控制创建工具模态框的显示与隐藏
     const [isAddPluginToolModalOpen, setAddPluginToolIsOpen] = React.useState(false);
-    useBreadcrumbRightEl(<Button type={"primary"} onClick={() => {
-        setAddPluginToolIsOpen(true);
-    }}>
-        <PlusOutlined/>创建工具</Button>)
+    useBreadcrumbRightEl(
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16}}>
+            <div>
+                <Button onClick={() => navigate(-1)}  icon={<ArrowLeftOutlined />}>返回</Button>
+                {/* 其他内容 */}
+            </div>
+            <div>
+                <Button type={"primary"} onClick={() => {
+                    setAddPluginToolIsOpen(true);
+                }}>
+                    <PlusOutlined/>创建工具</Button>
+            </div>
+        </div>
+    )
+
     const {
         loading,
         result,
@@ -99,23 +110,34 @@ const PluginTool: React.FC = () =>{
             key: 'name',
         },
         {
-            title: '输入参数',
-            dataIndex: 'inputParams',
-            key: 'inputParams',
+            title: '工具描述',
+            dataIndex: 'description',
+            key: 'description',
+            ellipsis: true,  // 超出显示省略号
+            render: (text: string) => (
+                <Tooltip title={text}>
+                    <span>{text}</span>
+                </Tooltip>
+            ),
         },
-        {
-            title: '调试状态',
-            dataIndex: 'debugStatus',
-            key: 'debugStatus',
-            render: (item: number) =>{
-                if (item === 0){
-                    return  <Tag color="error">失败</Tag>
-                }  else if(item === 1){
-                    return  <Tag color="success">成功</Tag>
-                }
-
-            }
-        },
+        // {
+        //     title: '输入参数',
+        //     dataIndex: 'inputParams',
+        //     key: 'inputParams',
+        // },
+        // {
+        //     title: '调试状态',
+        //     dataIndex: 'debugStatus',
+        //     key: 'debugStatus',
+        //     render: (item: number) =>{
+        //         if (item === 0){
+        //             return  <Tag color="error">失败</Tag>
+        //         }  else if(item === 1){
+        //             return  <Tag color="success">成功</Tag>
+        //         }
+        //
+        //     }
+        // },
         {
             title: '创建时间',
             dataIndex: 'created',
@@ -131,6 +153,7 @@ const PluginTool: React.FC = () =>{
                         navigate('/ai/pluginToolEdit', {
                             state: {
                                 id: record.id,
+                                pluginId: id,
                                 // 插件名称
                                 pluginTitle:pluginTitle,
                                 // 插件工具名称

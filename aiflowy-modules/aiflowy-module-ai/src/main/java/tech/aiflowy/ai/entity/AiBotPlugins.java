@@ -15,13 +15,13 @@ import tech.aiflowy.ai.entity.base.AiBotPluginsBase;
 public class AiBotPlugins extends AiBotPluginsBase {
 
     @RelationOneToOne(selfField = "pluginId", targetField = "id")
-    private AiPlugins aiPlugins;
+    private AiPlugin aiPlugin;
 
-    public AiPlugins getAiPlugins() {
-        return aiPlugins;
+    public AiPlugin getAiPlugin() {
+        return aiPlugin;
     }
 
-    public void setAiPlugins(AiPlugins aiPlugins) {
-        this.aiPlugins = aiPlugins;
+    public void setAiPlugin(AiPlugin aiPlugin) {
+        this.aiPlugin = aiPlugin;
     }
 }

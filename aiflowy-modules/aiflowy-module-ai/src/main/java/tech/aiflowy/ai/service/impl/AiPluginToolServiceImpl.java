@@ -16,6 +16,7 @@ import tech.aiflowy.ai.service.AiPluginToolService;
 import tech.aiflowy.common.domain.Result;
 
 import javax.annotation.Resource;
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +50,7 @@ public class AiPluginToolServiceImpl extends ServiceImpl<AiPluginToolMapper, AiP
     }
 
     @Override
-    public Result searchPlugin(String aiPluginToolId) {
+    public Result searchPlugin(BigInteger aiPluginToolId) {
         //查询当前插件工具
         QueryWrapper queryAiPluginToolWrapper = QueryWrapper.create()
                 .select("*")
@@ -59,7 +60,8 @@ public class AiPluginToolServiceImpl extends ServiceImpl<AiPluginToolMapper, AiP
         // 查询当前的插件信息
         QueryWrapper queryAiPluginWrapper = QueryWrapper.create()
                 .select("*")
-                .from("tb_ai_plugin");
+                .from("tb_ai_plugin")
+                .where("id = ?", aiPluginTool.getPluginId());
         AiPlugin aiPlugin = aiPluginMapper.selectOneByQuery(queryAiPluginWrapper);
         Map<String, Object> result = new HashMap<>();
         result.put("data", aiPluginTool);

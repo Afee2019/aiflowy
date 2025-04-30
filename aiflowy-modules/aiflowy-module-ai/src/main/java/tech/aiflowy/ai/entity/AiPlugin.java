@@ -16,4 +16,9 @@ import java.util.List;
 @Table("tb_ai_plugin")
 public class AiPlugin extends AiPluginBase {
 
+
+    public String getTitle() {
+        return this.getName();
+    }
+
 }

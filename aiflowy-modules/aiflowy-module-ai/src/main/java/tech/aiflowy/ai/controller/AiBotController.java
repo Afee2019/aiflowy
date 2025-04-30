@@ -74,6 +74,8 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     private AiPluginsService aiPluginsService;
     @Resource
     private AiBotPluginsService aiBotPluginsService;
+    @Resource
+    private AiPluginToolService aiPluginToolService;
 
     @PostMapping("updateOptions")
     public Result updateOptions(@JsonBody("id") BigInteger id, @JsonBody("options") Map<String, Object> options) {
@@ -147,10 +149,10 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         HumanMessage humanMessage = new HumanMessage(prompt);
 
         // 添加插件相关的function calling
-        appendPluginFunctions(botId, humanMessage);
+        appendPluginToolFunction(botId, humanMessage);
 
         //添加工作流相关的 Function Calling
-        appendWorkflowFunctions(botId, humanMessage);
+//        appendWorkflowFunctions(botId, humanMessage);
 
         //添加知识库相关的 Function Calling
         appendKnowledgeFunctions(botId, humanMessage);
@@ -166,7 +168,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 function_call(aiMessageResponse, emitter, needClose, historiesPrompt, llm, prompt, false);
             } catch (Exception e) {
                 emitter.completeWithError(e);
-            }
+            } 
 
             if (needClose[0]) {
                 System.out.println("function chat complete");
@@ -265,7 +267,8 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         HumanMessage humanMessage = new HumanMessage();
 
         // 添加插件、工作流、知识库相关的 Function Calling
-        appendPluginFunctions(botId, humanMessage);
+        appendPluginToolFunction(botId, humanMessage);
+//        appendPluginFunctions(botId, humanMessage);
         appendWorkflowFunctions(botId, humanMessage);
         appendKnowledgeFunctions(botId, humanMessage);
 
@@ -276,6 +279,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
             MySseEmitter emitter = new MySseEmitter((long) (1000 * 60 * 2));
             final Boolean[] needClose = {true};
 
+//            if (humanMessage.getFunctions() != null && !humanMessage.getFunctions().isEmpty()) {
             if (humanMessage.getFunctions() != null && !humanMessage.getFunctions().isEmpty()) {
                 try {
                     AiMessageResponse aiMessageResponse = llm.chat(historiesPrompt);
@@ -498,14 +502,32 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         }
     }
 
-    private void appendPluginFunctions(BigInteger botId, HumanMessage humanMessage) {
+//    private void appendPluginFunctions(BigInteger botId, HumanMessage humanMessage) {
+//        QueryWrapper queryWrapper = QueryWrapper.create().eq(AiBotPlugins::getBotId, botId);
+//        List<AiBotPlugins> aiBotPlugins = aiBotPluginsService.getMapper().selectListWithRelationsByQuery(queryWrapper);
+//        if (cn.hutool.core.collection.CollectionUtil.isNotEmpty(aiBotPlugins)) {
+//            for (AiBotPlugins aiBotPlugin : aiBotPlugins) {
+//                Function function = aiBotPlugin.getAiPlugins().toFunction();
+//                humanMessage.addFunction(function);
+//            }
+//        }
+//    }
+    private void appendPluginToolFunction(BigInteger botId, HumanMessage humanMessage) {
         QueryWrapper queryWrapper = QueryWrapper.create().eq(AiBotPlugins::getBotId, botId);
         List<AiBotPlugins> aiBotPlugins = aiBotPluginsService.getMapper().selectListWithRelationsByQuery(queryWrapper);
-        if (cn.hutool.core.collection.CollectionUtil.isNotEmpty(aiBotPlugins)) {
-            for (AiBotPlugins aiBotPlugin : aiBotPlugins) {
-                Function function = aiBotPlugin.getAiPlugins().toFunction();
-                humanMessage.addFunction(function);
+        // 根据插件iD查询该插件下面有哪些插件工具，转换成Function
+        for (AiBotPlugins aiBotPlugin: aiBotPlugins){
+            BigInteger pluginId = aiBotPlugin.getPluginId();
+            QueryWrapper queryTool = QueryWrapper.create()
+                    .select("*")
+                    .from("tb_ai_plugin_tool")
+                    .where("plugin_id = ?", pluginId);
+            List<AiPluginTool> aiPluginTools = aiPluginToolService.getMapper().selectListWithRelationsByQuery(queryTool);
+            for (AiPluginTool item: aiPluginTools){
+                humanMessage.addFunction(item.toFunction());
             }
+
         }
+
     }
 }

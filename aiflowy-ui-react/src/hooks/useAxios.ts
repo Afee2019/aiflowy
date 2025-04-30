@@ -53,6 +53,7 @@ Axios.interceptors.request.use((config) => {
 })
 
 export const useAxios =  makeUseAxios({
+        // @ts-ignore
         cache: axiosCache,
         defaultOptions: {
             useCache: false,

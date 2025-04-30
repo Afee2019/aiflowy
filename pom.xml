@@ -35,6 +35,8 @@
         <commonmark.version>0.18.0</commonmark.version>
         <jsoup.version>1.16.1</jsoup.version>
         <commons-io.version>2.18.0</commons-io.version>
+        <hutool-http.version>5.8.28</hutool-http.version>
+        <hutool-json.version>5.8.32</hutool-json.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -61,6 +63,18 @@
                 <groupId>cn.hutool</groupId>
                 <artifactId>hutool-extra</artifactId>
                 <version>5.8.36</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-http</artifactId>
+                <version>${hutool-http.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-json</artifactId>
+                <version>${hutool-json.version}</version>
             </dependency>
 
             <dependency>

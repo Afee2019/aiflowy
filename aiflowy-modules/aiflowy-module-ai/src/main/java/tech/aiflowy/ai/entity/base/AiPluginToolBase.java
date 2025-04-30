@@ -5,6 +5,7 @@ import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Date;
 
 
@@ -16,13 +17,13 @@ public class AiPluginToolBase implements Serializable {
      * 插件工具id
      */
     @Id(keyType = KeyType.Generator, value = "snowFlakeId", comment = "插件工具id")
-    private Long id;
+    private BigInteger id;
 
     /**
      * 插件id
      */
     @Column(comment = "插件id")
-    private Long pluginId;
+    private BigInteger pluginId;
 
     /**
      * 名称
@@ -84,19 +85,19 @@ public class AiPluginToolBase implements Serializable {
     @Column(comment = "调试状态【0失败 1成功】")
     private int debugStatus;
 
-    public Long getId() {
+    public BigInteger getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(BigInteger id) {
         this.id = id;
     }
 
-    public Long getPluginId() {
+    public BigInteger getPluginId() {
         return pluginId;
     }
 
-    public void setPluginId(Long pluginId) {
+    public void setPluginId(BigInteger pluginId) {
         this.pluginId = pluginId;
     }
 

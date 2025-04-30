@@ -21,7 +21,7 @@ import {
 	Radio,
 	Row,
 	Select,
-	Space, Spin
+	Space, Spin, Tooltip
 } from 'antd';
 import {usePage, usePostManual} from "../../../hooks/useApis.ts";
 import SearchForm from "../../../components/AntdCrud/SearchForm.tsx";
@@ -295,7 +295,7 @@ const Plugin: React.FC = () => {
 										name: item.name,
 										description: item.description,
 										baseUrl: item.baseUrl,
-										headers: JSON.parse(item.headers),
+										headers: item.headers?JSON.parse(item.headers):[],
 										authData: item.authData,
 										authType: item.authType,
 										position: item.position,
@@ -353,9 +353,17 @@ const Plugin: React.FC = () => {
 								avatar={<Avatar src={item.icon || "/favicon.png"} />}
 								title={item.name}
 								description={
-									<>
-										<p>{item.description}</p>
-									</>
+									<Tooltip title={item.description}>
+										<div style={{
+											display: '-webkit-box',
+											WebkitLineClamp: 1,      // 限制显示行数
+											WebkitBoxOrient: 'vertical',
+											overflow: 'hidden',
+											textOverflow: 'ellipsis',
+										}}>
+											{item.description}
+										</div>
+									</Tooltip>
 								}
 							/>
 						</Card>
@@ -450,15 +458,15 @@ const Plugin: React.FC = () => {
 									<Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
 										<Form.Item
 											{...restField}
-											name={[name, 'first']}
-											rules={[{ required: true, message: 'Missing first name' }]}
+											name={[name, 'label']}
+											rules={[{ required: true, message: 'Missing label ' }]}
 										>
 											<Input placeholder="Headers Name" />
 										</Form.Item>
 										<Form.Item
 											{...restField}
-											name={[name, 'last']}
-											rules={[{ required: true, message: 'Missing last name' }]}
+											name={[name, 'value']}
+											rules={[{ required: true, message: 'Missing  value' }]}
 										>
 											<Input placeholder="Headers value" />
 										</Form.Item>

@@ -5,6 +5,8 @@ import tech.aiflowy.ai.entity.AiPlugin;
 import tech.aiflowy.ai.entity.AiPluginTool;
 import tech.aiflowy.common.domain.Result;
 
+import java.math.BigInteger;
+
 /**
  *  服务层。
  *
@@ -15,7 +17,7 @@ public interface AiPluginToolService extends IService<AiPluginTool> {
 
     Result savePluginTool(AiPluginTool aiPluginTool);
 
-    Result searchPlugin(String aiPluginToolId);
+    Result searchPlugin(BigInteger aiPluginToolId);
 
     Result updatePlugin(AiPluginTool aiPluginTool);
 }

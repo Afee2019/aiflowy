@@ -1,11 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import {useLayout} from "../../../hooks/useLayout.tsx";
-import {useLocation} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import {Button, Collapse, Form, Input, message, Select, Space, Spin, Switch, Table} from "antd";
 import {usePost, usePostManual} from "../../../hooks/useApis.ts";
 import './less/pluginToolEdit.less'
-import {DeleteOutlined, EditOutlined, PlusOutlined} from "@ant-design/icons";
+import {ArrowLeftOutlined, DeleteOutlined, EditOutlined, PlusOutlined} from "@ant-design/icons";
 import TextArea from "antd/es/input/TextArea";
+import {useBreadcrumbRightEl} from "../../../hooks/useBreadcrumbRightEl.tsx";
 
 interface inputDataParameter {
     key: string;
@@ -25,7 +26,19 @@ interface outputDataParameter {
     required: boolean;
     enabled: boolean;
 }
+
+
 const PluginToolEdit: React.FC = () => {
+    const navigate = useNavigate();
+
+    useBreadcrumbRightEl(
+        <div>
+            <div>
+                <button onClick={() => navigate(-1)}>返回</button>
+                {/* 其他内容 */}
+            </div>
+        </div>
+    )
     const { setOptions } = useLayout();
     const location = useLocation();
     const { id, pluginTitle, pluginToolTitle } = location.state || {};
@@ -36,7 +49,14 @@ const PluginToolEdit: React.FC = () => {
     const [isEditOutput, setIsEditOutput] = useState(false);
     const [formInput] = Form.useForm();
     const [formOutput] = Form.useForm();
-
+    useBreadcrumbRightEl(
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16}}>
+            <div>
+                <Button onClick={() => navigate(-1)}  icon={<ArrowLeftOutlined />}>返回</Button>
+                {/* 其他内容 */}
+            </div>
+        </div>
+    )
     const [editStates, setEditStates] = useState({
         '1': false,
         '2': false,
@@ -50,8 +70,8 @@ const PluginToolEdit: React.FC = () => {
             breadcrumbs: [
                 { title: '首页' },
                 { title: '插件', href: `/ai/plugin` },
-                { title: pluginTitle, href: `/ai/plugin` },
-                { title: pluginToolTitle, href: `/ai/pluginTool` },
+                { title: pluginTitle},
+                { title: pluginToolTitle},
                 { title: '修改' },
             ],
         });
