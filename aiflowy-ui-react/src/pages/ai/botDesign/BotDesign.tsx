@@ -110,6 +110,8 @@ const BotDesign: React.FC = () => {
 
     const {setOptions} = useLayout();
     useEffect(() => {
+        console.log('detail')
+        console.log(detail)
         setOptions({
             leftMenuCollapsed: true, showBreadcrumb: false,
             headerLeftEl: <span style={{marginLeft: "20px"}}>{detail?.data?.title}</span>,
@@ -150,7 +152,10 @@ const BotDesign: React.FC = () => {
                 options: values,
                 id: params.id,
             }
-        })
+        }).then(reGetDetail)
+            .then(() => {
+                message.success("保存成功")
+            })
     }
 
     useEffect(() => {
@@ -450,7 +455,7 @@ const BotDesign: React.FC = () => {
                                 chats={chats}
                                 onChatsChange={setChats} // 确保正确传递 onChatsChange
                                 // style={{ height: '600px' }}
-                                helloMessage="欢迎使用 AIFlowy ，我是你的专属机器人，有什么问题可以随时问我。"
+                                helloMessage={detail?.data?.options?.welcomeMessage}
                                 request={async (messages) => {
                                     const readableStream = new ReadableStream({
                                         async start(controller) {
