@@ -149,6 +149,9 @@ function sidebarDevelopment(): DefaultTheme.SidebarItem[] {
                 {text: '知识库', link: '/ai/knowledge'},
                 {text: 'apiKey', link: '/ai/apiKey'},
                 {text: 'Ollama', link: '/ai/ollama'},
+                {text: '工作流', collapsed: false, items: [
+                    {text: '自定义节点', link: '/ai/custom-node'},
+                    ]},
             ]
         },
     ]
