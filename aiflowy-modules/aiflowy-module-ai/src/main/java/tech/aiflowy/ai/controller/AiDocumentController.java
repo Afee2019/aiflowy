@@ -367,7 +367,7 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
         AiKnowledge aiKnowledge = new AiKnowledge();
         aiKnowledge.setId(entity.getKnowledgeId());
         // CanUpdateEmbedLlm false: 不能修改知识库的大模型 true: 可以修改
-        aiKnowledge.setCanUpdateEmbedLlm(false);
+        aiKnowledge.setCanUpdateEmbedding(false);
         knowledgeService.updateById(aiKnowledge);
         return Result.success();
     }

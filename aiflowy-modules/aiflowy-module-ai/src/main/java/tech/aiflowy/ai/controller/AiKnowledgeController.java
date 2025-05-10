@@ -35,7 +35,7 @@ public class AiKnowledgeController extends BaseCurdController<AiKnowledgeService
     @Override
     protected Result onSaveOrUpdateBefore(AiKnowledge entity, boolean isSave) {
         if (isSave){
-            entity.setCanUpdateEmbedLlm(true);
+            entity.setCanUpdateEmbedding(true);
         }
         return super.onSaveOrUpdateBefore(entity, isSave);
     }

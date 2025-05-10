@@ -220,6 +220,7 @@ CREATE TABLE `tb_ai_knowledge`  (
   `modified` datetime(0) NULL DEFAULT NULL COMMENT '最后一次修改时间',
   `modified_by` bigint(0) UNSIGNED NULL DEFAULT NULL COMMENT '最后一次修改用户ID',
   `options` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '其他配置',
+  `can_update_embedding` tinyint(1) NULL DEFAULT NULL COMMENT '是否能修改当前知识库的向量模型',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '知识库' ROW_FORMAT = Dynamic;
 
@@ -573,4 +574,8 @@ CREATE TABLE `tb_sys_role_menu`  (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '角色-菜单表' ROW_FORMAT = Dynamic;
 
+
+
 SET FOREIGN_KEY_CHECKS = 1;
+
+
