@@ -18,7 +18,7 @@
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mybatis-flex.version>1.10.9</mybatis-flex.version>
-        <agents-flex.version>1.0.7</agents-flex.version>
+        <agents-flex.version>1.0.8</agents-flex.version>
         <okhttp.version>4.9.3</okhttp.version>
         <spring.version>5.3.25</spring.version>
         <spring-boot.version>2.7.18</spring-boot.version>

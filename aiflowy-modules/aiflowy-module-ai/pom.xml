@@ -32,7 +32,7 @@
         <dependency>
             <groupId>dev.tinyflow</groupId>
             <artifactId>tinyflow-java-core</artifactId>
-            <version>1.0.4</version>
+            <version>1.0.5</version>
         </dependency>
         <!--使用 enjoy 模板引擎-->
         <dependency>
