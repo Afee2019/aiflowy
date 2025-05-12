@@ -15,6 +15,7 @@ import com.agentsflex.core.prompt.HistoriesPrompt;
 import com.agentsflex.core.util.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializeConfig;
+import com.alibaba.fastjson2.JSONObject;
 import com.mybatisflex.core.query.QueryWrapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -141,6 +142,10 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         }
 
         Llm llm = aiLlm.toLlm();
+
+        if (llm == null) {
+            return ChatManager.getInstance().sseEmitterForContent("LLM获取为空");
+        }
 
         AiBotMessageMemory memory = new AiBotMessageMemory(botId, SaTokenUtil.getLoginAccount().getId(),
                 sessionId, isExternalMsg, aiBotMessageService, aiBotConversationMessageMapper,

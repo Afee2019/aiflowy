@@ -128,6 +128,9 @@ public class AiLlm extends AiLlmBase {
         openAiLlmConfig.setModel(getLlmModel());
         openAiLlmConfig.setDefaultEmbeddingModel(getLlmModel());
         String llmExtraConfig = getLlmExtraConfig();
+        if (llmExtraConfig == null){
+            return null;
+        }
         Properties prop = PropertiesUtil.textToProperties(llmExtraConfig);
         String chatPath = prop.getProperty("chatPath");
         String embedPath = prop.getProperty("embedPath");
