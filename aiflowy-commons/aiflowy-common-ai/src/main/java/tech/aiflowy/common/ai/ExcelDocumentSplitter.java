@@ -15,7 +15,10 @@ public class ExcelDocumentSplitter implements DocumentSplitter {
     private boolean includeHeader;
 
     public ExcelDocumentSplitter(int rowsPerChunk) {
-        this(rowsPerChunk, true);
+        if (rowsPerChunk <= 0) {
+            throw new IllegalArgumentException("rows must be greater than 0");
+        }
+        this.rowsPerChunk = rowsPerChunk;
     }
 
     public ExcelDocumentSplitter(int rowsPerChunk, boolean includeHeader) {

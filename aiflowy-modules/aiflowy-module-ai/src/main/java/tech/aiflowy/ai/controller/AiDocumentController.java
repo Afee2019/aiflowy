@@ -186,6 +186,15 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
                          @RequestParam(name="rowsPerChunk", required = false) Integer rowsPerChunk,
                          @RequestParam(name="userWillSave") boolean userWillSave
     ) throws IOException {
+        if (chunkSize == null){
+            chunkSize = 100;
+        }
+        if (overlapSize == null){
+            overlapSize = 200;
+        }
+        if (rowsPerChunk == null){
+            rowsPerChunk = 1;
+        }
         if (file.getOriginalFilename() == null){
             return Result.fail(1,"文件名不能为空");
         }
