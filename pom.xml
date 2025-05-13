@@ -18,7 +18,8 @@
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mybatis-flex.version>1.10.9</mybatis-flex.version>
-        <agents-flex.version>1.0.8</agents-flex.version>
+        <agents-flex.version>1.0.9</agents-flex.version>
+        <tinyflow-java.version>1.0.6</tinyflow-java.version>
         <okhttp.version>4.9.3</okhttp.version>
         <spring.version>5.3.25</spring.version>
         <spring-boot.version>2.7.18</spring-boot.version>
@@ -127,6 +128,11 @@
                 <groupId>com.agentsflex</groupId>
                 <artifactId>agents-flex-bom</artifactId>
                 <version>${agents-flex.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>dev.tinyflow</groupId>
+                <artifactId>tinyflow-java-core</artifactId>
+                <version>${tinyflow-java.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.squareup.okhttp3</groupId>
