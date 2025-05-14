@@ -522,21 +522,18 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 //        }
 //    }
     private void appendPluginToolFunction(BigInteger botId, HumanMessage humanMessage) {
-        QueryWrapper queryWrapper = QueryWrapper.create().eq(AiBotPlugins::getBotId, botId);
-        List<AiBotPlugins> aiBotPlugins = aiBotPluginsService.getMapper().selectListWithRelationsByQuery(queryWrapper);
-        // 根据插件iD查询该插件下面有哪些插件工具，转换成Function
-        for (AiBotPlugins aiBotPlugin: aiBotPlugins){
-            BigInteger pluginId = aiBotPlugin.getPluginToolId();
+        QueryWrapper queryWrapper = QueryWrapper.create().select("plugin_tool_id").eq(AiBotPlugins::getBotId, botId);
+        List<BigInteger> pluginToolIds = aiBotPluginsService.getMapper().selectListWithRelationsByQueryAs(queryWrapper, BigInteger.class);
+
             QueryWrapper queryTool = QueryWrapper.create()
                     .select("*")
                     .from("tb_ai_plugin_tool")
-                    .where("plugin_id = ?", pluginId);
+                    .in("id", pluginToolIds);
             List<AiPluginTool> aiPluginTools = aiPluginToolService.getMapper().selectListWithRelationsByQuery(queryTool);
             for (AiPluginTool item: aiPluginTools){
                 humanMessage.addFunction(item.toFunction());
             }
 
-        }
 
     }
 }
