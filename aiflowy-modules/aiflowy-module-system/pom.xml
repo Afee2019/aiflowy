@@ -4,7 +4,7 @@
     <parent>
         <groupId>tech.aiflowy</groupId>
         <artifactId>aiflowy-modules</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.2</version>
     </parent>
 
     <artifactId>aiflowy-module-system</artifactId>
@@ -21,17 +21,17 @@
         <dependency>
             <groupId>tech.aiflowy</groupId>
             <artifactId>aiflowy-common-base</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>tech.aiflowy</groupId>
             <artifactId>aiflowy-module-core</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>tech.aiflowy</groupId>
             <artifactId>aiflowy-common-satoken</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>cn.hutool</groupId>
@@ -40,12 +40,12 @@
         <dependency>
             <groupId>tech.aiflowy</groupId>
             <artifactId>aiflowy-common-web</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>tech.aiflowy</groupId>
             <artifactId>aiflowy-module-log</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
     </dependencies>
 </project>

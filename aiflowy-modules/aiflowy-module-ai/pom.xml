@@ -4,7 +4,7 @@
     <parent>
         <groupId>tech.aiflowy</groupId>
         <artifactId>aiflowy-modules</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.2</version>
     </parent>
 
     <artifactId>aiflowy-module-ai</artifactId>
@@ -17,17 +17,17 @@
         <dependency>
             <groupId>tech.aiflowy</groupId>
             <artifactId>aiflowy-common-cache</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>tech.aiflowy</groupId>
             <artifactId>aiflowy-common-base</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>tech.aiflowy</groupId>
             <artifactId>aiflowy-common-ai</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>dev.tinyflow</groupId>
@@ -46,17 +46,17 @@
         <dependency>
             <groupId>tech.aiflowy</groupId>
             <artifactId>aiflowy-module-core</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>tech.aiflowy</groupId>
             <artifactId>aiflowy-common-satoken</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>tech.aiflowy</groupId>
             <artifactId>aiflowy-common-file-storage</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>cn.hutool</groupId>
@@ -65,7 +65,7 @@
         <dependency>
             <groupId>tech.aiflowy</groupId>
             <artifactId>aiflowy-module-system</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
