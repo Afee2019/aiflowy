@@ -68,6 +68,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     private AiBotConversationMessageService aiBotConversationMessageService;
     @Resource
     private AiBotConversationMessageMapper aiBotConversationMessageMapper;
+
     public AiBotController(AiBotService service, AiLlmService aiLlmService, AiBotWorkflowService aiBotWorkflowService, AiBotKnowledgeService aiBotKnowledgeService, AiBotMessageService aiBotMessageService) {
         super(service);
         this.aiLlmService = aiLlmService;
@@ -116,6 +117,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
     /**
      * 当前系统用户调用对话
+     *
      * @param prompt
      * @param botId
      * @param sessionId
@@ -153,7 +155,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 aiBotConversationMessageService);
 
         final HistoriesPrompt historiesPrompt = new HistoriesPrompt();
-        if (llmOptions.get("systemPrompt") != null){
+        if (llmOptions.get("systemPrompt") != null) {
             historiesPrompt.setSystemMessage(SystemMessage.of((String) llmOptions.get("systemPrompt")));
         }
         historiesPrompt.setMemory(memory);
@@ -220,8 +222,9 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     /**
      * 外部用户调用智能体进行对话
      * 需要用户传 apiKey 对用户进行身份验证
-     * @return
+     *
      * @param stream [true: 返回sse false： 返回json
+     * @return
      */
     @SaIgnore
     @PostMapping("externalChat")
@@ -245,22 +248,22 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 .select("api_key", "status", "expired_at")
                 .from("tb_sys_api_key")
                 .where("api_key = ? ", apiKey);
-        SysApiKey aiBotApiKey =  aiBotApiKeyMapper.selectOneByQuery(queryWrapper);
-        if (aiBotApiKey == null ){
-            return createResponse(stream, JSON.toJSONString(errorRespnseMsg(1,"该apiKey不存在")));
+        SysApiKey aiBotApiKey = aiBotApiKeyMapper.selectOneByQuery(queryWrapper);
+        if (aiBotApiKey == null) {
+            return createResponse(stream, JSON.toJSONString(errorRespnseMsg(1, "该apiKey不存在")));
         }
-        if (aiBotApiKey.getStatus() == 0 ){
-            return createResponse(stream, JSON.toJSONString(errorRespnseMsg(2,"该apiKey未启用")));
+        if (aiBotApiKey.getStatus() == 0) {
+            return createResponse(stream, JSON.toJSONString(errorRespnseMsg(2, "该apiKey未启用")));
         }
 
-        if (aiBotApiKey.getExpiredAt().getTime() < new Date().getTime()){
-            return createResponse(stream, JSON.toJSONString(errorRespnseMsg(3,"该apiKey已失效")));
+        if (aiBotApiKey.getExpiredAt().getTime() < new Date().getTime()) {
+            return createResponse(stream, JSON.toJSONString(errorRespnseMsg(3, "该apiKey已失效")));
 
         }
 
         AiBot aiBot = service.getById(botId);
         if (aiBot == null) {
-            return createResponse(stream, JSON.toJSONString(errorRespnseMsg(4,"机器人不存在")));
+            return createResponse(stream, JSON.toJSONString(errorRespnseMsg(4, "机器人不存在")));
         }
 
         Map<String, Object> llmOptions = aiBot.getLlmOptions();
@@ -272,7 +275,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         Llm llm = aiLlm.toLlm();
         AiBotExternalMessageMemory messageMemory = new AiBotExternalMessageMemory(messages);
         HistoriesPrompt historiesPrompt = new HistoriesPrompt();
-        if (llmOptions.get("systemPrompt") != null){
+        if (llmOptions.get("systemPrompt") != null) {
             historiesPrompt.setSystemMessage(SystemMessage.of((String) llmOptions.get("systemPrompt")));
         }
         historiesPrompt.setMemory(messageMemory);
@@ -344,7 +347,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 }
             } else {
                 AiMessageResponse messageResponse = llm.chat(historiesPrompt);
-                 resultFunctionCall = jsonResultJsonFunctionCall(messageResponse, historiesPrompt, llm, prompt);
+                resultFunctionCall = jsonResultJsonFunctionCall(messageResponse, historiesPrompt, llm, prompt);
                 AiBotExternalMsgJsonResult result = handleMessageResult(resultFunctionCall.getMessage());
                 return JSON.toJSONString(result, new SerializeConfig());
             }
@@ -352,7 +355,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     }
 
     private AiBotExternalMsgJsonResult handleMessageResult(AiMessage aiMessage) {
-        AiBotExternalMsgJsonResult messageResult =  new AiBotExternalMsgJsonResult();
+        AiBotExternalMsgJsonResult messageResult = new AiBotExternalMsgJsonResult();
         messageResult.setCreated(new Date().getTime());
         AiBotExternalMsgJsonResult.Usage usage = new AiBotExternalMsgJsonResult.Usage();
         usage.setTotalTokens(aiMessage.getTotalTokens());
@@ -385,14 +388,14 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     private Object createErrorResponse(Exception e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
+
     /**
-     *
      * @param aiMessageResponse 大模型返回的消息
      * @param emitter
-     * @param needClose 是否需要关闭流
-     * @param historiesPrompt 消息历史记录
-     * @param llm 大模型
-     * @param prompt 提示词
+     * @param needClose         是否需要关闭流
+     * @param historiesPrompt   消息历史记录
+     * @param llm               大模型
+     * @param prompt            提示词
      * @param isExternalChatApi true 外部系统调用bot  false 内部系统调用bot
      */
     private String function_call(AiMessageResponse aiMessageResponse, MySseEmitter emitter, Boolean[] needClose, HistoriesPrompt historiesPrompt, Llm llm, String prompt, boolean isExternalChatApi) {
@@ -402,14 +405,14 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         Object messageContent = aiMessageResponse.getMessage();
         if (StringUtil.hasText(content)) {
             // 如果是外部系统调用chat
-            if (isExternalChatApi){
+            if (isExternalChatApi) {
                 AiBotExternalMsgJsonResult result = handleMessageStreamJsonResult(aiMessageResponse.getMessage());
                 System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
                 System.out.println(JSON.toJSONString(result, new SerializeConfig()));
                 System.out.println("未完测试");
 
                 emitter.send(JSON.toJSONString(result, new SerializeConfig()));
-            } else{
+            } else {
                 emitter.send(JSON.toJSONString(messageContent));
             }
 
@@ -456,8 +459,8 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         return JSON.toJSONString(messageContent);
     }
 
-    private Map<String, Object> errorRespnseMsg(int errorCode, String message){
-        HashMap<String, Object> result =  new HashMap<>();
+    private Map<String, Object> errorRespnseMsg(int errorCode, String message) {
+        HashMap<String, Object> result = new HashMap<>();
         result.put("error", errorCode);
         result.put("message", message);
         return result;
@@ -477,7 +480,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         return result;
     }
 
-    private AiMessageResponse jsonResultJsonFunctionCall(AiMessageResponse aiMessageResponse , HistoriesPrompt historiesPrompt, Llm llm, String prompt) {
+    private AiMessageResponse jsonResultJsonFunctionCall(AiMessageResponse aiMessageResponse, HistoriesPrompt historiesPrompt, Llm llm, String prompt) {
         List<FunctionCaller> functionCallers = aiMessageResponse.getFunctionCallers();
         if (CollectionUtil.hasItems(functionCallers)) {
             for (FunctionCaller functionCaller : functionCallers) {
@@ -514,7 +517,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         }
     }
 
-//    private void appendPluginFunctions(BigInteger botId, HumanMessage humanMessage) {
+    //    private void appendPluginFunctions(BigInteger botId, HumanMessage humanMessage) {
 //        QueryWrapper queryWrapper = QueryWrapper.create().eq(AiBotPlugins::getBotId, botId);
 //        List<AiBotPlugins> aiBotPlugins = aiBotPluginsService.getMapper().selectListWithRelationsByQuery(queryWrapper);
 //        if (cn.hutool.core.collection.CollectionUtil.isNotEmpty(aiBotPlugins)) {
@@ -527,17 +530,19 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     private void appendPluginToolFunction(BigInteger botId, HumanMessage humanMessage) {
         QueryWrapper queryWrapper = QueryWrapper.create().select("plugin_tool_id").eq(AiBotPlugins::getBotId, botId);
         List<BigInteger> pluginToolIds = aiBotPluginsService.getMapper().selectListWithRelationsByQueryAs(queryWrapper, BigInteger.class);
-        if (pluginToolIds.isEmpty()){
+
+        if (pluginToolIds == null || pluginToolIds.isEmpty()) {
             return;
         }
-            QueryWrapper queryTool = QueryWrapper.create()
-                    .select("*")
-                    .from("tb_ai_plugin_tool")
-                    .in("id", pluginToolIds);
-            List<AiPluginTool> aiPluginTools = aiPluginToolService.getMapper().selectListWithRelationsByQuery(queryTool);
-            for (AiPluginTool item: aiPluginTools){
-                humanMessage.addFunction(item.toFunction());
-            }
+
+        QueryWrapper queryTool = QueryWrapper.create()
+                .select("*")
+                .from("tb_ai_plugin_tool")
+                .in("id", pluginToolIds);
+        List<AiPluginTool> aiPluginTools = aiPluginToolService.getMapper().selectListWithRelationsByQuery(queryTool);
+        for (AiPluginTool item : aiPluginTools) {
+            humanMessage.addFunction(item.toFunction());
+        }
 
 
     }
