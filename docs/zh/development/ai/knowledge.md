@@ -2,12 +2,12 @@
 
 ## RAG 应用
 
-## 一、RAG 应用前言
+## 1、RAG 应用前言
 RAG 是 Retrieval-augmented Generation 的简写，指的是检索增强生成。
 2020 年，Facebook AI Research(FAIR) 团队发表名为《Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks》的论文，首次提出了RAG概念，RAG 是当下热门的大模型前沿技术之一。
 通过RAG技术，大语言模型在回答问题时，可以从企业知识库中检索最新的相关信息来生成内容，从而提高回答的准确性、关联性和新鲜度，并解决幻觉问题。同时，RAG技术外挂的私有数据不参与大模型训练，保证了企业的数据安全。
 
-## 二、RAG 的流程和原理
+## 2、RAG 的流程和原理
 
 ![rag.png](resource/rag.png)
 
@@ -15,12 +15,12 @@ RAG 是 Retrieval-augmented Generation 的简写，指的是检索增强生成�
 
 ## Embedding 
 
-## 一、什么是 Embedding
+## 1、什么是 Embedding
 
 Embedding 我们可以简单的理解为：有一种算法（或模型），能够把高纬数据映射到一个低维度的向量空间的过程，这个映射的过程，本质上是一个数据特征提取的过程。
 低纬度的向量数据，可以减少数据的复杂性，从而提高模型的训练和推理效率。
 
-## 二、示例代码
+## 2、示例代码
 
 ```java
 Llm llm = OpenAILlm.of("sk-rts5NF6n*******");
@@ -32,7 +32,7 @@ System.out.println(Arrays.toString(embeddings.getVector()));
 
 ## VectorStore
 
-## 一、什么是 VectorStore
+## 1、什么是 VectorStore
 
 Agents-Flex 的 Store 指的是向量存储器 VectorStore。 其定义了如下的方法，用于对向量数据进行增删改查：
 
@@ -54,7 +54,7 @@ Agents-Flex 的 Store 指的是向量存储器 VectorStore。 其定义了如下
 - `agents-flex-store-opensearch`：opensearch 向量存储
 - `agents-flex-store-redis`：redis 向量数据存储  
 
-## 二、示例代码
+## 2、示例代码
 
 ```java
 AliyunVectorStoreConfig storeConfig = new AliyunVectorStoreConfig();
@@ -107,7 +107,7 @@ wrapper.setText("关键字或者提示词");
 List<Document> result = store.search(wrapper);
 ```
 
-## 三、SearchWrapper
+## 3、SearchWrapper
 
 目前，在向量数据库领域中，并不存在一个类似 SQL 的语言，来统一数据库查询。每一家的向量数据库都是提供了不同的 API 或者独特的查询语言。
 
@@ -136,7 +136,7 @@ rw1.eq("ckey", "avalue").in(Connector.AND_NOT, "dkey", "bvalue");
 
 ## Document 文档
 
-## 一、Document 介绍
+## 1、Document 介绍
 在 Agents-Flex 中，Document 是一个带有向量数据的文档对象。其定义如下
 
 ```java
@@ -165,7 +165,7 @@ public class Document extends VectorData {
 - **DocumentParser**: 文档解析器，用于对不同类型的文档进行解析，最终得到 **Document** 对象，比如解析 word、pdf、html 等等。
 - **DocumentSplitter**: 文档分割器，用于对大文档进行分割，生成多个小文档，方便 Embedding 计算以及向量数据库存储。
 
-## 二、DocumentLoader 文档加载器
+## 2、DocumentLoader 文档加载器
 
 在 Agents-Flex 中，提供了如下两种文档加载器（未来会提供更多的类型）：
 
@@ -176,14 +176,14 @@ public class Document extends VectorData {
 
 ---
 
-## 三、DocumentParser 文档解析器
+## 3、DocumentParser 文档解析器
 
 文档解析器用于对不同类型的文档进行解析，最终得到 **Document** 对象，Agents-Flex 已内置的文档解析器如下：
 
 - **PdfBoxDocumentParser**: 对 PDF 解析
 - **PoiDocumentParser**: 对 Word 文档进行解析
 
-## 四、DocumentSplitter 文档分割器
+## 4、DocumentSplitter 文档分割器
 
 文档分割器是用来对大文档进行分割为多个小文档的场景，不同的分割器可以用于不同的分割场景。目前 Agents-Flex 提供的文档分割器如下：
 
@@ -196,7 +196,7 @@ public class Document extends VectorData {
 
 ## Redis向量数据库
 
-## 一、部署Redis向量数据库
+## 1、部署Redis向量数据库
 
 Redis向量数据库是包含redisSearch功能组件的Redis,这里使用docker版实现快速部署
 
@@ -204,7 +204,7 @@ Redis向量数据库是包含redisSearch功能组件的Redis,这里使用docker�
 docker run --name  redis_stack  -e REDIS_ARGS="--requirepass Test2025L" -p 6379:6379  -d --restart=always redis/redis-stack-server:latest
 ```
 
-## 二、知识库页面配置
+## 2、知识库页面配置
 
 向量数据库类型选择Redis,向量数据库配置中填写uri = redis://:Test2025L@127.0.0.1:6379，向量数据库集合中填写知识库英文缩写如：redisKnowledge,Embedding 模型中选择一个模型（大模型菜单中能力是Embedding的模型）
 ![输入图片说明](resource/ai_redis_knowledge.png)
@@ -215,14 +215,14 @@ docker run --name  redis_stack  -e REDIS_ARGS="--requirepass Test2025L" -p 6379:
 storePrefix = docs:
 defaultCollectionName = documents
 ```
-## 三、文件导入
+## 3、文件导入
 ![输入图片说明](resource/ai_redis_file_import.png)
 ## 四、检索测试
 ![输入图片说明](resource/ai_redis_search_test.png)
 
 ## Milvus 向量数据库
 
-## 一、安装 DockerDesktop
+## 1、安装 DockerDesktop
 这里介绍windows使用 dockerDesktop 部署 Milvus 向量数据库
 
 1. 安装dockerDesktop , 点开连接，直接点击Download for Windows即可下载
@@ -243,7 +243,7 @@ docker --version
 docker-compose --version
 ```
 
-## 二、部署 Milvus 向量数据库
+## 2、部署 Milvus 向量数据库
 
 1. Milvus下载
 从链接中: 下载选择自己所需的版本即可，这里我选择的是最新版本milvus-2.5.11
@@ -261,7 +261,7 @@ https://github.com/milvus-io/milvus/releases/tag/v2.5.11
 
 ![install_milvus_3.png](resource/install_milvus_3.png)
 
-## 三、Milvus 图形化界面attu的安装
+## 3、Milvus 图形化界面attu的安装
 
 1. attu下载
 大家可以点击下载attu选择自己所需的版本，我使用的为最新版本Release v2.4.6
@@ -275,7 +275,7 @@ https://github.com/zilliztech/attu/releases/tag/v2.5.8
 
 ![install_attu_1.png](resource/install_attu_1.png)
 
-## 四、Milvus 向量数据库配置
+## 4、Milvus 向量数据库配置
 **Milvus 向量数据库配置**
 1. 以下为未设置密码的配置样例：
 
@@ -293,7 +293,7 @@ token ：使用token认证，默认为空，为空则不使用token认证
 
 ## Elasticsearch 向量数据库
 
-## 一、 Elasticsearch 知识库配置样例
+## 1、 Elasticsearch 知识库配置样例
 
 如果没有设置账号和密码，不用添加账号和密码的配置
 ![img.png](resource/elastic_search_config.png)
@@ -303,7 +303,7 @@ apiKey ：使用apiKey认证，默认为空，为空则不使用apiKey认证
 
 ## OpenSearch 向量数据库
 
-## 一、安装OpenSearch
+## 1、安装OpenSearch
 
 docker 安装参考地址
 
@@ -321,6 +321,6 @@ docker run -d -p 9200:9200 -p 9600:9600 -e "discovery.type=single-node" -e "OPEN
 
 ![oepn_search_success.png](resource/oepn_search_success.png)
 
-## 二、OpenSearch 知识库配置样例
+## 2、OpenSearch 知识库配置样例
 
 ![open_search_config.png](resource/open_search_config.png)

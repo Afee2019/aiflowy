@@ -190,9 +190,10 @@ function sidebarProduct(): DefaultTheme.SidebarItem[] {
             items: [
                 {text: '什么是知识库', link: '/knowledge/what-is-knowledge'},
                 {text: '创建知识库', link: '/knowledge/create-knowledge'} ,
+                {text: '管理知识库', link: '/knowledge/management-knowledge'} ,
                 {text: '文档分片', link: 'knowledge/splitter'},
                 {text: 'Embedding 模型', link: 'knowledge/embedding'},
-                {text: '快速开始', link: '/knowledge/quick-start'},
+                {text: '向量数据库', link: 'knowledge/vector-database'}
             ]
         },
         {
