@@ -9,13 +9,9 @@
 拖动节点到画布中后，点击选择按钮：
 ![pluginInit.png](../resource/pluginInit.png)
 
-点击后会弹出一个选择框：
+点击后会弹出一个选择框，选择已经定义好的插件：
 
 ![pluginChose.png](../resource/pluginChose.png)
-
-点击你定义好的插件，然后选择一个具体的工具：
-
-![pluginTool.png](../resource/pluginTool.png)
 
 选择好之后，会自动填充输入输出参数，这样插件节点就添加完毕了：
 
