@@ -251,5 +251,28 @@ function sidebarProduct(): DefaultTheme.SidebarItem[] {
                 }
             ]
         },
+        {
+            text: '系统管理',
+            collapsed: false,
+            items: [
+                {
+                    text: '用户管理',
+                    link: 'system/user.md',
+                },
+                {
+                    text: '角色管理',
+                    link: 'system/role.md',
+                },
+                {
+                    text: '菜单管理',
+                    link: 'system/menu.md',
+                },
+                {
+                    text: 'apiKey',
+                    link: 'system/apiKey.md',
+                },
+
+            ]
+        }
     ]
 }

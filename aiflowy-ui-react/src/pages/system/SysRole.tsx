@@ -88,7 +88,7 @@ export const SysRole: React.FC = () => {
 		deleteButtonEnable: true,
 		editButtonEnable: true,
 		hidden: false,
-		width: "200px",
+		width: "250px",
 		customActions: (data) => {
 			if (isAdminRole(data)) {
 				return <></>
