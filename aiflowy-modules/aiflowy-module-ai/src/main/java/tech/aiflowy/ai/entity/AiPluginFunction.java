@@ -264,6 +264,7 @@ public class AiPluginFunction  implements Function {
         }
 
         params.add(pluginParam);
+
         // 处理 children
         List<Map<String, Object>> children = (List<Map<String, Object>>) paramDef.get("children");
         if (children != null) {
