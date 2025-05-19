@@ -165,41 +165,46 @@ public class AiPluginFunction  implements Function {
             }
         }
 
-
         List<Map<String, Object>> dataList = getDataList(aiPluginTool.getInputData());
 
         // 遍历插件工具定义的参数列表
         for (Map<String, Object> paramDef : dataList) {
-            String paramName = (String) paramDef.get("name");
-
-            // 检查大模型返回的参数中是否包含当前参数
-            if (argsMap != null && argsMap.containsKey(paramName)) {
-                PluginParam pluginParam = new PluginParam();
-                pluginParam.setName(paramName);
-                pluginParam.setDescription((String) paramDef.get("description"));
-                pluginParam.setRequired((boolean) paramDef.get("required"));
-                pluginParam.setType((String) paramDef.get("type"));
-                pluginParam.setMethod((String) paramDef.get("method"));
-                pluginParam.setEnabled((boolean) paramDef.get("enabled"));
-                // 使用大模型返回的值，而不是默认值
-                pluginParam.setDefaultValue(argsMap.get(paramName));
-
-                params.add(pluginParam);
-            } else if ((boolean) paramDef.get("required")) {
-                // 如果是必填参数但大模型没有返回，使用默认值或抛出异常
-                PluginParam pluginParam = new PluginParam();
-                pluginParam.setName(paramName);
-                pluginParam.setDescription((String) paramDef.get("description"));
-                pluginParam.setRequired(true);
-                pluginParam.setMethod((String) paramDef.get("method"));
-                pluginParam.setEnabled((boolean) paramDef.get("enabled"));
-                pluginParam.setType((String) paramDef.get("type"));
-                pluginParam.setDefaultValue(paramDef.get("defaultValue"));
-                params.add(pluginParam);
-            }
+            processParamWithChildren(paramDef, argsMap, params);
         }
 
         JSONObject result = PluginHttpClient.sendRequest(url, method, headersMap, params);
         return result;
+    }
+
+    private void processParamWithChildren(Map<String, Object> paramDef, Map<String, Object> argsMap, List<PluginParam> params) {
+        boolean enabled = (boolean) paramDef.get("enabled");
+        if (!enabled){
+            return;
+        }
+        String paramName = (String) paramDef.get("name");
+        PluginParam pluginParam = new PluginParam();
+        pluginParam.setName(paramName);
+        pluginParam.setDescription((String) paramDef.get("description"));
+        pluginParam.setRequired((boolean) paramDef.get("required"));
+        pluginParam.setType((String) paramDef.get("type"));
+        pluginParam.setEnabled((boolean) paramDef.get("enabled"));
+        pluginParam.setMethod((String) paramDef.get("method"));
+
+        // 如果用户传了值，就用用户的值；否则用默认值
+        if (paramDef.get("defaultValue") != null && !"".equals(paramDef.get("defaultValue"))) {
+            pluginParam.setDefaultValue(paramDef.get("defaultValue"));
+        } else if (argsMap != null && paramDef.get("name").equals(paramName)){
+            pluginParam.setDefaultValue(argsMap.get(paramName));
+        }
+
+        params.add(pluginParam);
+
+        // 处理 children
+        List<Map<String, Object>> children = (List<Map<String, Object>>) paramDef.get("children");
+        if (children != null) {
+            for (Map<String, Object> child : children) {
+                processParamWithChildren(child, argsMap, params);
+            }
+        }
     }
 }

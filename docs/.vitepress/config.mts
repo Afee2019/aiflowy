@@ -163,34 +163,37 @@ function sidebarProduct(): DefaultTheme.SidebarItem[] {
             text: '简介',
             collapsed: false,
             items: [
-                {text: '什么是 AIFlowy？', link: '/info/what-is-aiflowy'},
-                {text: '技术规格', link: '/info/specifications'},
+                {text: '什么是 AIFlowy？', link: 'info/what-is-aiflowy'},
+                {text: '技术规格', link: 'info/specifications'},
             ]
         },
         {
             text: 'Bot 应用',
             collapsed: false,
             items: [
-                {text: '什么是 Bot', link: '/bot-application/what-is-a-bot'},
-                {text: '快速开始', link: '/bot-application/quick-start'},
+                {text: '什么是 Bot', link: 'bot-application/what-is-a-bot'},
+                {text: '快速开始', link: 'bot-application/quick-start'},
+                {text: '挂载知识库', link: 'bot-application/mount-Knowledge'},
+                {text: '挂载插件', link: 'bot-application/mount-plugins'},
+                {text: '挂载工作流', link: 'bot-application/mount-workflow'},
             ]
         },
         {
             text: '插件',
             collapsed: false,
             items: [
-                {text: '什么是插件', link: '/plugin/what_is_plugin'},
-                {text: '快速开始', link: '/plugin/quick-start'},
-                {text: '计划中', link: '/plugin/other'},
+                {text: '什么是插件', link: 'plugin/what_is_plugin'},
+                {text: '快速开始', link: 'plugin/quick-start'},
+                {text: '计划中', link: 'plugin/other'},
             ]
         },
         {
             text: '知识库',
             collapsed: false,
             items: [
-                {text: '什么是知识库', link: '/knowledge/what-is-knowledge'},
-                {text: '创建知识库', link: '/knowledge/create-knowledge'} ,
-                {text: '管理知识库', link: '/knowledge/management-knowledge'} ,
+                {text: '什么是知识库', link: 'knowledge/what-is-knowledge'},
+                {text: '创建知识库', link: 'knowledge/create-knowledge'} ,
+                {text: '管理知识库', link: 'knowledge/management-knowledge'} ,
                 {text: '文档分片', link: 'knowledge/splitter'},
                 {text: 'Embedding 模型', link: 'knowledge/embedding'},
                 {text: '向量数据库', link: 'knowledge/vector-database'}
@@ -200,18 +203,20 @@ function sidebarProduct(): DefaultTheme.SidebarItem[] {
             text: '工作流',
             collapsed: false,
             items: [
-                {text: '什么是工作流', link: '/workflow/what_is_workflow'},
-                {text: '快速开始', link: '/workflow/quick_start'},
-                {text: '执行条件', link: '/workflow/execute-condition'},
-                {text: '节点上下文', link: '/workflow/node-context'},
+                {text: '什么是工作流', link: 'workflow/what_is_workflow'},
+                {text: '快速开始', link: 'workflow/quick_start'},
+                {text: '执行条件', link: 'workflow/execute-condition'},
+                {text: '节点上下文', link: 'workflow/node-context'},
                 {text: '节点配置', collapsed: false, items: [
-                        {text: '循环', link: '/workflow/nodes/loop'},
-                        {text: '大模型', link: '/workflow/nodes/llm'},
-                        {text: '搜索引擎', link: '/workflow/nodes/search-engine'},
-                        {text: '内容模板', link: '/workflow/nodes/template-node'},
-                        {text: '文件内容提取', link: '/workflow/nodes/doc-content'},
-                        {text: '文件生成', link: '/workflow/nodes/file-generator'},
-                        {text: '插件', link: '/workflow/nodes/plugin'},
+                        {text: '循环', link: 'workflow/nodes/loop'},
+                        {text: '大模型', link: 'workflow/nodes/llm'},
+                        {text: '知识库', link: 'workflow/nodes/knowledge'},
+                        {text: '搜索引擎', link: 'workflow/nodes/search-engine'},
+                        {text: 'Http 请求', link: 'workflow/nodes/http'},
+                        {text: '内容模板', link: 'workflow/nodes/template-node'},
+                        {text: '文件内容提取', link: 'workflow/nodes/doc-content'},
+                        {text: '文件生成', link: 'workflow/nodes/file-generator'},
+                        {text: '插件', link: 'workflow/nodes/plugin'},
                     ]},
             ]
         },
@@ -219,9 +224,9 @@ function sidebarProduct(): DefaultTheme.SidebarItem[] {
             text: '模型管理',
             collapsed: false,
             items: [
-                {text: '模型管理', link: '/llm/llmList'},
-                {text: '模型接入', link: '/llm/addLlm'},
-                {text: '添加供应商', link: '/llm/llmSuppliers.md'},
+                {text: '模型管理', link: 'llm/llmList'},
+                {text: '模型接入', link: 'llm/addLlm'},
+                {text: '添加供应商', link: 'llm/llmSuppliers.md'},
             ]
         },
         {
