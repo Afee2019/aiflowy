@@ -173,7 +173,7 @@ function sidebarProduct(): DefaultTheme.SidebarItem[] {
             items: [
                 {text: '什么是 Bot', link: 'bot-application/what-is-a-bot'},
                 {text: '快速开始', link: 'bot-application/quick-start'},
-                {text: '挂载知识库', link: 'bot-application/mount-Knowledge'},
+                {text: '挂载知识库', link: 'bot-application/mount-knowledge'},
                 {text: '挂载插件', link: 'bot-application/mount-plugins'},
                 {text: '挂载工作流', link: 'bot-application/mount-workflow'},
             ]
@@ -213,6 +213,7 @@ function sidebarProduct(): DefaultTheme.SidebarItem[] {
                         {text: '知识库', link: 'workflow/nodes/knowledge'},
                         {text: '搜索引擎', link: 'workflow/nodes/search-engine'},
                         {text: 'Http 请求', link: 'workflow/nodes/http'},
+                        {text: '动态代码', link: 'workflow/nodes/dynamic-code'},
                         {text: '内容模板', link: 'workflow/nodes/template-node'},
                         {text: '文件内容提取', link: 'workflow/nodes/doc-content'},
                         {text: '文件生成', link: 'workflow/nodes/file-generator'},
