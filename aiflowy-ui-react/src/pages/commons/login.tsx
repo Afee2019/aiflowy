@@ -60,7 +60,7 @@ const Login: React.FC = () => {
         <div className={styles.container} style={{backgroundImage: `url(${loginBg})`,position:"relative"}}>
             <Flex vertical={false} style={{margin: "200px"}}>
                 <div>
-                    <img alt="" src={loginImage} style={{height: "600px"}}/>
+                    <img alt="" src={loginImage} style={{height: "600px", width: "768px"}}/>
                 </div>
                 <Form
                     form={form}
