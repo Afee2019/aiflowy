@@ -94,14 +94,14 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
         chain.addEventListener(new ChainEventListener() {
             @Override
             public void onEvent(ChainEvent event, Chain chain) {
-                //System.out.println("onEvent : " + event);
+                System.out.println("onEvent : " + event);
             }
         });
 
         chain.addOutputListener(new ChainOutputListener() {
             @Override
             public void onOutput(Chain chain, ChainNode node, Object outputMessage) {
-                //System.out.println("output : " + node.getId() + " : " + outputMessage);
+                System.out.println("output : " + node.getId() + " : " + outputMessage);
             }
         });
 

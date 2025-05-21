@@ -58,11 +58,14 @@ public class TinyFlowConfigService {
         MakeFileNodeParser makeFileNodeParser = new MakeFileNodeParser(storageService);
         // 插件
         PluginToolNodeParser pluginToolNodeParser  = new PluginToolNodeParser();
+        // SQL查询
+        SqlNodeParser sqlNodeParser = new SqlNodeParser();
 
         ChainParser chainParser = tinyflow.getChainParser();
         chainParser.addNodeParser(docNodeParser.getNodeName(), docNodeParser);
         chainParser.addNodeParser(makeFileNodeParser.getNodeName(), makeFileNodeParser);
         chainParser.addNodeParser(pluginToolNodeParser.getNodeName(), pluginToolNodeParser);
+        chainParser.addNodeParser(sqlNodeParser.getNodeName(), sqlNodeParser);
     }
 
     public void setSearchEngineProvider(Tinyflow tinyflow) {
