@@ -1,4 +1,6 @@
 -- v1.0.3 ddl start --
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 -- Table structure for tb_sys_job
 -- ----------------------------
@@ -236,6 +238,7 @@ CREATE TABLE `qrtz_triggers`  (
                                   CONSTRAINT `qrtz_triggers_ibfk_1` FOREIGN KEY (`SCHED_NAME`, `JOB_NAME`, `JOB_GROUP`) REFERENCES `qrtz_job_details` (`SCHED_NAME`, `JOB_NAME`, `JOB_GROUP`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
+SET FOREIGN_KEY_CHECKS = 1;
 -- v1.0.3 ddl end --
 
 -- v1.0.3 data start --
