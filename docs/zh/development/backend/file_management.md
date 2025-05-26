@@ -12,10 +12,16 @@ aiflowy:
   storage:
     type: local
     local:
-      root: /your/path/aiflowy
+      root: /rootPath  # 文件存储的根目录，默认在 target目录下，部署请修改！
+# 修改完上述配置后同步修改这里
+spring:
+  web:
+    resources:
+      static-locations: classpath:/rootPath
 ```
+> 注意：不建议使用默认存储方式，建议使用 s3 方式来存储文件。
 
-以上配置，指的是使用 LocalFileStorageServiceImpl这个实现类来进行文件存储，同时存储的目录为：/your/path/aiflowy。
+以上配置，指的是使用 LocalFileStorageServiceImpl这个实现类来进行文件存储，同时存储的目录为：/rootPath。
 自定义存储类型
 在 AIFlowy 中，扩展自己的自定义存储类型非常简单。我们只需要编写一个类，实现 FileStorageService接口，并通过 @Component注解为当前的实现类型取个名字，如下代码所示：
 
