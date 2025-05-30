@@ -1,17 +1,25 @@
 /* styles.css */
 .app-container {
     display: flex;
-    height: 100vh;
     overflow: hidden;
+    height: calc(100vh - 135px);
 }
 
 .menu-container {
-    width: 150px;
-    min-width: 150px;
-    background-color: #f0f0f0;
-    padding: 10px;
-    border-right: 1px solid #ccc;
+    width: 239px;
+    height: 100%;
+    background-color: #ffffff;
+    border-right: 1px solid #e8e8e8;
+    text-align: center;
+}
 
+/* 右侧内容区域样式 */
+.content-container {
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 16px;
+    background-color: #fff;
 }
 
 .menu-item {
@@ -21,11 +29,11 @@
 }
 
 .menu-item:hover {
-    background-color: #e0e0e0;
+    background-color: #E8EBF2;
 }
 
 .menu-item.active {
-    background-color: #d0d0d0;
+    background-color: #F7F7FC;
     font-weight: bold;
 }
 .content-container{

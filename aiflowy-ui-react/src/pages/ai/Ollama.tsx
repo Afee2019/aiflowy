@@ -223,7 +223,7 @@ const Ollama: React.FC = () => {
                         })
                     }
                     }>
-                        查询
+                        搜索
                     </Button>
                 </div>
                 <div style={{marginLeft: '10px'}}>

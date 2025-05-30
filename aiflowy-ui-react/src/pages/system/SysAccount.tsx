@@ -88,6 +88,18 @@ export const SysAccount: React.FC = () => {
 
         {
             form: {
+                type: "image"
+            },
+            dataIndex: "avatar",
+            title: "账户头像",
+            key: "avatar",
+            render: (value) => {
+                return value ? <Avatar src={value}/> : <></>
+            },
+        },
+
+        {
+            form: {
                 type: "input",
                 rules: [{required: true, message: '请输入登录账号'}]
             },
@@ -141,17 +153,6 @@ export const SysAccount: React.FC = () => {
             key: "email"
         },
 
-        {
-            form: {
-                type: "image"
-            },
-            dataIndex: "avatar",
-            title: "账户头像",
-            key: "avatar",
-            render: (value) => {
-                return value ? <Avatar src={value}/> : <></>
-            },
-        },
 
         {
             title: "部门",

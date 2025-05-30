@@ -27,20 +27,28 @@ const Layout: React.FC = () => {
     return (
         <CheckLogin>
             <LayoutContext.Provider value={{options, setOptions}}>
-                <AntdLayout style={{minHeight: '100vh',display: 'flex',alignItems:'stretch'}}>
-                    {options.showLeftMenu && <LeftMenu collapsed={options.leftMenuCollapsed ?? false}/>}
-                    <AntdLayout>
-                        <Header collapsed={options.leftMenuCollapsed ?? false}/>
-                        <AntdLayout style={{padding: '10px'}}>
-                            {options.showBreadcrumb && <Breadcrumb/>}
-                            <Content style={{background: "#fff", borderRadius: '3px', overflow: "hidden"}}>
-                                {/*<CheckPerms>*/}
-                                <Outlet/>
-                                {/*</CheckPerms>*/}
-                            </Content>
+                <div style={{display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden'}}>
+                    <AntdLayout style={{height: '100vh',display: 'flex',alignItems:'stretch'}}>
+                        {options.showLeftMenu && <LeftMenu collapsed={options.leftMenuCollapsed ?? false}/>}
+                        <AntdLayout>
+                            <div style={{position: 'sticky', top: 0, zIndex: 1}}>
+                                <Header collapsed={options.leftMenuCollapsed ?? false}/>
+                            </div>
+                            <AntdLayout style={{padding: '10px'}}>
+                                {options.showBreadcrumb && <Breadcrumb/>}
+                                <div style={{height: '100%',  overflow: 'auto'}}>
+                                    <Content style={{background: "#fff", borderRadius: '3px'}}>
+                                        {/*<CheckPerms>*/}
+                                        <Outlet/>
+                                        {/*</CheckPerms>*/}
+                                    </Content>
+                                </div>
+
+                            </AntdLayout>
                         </AntdLayout>
                     </AntdLayout>
-                </AntdLayout>
+                </div>
+
             </LayoutContext.Provider>
         </CheckLogin>
     );

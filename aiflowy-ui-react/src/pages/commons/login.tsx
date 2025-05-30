@@ -36,7 +36,7 @@ const Login: React.FC = () => {
             if (loadedCount >= 2) {
                 setTimeout(() => {
                     setIsPageLoaded(true);
-                }, 300); // 可选：加个小延迟让动画更自然
+                }, 1000); // 可选：加个小延迟让动画更自然
             }
         };
 
@@ -53,6 +53,11 @@ const Login: React.FC = () => {
     }, []);
 
     const onFinish = (values: any) => {
+        console.log("values", values);
+        if (!values.agreement){
+            message.error("请先阅读并同意用户服务协议和隐私政策");
+            return
+        }
         startCaptcha((randstr, ticket) => {
             doLogin({
                 data: {
@@ -142,7 +147,7 @@ const Login: React.FC = () => {
                     </Form.Item>
 
                     <Form.Item>
-                        <Form.Item name="remember" valuePropName="checked" noStyle>
+                        <Form.Item name="agreement" valuePropName="checked" noStyle>
                             <Checkbox>我已阅读《用户服务协议》以及《安全隐私协议》</Checkbox>
                         </Form.Item>
                     </Form.Item>

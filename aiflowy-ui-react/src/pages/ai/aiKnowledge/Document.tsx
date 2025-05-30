@@ -725,25 +725,33 @@ const Document: React.FC = () => {
         }
     }, [knowledge])
 
+// 在Document组件的return部分修改布局结构
     return (
-        <div className="app-container">
-            {/* 左侧菜单 */}
-            <DocumentMenu
-                items={menuItems}
-                onSelect={(id) => {
-                    if (id === 'search-test') {
-                        setSearchResult([])
-                    } else if (id === 'file-management') {
-                        getDocumentList()
-                    }
-                    setIsOpenDocChunk(false)
-                    setSelectedMenu(id)
-                }}
-                selectedId={selectedMenu}
-            />
+        <div className="app-container" style={{
+            display: 'flex',
+            flexDirection: 'row',
+        }}>
+            {/* 左侧菜单 - 固定不滚动 */}
+            <div className="menu-container">
+                <DocumentMenu
+                    items={menuItems}
+                    onSelect={(id) => {
+                        if (id === 'search-test') {
+                            setSearchResult([])
+                        } else if (id === 'file-management') {
+                            getDocumentList()
+                        }
+                        setIsOpenDocChunk(false)
+                        setSelectedMenu(id)
+                    }}
+                    selectedId={selectedMenu}
+                />
+            </div>
 
-            {/* 右侧内容区域 */}
-            <div className="content-container">{renderContent()}</div>
+            {/* 右侧内容区域 - 可滚动 */}
+            <div className="content-container">
+                {renderContent()}
+            </div>
         </div>
     );
 };
