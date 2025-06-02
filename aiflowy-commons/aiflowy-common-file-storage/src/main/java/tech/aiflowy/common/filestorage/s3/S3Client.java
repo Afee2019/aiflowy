@@ -209,6 +209,7 @@ public class S3Client {
                 request.setRange(start);
             }
         }
+        request.setRange(0);
         S3Object object = client.getObject(request);
         return object.getObjectContent();
     }

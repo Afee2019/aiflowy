@@ -9,6 +9,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mybatisflex.core.query.QueryWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tech.aiflowy.ai.controller.AiBotController;
 import tech.aiflowy.ai.mapper.AiPluginMapper;
 import tech.aiflowy.ai.service.AiPluginToolService;
 import tech.aiflowy.common.ai.util.NestedParamConverter;
@@ -29,6 +32,7 @@ public class AiPluginFunction  implements Function {
     private String name;
     private String description;
     private Parameter[] parameters;
+    private static final Logger logger = LoggerFactory.getLogger(AiPluginFunction.class);
 
     public AiPluginFunction() {
 
@@ -235,6 +239,10 @@ public class AiPluginFunction  implements Function {
 
         // 发送请求
         JSONObject result = PluginHttpClient.sendRequest(url, method, headersMap, allParams);
+        if (result.get("error") != null){
+            logger.error("插件调用失败");
+            logger.error(result.get("error").toString());
+        }
         return result;
     }
 

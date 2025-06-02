@@ -24,6 +24,8 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import tech.aiflowy.common.filestorage.FileStorageManager;
+import tech.aiflowy.common.filestorage.FileStorageService;
 import tech.aiflowy.common.util.StringUtil;
 
 import javax.annotation.Resource;
@@ -60,6 +62,10 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
 
     @Resource
     private  AiLlmService aiLlmService;
+
+    @Resource(name = "default")
+    FileStorageService storageService;
+
     @Override
     public Page<AiDocument> getDocumentList(String knowledgeId, int pageSize, int pageNum, String fileName) {
         // 构建 QueryWrapper
@@ -128,8 +134,13 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
         // 再删除指定路径下的文件
         QueryWrapper wrapper = QueryWrapper.create().where("id = ?", id);
         AiDocument aiDocument = aiDocumentMapper.selectOneByQuery(wrapper);
-        String filePath = getRootPath() + aiDocument.getDocumentPath();
-        deleteFile(filePath);
+        // 删除 s3 下的文件
+        if (aiDocument.getDocumentPath().startsWith("http")){
+            storageService.delete(aiDocument.getDocumentPath());
+        } else {
+            String filePath = getRootPath() + aiDocument.getDocumentPath();
+            deleteFile(filePath);
+        }
         return true;
     }
 
@@ -232,6 +243,7 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
     }
 
     public static boolean deleteFile(String filePath){
+        // 判断当前文件存储的地方是本地，还是s3
         Path path = Paths.get(filePath);
         try {
             // 删除文件
@@ -259,4 +271,6 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
             throw new RuntimeException(e);
         }
     }
+
+
 }

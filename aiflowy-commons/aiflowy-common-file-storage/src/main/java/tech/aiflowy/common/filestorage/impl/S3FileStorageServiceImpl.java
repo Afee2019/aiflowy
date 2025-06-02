@@ -2,6 +2,7 @@ package tech.aiflowy.common.filestorage.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,12 @@ public class S3FileStorageServiceImpl implements FileStorageService {
 
 
     private S3Client client;
+
+    @Value("${aiflowy.storage.s3.endpoint}")
+    private  String endpoint;
+
+    @Value("${aiflowy.storage.s3.bucket-name}")
+    private  String bucketName;
 
     @EventListener(ApplicationReadyEvent.class)
     public void init() {
@@ -45,5 +52,31 @@ public class S3FileStorageServiceImpl implements FileStorageService {
         return client.getObjectContent(path);
     }
 
+    @Override
+    public void delete(String path) {
+        String filePath = S3FileStorageServiceImpl.extractObjectPathFromUrl(path, endpoint, bucketName);
+        client.delete(filePath);
+    }
 
+
+    public static String extractObjectPathFromUrl(String url, String endpoint, String bucketName) {
+        String host = endpoint + "/" + bucketName;
+
+        if (url.startsWith(host)) {
+            String path = url.substring(host.length());
+
+            int queryStringIndex = path.indexOf('?');
+            if (queryStringIndex > 0) {
+                path = path.substring(0, queryStringIndex);
+            }
+
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+
+            return path;
+        } else {
+            throw new IllegalArgumentException("URL 不属于当前 Bucket");
+        }
+    }
 }

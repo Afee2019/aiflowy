@@ -56,4 +56,9 @@ public class XFileStorageServiceImpl implements FileStorageService {
         byte[] bytes = xFileStorageService.download(remoteFileInfo.toFileInfo()).bytes();
         return new ByteArrayInputStream(bytes);
     }
+
+    @Override
+    public void delete(String path) {
+
+    }
 }

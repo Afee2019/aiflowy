@@ -59,16 +59,16 @@ const Document: React.FC = () => {
     // documentChunk查看弹框
     const [para] = useState();
     const [isDocChunkModalOpen, setIsDocChunkModalOpen] = useState(false);
-    const [isDocPreviewContent, setIsDocPreviewContent] = useState(false);
+    // const [isDocPreviewContent, setIsDocPreviewContent] = useState(false);
     const {doPost, result: resultRemove} = usePost('/api/v1/aiDocument/removeDoc', para)
     const {doPost: doPostChunkRemove} = usePost('/api/v1/aiDocumentChunk/removeChunk', para)
-    const {doPost: doPostDocPreview} = usePost('/api/v1/aiDocument/docPreview', para, {manual: true})
+    // const {doPost: doPostDocPreview} = usePost('/api/v1/aiDocument/docPreview', para, {manual: true})
     const {doPost: doPostEditUpdate} = usePost('/api/v1/aiDocumentChunk/update', para, {manual: true})
     // documentChunk弹框绑定的值
     const [isDocChunkContent, setIsDocChunkContent] = useState('');
-    const [fileContent, setFileContent] = useState<string | null>(null);
-    const [loadingPreview, setLoadingPreview] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
+    // const [fileContent, setFileContent] = useState<string | null>(null);
+    // const [loadingPreview, setLoadingPreview] = useState<boolean>(false);
+    // const [error, setError] = useState<string | null>(null);
     const [isConfirmDelete, setIsConfirmDelete] = useState(false);
     const [isTxtBoxEditModalOpen, setIsTxtBoxEditModalOpen] = useState(false);
     const [form] = Form.useForm();
@@ -145,9 +145,12 @@ const Document: React.FC = () => {
                         }
                         setQueryParams(param)
                     }}>查看 {record.name}</a>
+                    {/*<a onClick={() => {*/}
+                    {/*    fetchFilePreview(record.id).then(r => console.log(r))*/}
+                    {/*}}>预览</a>*/}
                     <a onClick={() => {
-                        fetchFilePreview(record.id).then(r => console.log(r))
-                    }}>预览</a>
+                        fetchFileDownload(record).then(r => console.log(r))
+                    }}>下载</a>
                     <Popconfirm
                         title="确定删除"
                         description="您确定要删除这条数据吗？"
@@ -346,71 +349,152 @@ const Document: React.FC = () => {
             })
         })
     }
+    // 文件下载
+    const fetchFileDownload = async (record: any) => {
+        // s3 下载文件方法
+        if (record?.documentPath.startsWith('http')){
+            try {
 
+                // 使用 fetch 获取文件流
+                const response = await fetch(record?.documentPath);
+                if (!response.ok) {
+                    console.error('文件下载失败');
+                }
 
-    const fetchFilePreview = async (documentId: string) => {
-        setLoadingPreview(true);
-        setError(null);
-        try {
-            const response = await doPostDocPreview({data: {documentId: documentId}});
-            const contentType = response.data.data.headers['Content-Type'];
-            const data = response.data.data.body;
+                // 获取文件名（从响应头 Content-Disposition 中提取）
+                const disposition = response.headers.get('Content-Disposition');
+                let fileName = `${record?.title}.${record?.documentType}`; // 默认文件名
+                if (disposition && disposition.indexOf('filename=') !== -1) {
+                    const fileNameMatch = disposition.match(/filename="?([^"]+)"?/);
+                    if (fileNameMatch != null){
+                        if (fileNameMatch.length > 1) {
+                            fileName = decodeURIComponent(fileNameMatch[1]); // 解码中文文件名
+                        }
+                    }
 
-            if (contentType.includes('text/html')) {
-                // 如果是HTML内容（可能是DOCX转换后的HTML）
-                setFileContent(data);
-                setIsDocPreviewContent(true)
+                }
 
-            } else if (contentType.includes('application/pdf')) {
-                window.open(data)
-            } else if (contentType.includes('application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
-                // 直接处理DOCX文件 - 使用Mammoth.js转换为HTML
-                setFileContent(await renderDocxAsHtml(data));
-                setIsDocPreviewContent(true);
+                // 获取 Blob 数据
+                const blob = await response.blob();
 
-            } else if (contentType.includes('text/plain')) {
-                // 纯文本文件
-                setFileContent(data);
-                setIsDocPreviewContent(true);
+                // 创建 a 标签进行下载
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.setAttribute('download', fileName); // 设置下载的文件名
+                document.body.appendChild(link);
+                link.click();
 
-            }else if (contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
-                // 纯文本文件
-                setFileContent(data);
-                setIsDocPreviewContent(true);
+                // 清理
+                link.remove();
+                window.URL.revokeObjectURL(downloadUrl);
+            } catch (error) {
+                message.error('文件下载失败');
             }
-            else {
-                setError('不支持的文件类型');
-                setIsDocPreviewContent(true);
-
-            }
-        } catch (err: any) {
-            setError(err.response?.data || '无法加载文件内容');
-        } finally {
-            setLoadingPreview(false);
         }
+        else {
+            // 本地下下载
+            try {
+                const response = await fetch(`/api/v1/aiDocument/download?documentId=${record?.id}`, {
+                    method: 'GET',
+                    headers: {
+                        // 如果需要 token 验证：
+                        'Authorization': `${localStorage.getItem('authKey')}`
+                    },
+                });
+                if (!response.ok) console.log('下载失败');
+
+                const disposition = response.headers.get('Content-Disposition');
+                let filename = 'file.pdf'; // 默认文件名
+
+                if (disposition && disposition.indexOf('filename=') !== -1) {
+                    const matches = /filename="?([^"]+)"?/.exec(disposition);
+                    if (matches?.[1]) {
+                        filename = decodeURIComponent(matches[1]); // 解码中文文件名
+                    }
+                }
+
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.setAttribute('download', filename);
+                document.body.appendChild(link);
+                link.click();
+
+                // 清理
+                link.remove();
+                window.URL.revokeObjectURL(downloadUrl);
+            } catch (error) {
+                message.error('文件下载失败');
+            }
+        }
+
     };
+
+    // const fetchFilePreview = async (documentId: string) => {
+    //     setLoadingPreview(true);
+    //     setError(null);
+    //     try {
+    //         const response = await doPostDocPreview({data: {documentId: documentId}});
+    //         const contentType = response.data.data.headers['Content-Type'];
+    //         const data = response.data.data.body;
+    //
+    //         if (contentType.includes('text/html')) {
+    //             // 如果是HTML内容（可能是DOCX转换后的HTML）
+    //             setFileContent(data);
+    //             setIsDocPreviewContent(true)
+    //
+    //         } else if (contentType.includes('application/pdf')) {
+    //             window.open(data)
+    //         } else if (contentType.includes('application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
+    //             // 直接处理DOCX文件 - 使用Mammoth.js转换为HTML
+    //             setFileContent(await renderDocxAsHtml(data));
+    //             setIsDocPreviewContent(true);
+    //
+    //         } else if (contentType.includes('text/plain')) {
+    //             // 纯文本文件
+    //             setFileContent(data);
+    //             setIsDocPreviewContent(true);
+    //
+    //         }else if (contentType.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+    //             // 纯文本文件
+    //             setFileContent(data);
+    //             setIsDocPreviewContent(true);
+    //         }
+    //         else {
+    //             setError('不支持的文件类型');
+    //             setIsDocPreviewContent(true);
+    //
+    //         }
+    //     } catch (err: any) {
+    //         setError(err.response?.data || '无法加载文件内容');
+    //     } finally {
+    //         setLoadingPreview(false);
+    //     }
+    // };
 // 添加DOCX渲染函数
-    const renderDocxAsHtml = async (base64Data: string) => {
-        try {
-            // 1. 首先添加Mammoth.js依赖（确保已安装）
-            const mammoth = await import('mammoth');
-
-            // 2. 将Base64转换为ArrayBuffer
-            const binaryString = atob(base64Data);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-            }
-            const arrayBuffer = bytes.buffer;
-
-            // 3. 使用Mammoth转换DOCX为HTML
-            const result = await mammoth?.convertToHtml({arrayBuffer});
-            return result.value; // 返回HTML内容
-        } catch (error: any) {
-            console.error('DOCX转换错误:', error);
-            return `<p>无法渲染DOCX文件: ${error.message}</p>`;
-        }
-    };
+//     const renderDocxAsHtml = async (base64Data: string) => {
+//         try {
+//             // 1. 首先添加Mammoth.js依赖（确保已安装）
+//             const mammoth = await import('mammoth');
+//
+//             // 2. 将Base64转换为ArrayBuffer
+//             const binaryString = atob(base64Data);
+//             const bytes = new Uint8Array(binaryString.length);
+//             for (let i = 0; i < binaryString.length; i++) {
+//                 bytes[i] = binaryString.charCodeAt(i);
+//             }
+//             const arrayBuffer = bytes.buffer;
+//
+//             // 3. 使用Mammoth转换DOCX为HTML
+//             const result = await mammoth?.convertToHtml({arrayBuffer});
+//             return result.value; // 返回HTML内容
+//         } catch (error: any) {
+//             console.error('DOCX转换错误:', error);
+//             return `<p>无法渲染DOCX文件: ${error.message}</p>`;
+//         }
+//     };
 
     const handleOk = () => {
         setIsDocChunkModalOpen(false);
@@ -440,10 +524,10 @@ const Document: React.FC = () => {
     const onEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setEditTxtBoxValue({...editTxtBoxValue, content: e.target.value})
     };
-    const handleIsPreviewOk = () => {
-        setIsDocPreviewContent(false);
-        setFileContent(null)
-    };
+    // const handleIsPreviewOk = () => {
+    //     setIsDocPreviewContent(false);
+    //     setFileContent(null)
+    // };
 
     // 根据选中的菜单项渲染不同的内容
     const renderContent = () => {
@@ -470,40 +554,40 @@ const Document: React.FC = () => {
                                     }}>
                                         重置
                                     </Button>
-                                    <Modal title="文件预览" open={isDocPreviewContent} onOk={handleIsPreviewOk}
-                                           onCancel={() => {
-                                               setIsDocPreviewContent(false)
-                                           }} width={1500}>
-                                        <div>
-                                            {loadingPreview && <p>加载中...</p>}
-                                            {error && <p style={{color: 'red'}}>错误：{error}</p>}
-                                            {fileContent && (
-                                                <div>
-                                                    {/* 如果是 blob URL，则直接用 iframe 加载 */}
-                                                    {fileContent.startsWith('blob:') ? (
-                                                        <iframe src={fileContent} width="100%" height="600px"
-                                                                title="PDF 预览"/>
-                                                    ) : (
-                                                        // 其他情况（如 data URL 或纯文本）
-                                                        <div>
-                                                            {typeof fileContent === 'string' && fileContent.startsWith('data:image') ? (
-                                                                <img src={fileContent} alt="预览"
-                                                                     style={{maxWidth: '100%'}}/>
-                                                            ) : typeof fileContent === 'string' && fileContent.startsWith('data:application/pdf') ? (
-                                                                <iframe src={fileContent} width="100%" height="600px"
-                                                                        title="PDF 预览"/>
-                                                            ) : typeof fileContent === 'string' && !fileContent.startsWith('data:') ? (
-                                                                // 渲染 HTML 内容
-                                                                <div dangerouslySetInnerHTML={{__html: fileContent}}/>
-                                                            ) : (
-                                                                <pre>{fileContent}</pre>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </Modal>
+                                    {/*<Modal title="文件预览" open={isDocPreviewContent} onOk={handleIsPreviewOk}*/}
+                                    {/*       onCancel={() => {*/}
+                                    {/*           setIsDocPreviewContent(false)*/}
+                                    {/*       }} width={1500}>*/}
+                                    {/*    <div>*/}
+                                    {/*        {loadingPreview && <p>加载中...</p>}*/}
+                                    {/*        {error && <p style={{color: 'red'}}>错误：{error}</p>}*/}
+                                    {/*        {fileContent && (*/}
+                                    {/*            <div>*/}
+                                    {/*                /!* 如果是 blob URL，则直接用 iframe 加载 *!/*/}
+                                    {/*                {fileContent.startsWith('blob:') ? (*/}
+                                    {/*                    <iframe src={fileContent} width="100%" height="600px"*/}
+                                    {/*                            title="PDF 预览"/>*/}
+                                    {/*                ) : (*/}
+                                    {/*                    // 其他情况（如 data URL 或纯文本）*/}
+                                    {/*                    <div>*/}
+                                    {/*                        {typeof fileContent === 'string' && fileContent.startsWith('data:image') ? (*/}
+                                    {/*                            <img src={fileContent} alt="预览"*/}
+                                    {/*                                 style={{maxWidth: '100%'}}/>*/}
+                                    {/*                        ) : typeof fileContent === 'string' && fileContent.startsWith('data:application/pdf') ? (*/}
+                                    {/*                            <iframe src={fileContent} width="100%" height="600px"*/}
+                                    {/*                                    title="PDF 预览"/>*/}
+                                    {/*                        ) : typeof fileContent === 'string' && !fileContent.startsWith('data:') ? (*/}
+                                    {/*                            // 渲染 HTML 内容*/}
+                                    {/*                            <div dangerouslySetInnerHTML={{__html: fileContent}}/>*/}
+                                    {/*                        ) : (*/}
+                                    {/*                            <pre>{fileContent}</pre>*/}
+                                    {/*                        )}*/}
+                                    {/*                    </div>*/}
+                                    {/*                )}*/}
+                                    {/*            </div>*/}
+                                    {/*        )}*/}
+                                    {/*    </div>*/}
+                                    {/*</Modal>*/}
                                     <Table columns={columns} dataSource={result?.data?.records} scroll={{x: 1000}}
                                            pagination={{
                                                current: pagination.current,
@@ -641,25 +725,33 @@ const Document: React.FC = () => {
         }
     }, [knowledge])
 
+// 在Document组件的return部分修改布局结构
     return (
-        <div className="app-container">
-            {/* 左侧菜单 */}
-            <DocumentMenu
-                items={menuItems}
-                onSelect={(id) => {
-                    if (id === 'search-test') {
-                        setSearchResult([])
-                    } else if (id === 'file-management') {
-                        getDocumentList()
-                    }
-                    setIsOpenDocChunk(false)
-                    setSelectedMenu(id)
-                }}
-                selectedId={selectedMenu}
-            />
+        <div className="app-container" style={{
+            display: 'flex',
+            flexDirection: 'row',
+        }}>
+            {/* 左侧菜单 - 固定不滚动 */}
+            <div className="menu-container">
+                <DocumentMenu
+                    items={menuItems}
+                    onSelect={(id) => {
+                        if (id === 'search-test') {
+                            setSearchResult([])
+                        } else if (id === 'file-management') {
+                            getDocumentList()
+                        }
+                        setIsOpenDocChunk(false)
+                        setSelectedMenu(id)
+                    }}
+                    selectedId={selectedMenu}
+                />
+            </div>
 
-            {/* 右侧内容区域 */}
-            <div className="content-container">{renderContent()}</div>
+            {/* 右侧内容区域 - 可滚动 */}
+            <div className="content-container">
+                {renderContent()}
+            </div>
         </div>
     );
 };

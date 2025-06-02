@@ -57,6 +57,11 @@ public class LocalFileStorageServiceImpl implements FileStorageService {
         return Files.newInputStream(target.toPath());
     }
 
+    @Override
+    public void delete(String path) {
+
+    }
+
 
     private File getLocalFile(String path) throws IOException {
         String root = StringUtils.hasText(this.root) ? this.root : getDefaultRoot();

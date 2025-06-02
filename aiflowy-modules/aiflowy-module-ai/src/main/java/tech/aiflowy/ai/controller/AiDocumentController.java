@@ -1,5 +1,6 @@
 package tech.aiflowy.ai.controller;
 
+import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.stp.StpUtil;
 import com.agentsflex.core.document.Document;
 import com.agentsflex.core.document.DocumentParser;
@@ -12,13 +13,16 @@ import com.agentsflex.core.llm.embedding.EmbeddingOptions;
 import com.agentsflex.core.store.DocumentStore;
 import com.agentsflex.core.store.StoreOptions;
 import com.agentsflex.core.store.StoreResult;
+import com.amazonaws.util.IOUtils;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tika.Tika;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -32,10 +36,12 @@ import tech.aiflowy.ai.service.AiDocumentService;
 import tech.aiflowy.ai.service.AiKnowledgeService;
 import tech.aiflowy.ai.service.AiLlmService;
 import tech.aiflowy.ai.service.impl.AiDocumentServiceImpl;
+import tech.aiflowy.ai.utils.ByteArrayMultipartFile;
 import tech.aiflowy.common.ai.DocumentParserFactory;
 import tech.aiflowy.common.ai.ExcelDocumentSplitter;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.filestorage.FileStorageService;
+import tech.aiflowy.common.filestorage.impl.LocalFileStorageServiceImpl;
 import tech.aiflowy.common.tree.Tree;
 import tech.aiflowy.common.util.RequestUtil;
 import tech.aiflowy.common.util.StringUtil;
@@ -44,11 +50,11 @@ import tech.aiflowy.common.web.jsonbody.JsonBody;
 import tech.aiflowy.core.utils.JudgeFileTypeUtil;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -75,6 +81,9 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
 
     @Value("${aiflowy.storage.local.root}")
     private  String fileUploadPath;
+
+    @Value("${aiflowy.storage.type}")
+    private String storageType;
 
     public AiDocumentController(AiDocumentService service,
                                 AiKnowledgeService knowledgeService,
@@ -188,7 +197,7 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
                          @RequestParam(name="regex", required = false) String regex,
                          @RequestParam(name="rowsPerChunk", required = false) Integer rowsPerChunk,
                          @RequestParam(name="userWillSave") boolean userWillSave
-    ) throws IOException {
+    ) throws Exception {
         if (chunkSize == null){
             chunkSize = 100;
         }
@@ -198,6 +207,7 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
         if (rowsPerChunk == null){
             rowsPerChunk = 1;
         }
+        String s = extractTextFromDocx(file);
         if (file.getOriginalFilename() == null){
             return Result.fail(1,"文件名不能为空");
         }
@@ -209,14 +219,35 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
         if (documentParser == null) {
             return Result.fail(3, "can not support the file type: " + file.getOriginalFilename());
         }
-        String path = storageService.save(file);
+        FileStorageService localFileStorageService = new LocalFileStorageServiceImpl();
+        String path = "";
         AiDocument aiDocument = new AiDocument();
-        try (InputStream stream = storageService.readStream(path);) {
-            Document document = documentParser.parse(stream);
-            aiDocument.setContent(document.getContent());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        MultipartFile fileCopy = copyMultipartFile(file);  // 复制文件
+        if (userWillSave){
+            // 如果用户要保存当前文件，设置的保存方式为s3
+            path = storageService.save(fileCopy);
+            String localTempPath = localFileStorageService.save(file);
+            try (InputStream stream = localFileStorageService.readStream(localTempPath);) {
+                Document document = documentParser.parse(stream);
+                aiDocument.setContent(document.getContent());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            if (storageType.equals("s3")){
+                // 删除本地文件
+                AiDocumentServiceImpl.deleteFile(getRootPath() + localTempPath);
+            }
+
+        } else {
+            path = localFileStorageService.save(file);
+            try (InputStream stream = localFileStorageService.readStream(path);) {
+                Document document = documentParser.parse(stream);
+                aiDocument.setContent(document.getContent());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
+
 
         //如果用户是预览分割效果
         if (!userWillSave){
@@ -359,7 +390,7 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
             chunk.setKnowledgeId(finalEntity.getKnowledgeId());
             chunk.setSorting(sort.get());
             boolean success = documentChunkService.save(chunk);
-           sort.getAndIncrement();
+            sort.getAndIncrement();
 
             if (success) {
                 return chunk.getId();
@@ -426,4 +457,59 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
 
     }
 
+    @GetMapping("/download")
+    @SaIgnore
+    public void downloadDocument(@RequestParam String documentId, HttpServletResponse response) throws IOException {
+        // 1. 从数据库获取文件信息
+        QueryWrapper queryWrapper = QueryWrapper.create().select("*").where("id = ?", documentId);
+        AiDocument aiDocument = service.getOne(queryWrapper);
+
+        if (aiDocument == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "文件不存在");
+            return;
+        }
+
+        // 2. 获取文件路径
+        String filePath = getRootPath() + aiDocument.getDocumentPath();
+        File file = new File(filePath);
+
+        if (!file.exists()) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "文件不存在");
+            return;
+        }
+
+        // 3. 构造文件名并设置响应头
+        String originalFilename = aiDocument.getTitle() + "." + aiDocument.getDocumentType();
+        String encodedFilename = URLEncoder.encode(originalFilename, StandardCharsets.UTF_8.name())
+                .replaceAll("\\+", "%20");
+
+        response.setContentType("application/octet-stream");
+        response.setContentLengthLong(file.length());
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"" + encodedFilename + "\"; filename*=UTF-8''" + encodedFilename);
+
+        // 缓存控制
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
+
+        // 4. 输出文件流
+        try (FileInputStream fis = new FileInputStream(file)) {
+            IOUtils.copy(fis, response.getOutputStream());
+        }
+    }
+
+
+    public String extractTextFromDocx(MultipartFile file) throws Exception {
+        Tika tika = new Tika();
+        try (InputStream inputStream = file.getInputStream()) {
+            return tika.parseToString(inputStream);
+        }
+    }
+
+    private MultipartFile copyMultipartFile(MultipartFile file) throws IOException {
+        byte[] bytes = file.getBytes();
+        return new ByteArrayMultipartFile(bytes, file.getName(),
+                file.getOriginalFilename(), file.getContentType());
+    }
 }

@@ -137,8 +137,14 @@ const CardPage: React.FC<CardPageProps> = forwardRef(({
 
                 <Row className={"card-row"} gutter={[16, 16]}>
                     {result?.data?.records?.length > 0 ? result?.data?.records?.map((item: any) => (
-                        <Col span={6} key={item.id}>
-                            <Card actions={[
+                        <Col span={6} key={item.id}
+                             xs={24}  // 在超小屏幕下占满一行
+                             sm={12}  // 在小屏幕下每行显示2个
+                             md={8}   // 在中等屏幕下每行显示3个
+                             lg={6}   // 在大屏幕下每行显示4个（保持原来的span={6}效果）
+                        >
+                            <Card
+                                actions={[
                                 ...customActions(item, [
                                     <EditOutlined key="edit" title="编辑" onClick={() => {
                                         setEditData(item)

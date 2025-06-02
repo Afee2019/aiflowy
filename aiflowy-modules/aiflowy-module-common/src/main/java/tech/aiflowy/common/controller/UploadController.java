@@ -35,4 +35,12 @@ public class UploadController {
                 .set("status", "success")
                 .set("response", data);
     }
+
+    @PostMapping(value = "/uploadPrePath",produces = MediaType.APPLICATION_JSON_VALUE)
+    public Result uploadPrePath(MultipartFile file, String prePath) {
+        System.out.println(file.getOriginalFilename());
+        System.out.println(prePath);
+        String path = storageService.save(file,prePath);
+        return Result.success("data",path);
+    }
 }

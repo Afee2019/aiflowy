@@ -22,6 +22,11 @@ public class FileStorageManager implements FileStorageService {
         return getService().readStream(path);
     }
 
+    @Override
+    public void delete(String path) {
+        getService().delete(path);
+    }
+
     private FileStorageService getService() {
         String type = StorageConfig.getInstance().getType();
         if (!StringUtils.hasText(type)) {

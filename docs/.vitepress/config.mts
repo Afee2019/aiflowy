@@ -179,6 +179,10 @@ function sidebarProduct(): DefaultTheme.SidebarItem[] {
                 {text: '挂载插件', link: 'bot-application/mount-plugins'},
                 {text: '挂载工作流', link: 'bot-application/mount-workflow'},
                 {text: 'Web 客户端', link: 'bot-application/bot-web-client'},
+                {
+                    text: 'IFrame 嵌入',
+                    link: 'system/iframe.md',
+                },
                 {text: '通过 API 请求', link: 'bot-application/bot-api-key'},
             ]
         },
@@ -282,10 +286,6 @@ function sidebarProduct(): DefaultTheme.SidebarItem[] {
                 {
                     text: 'apiKey',
                     link: 'system/apiKey.md',
-                },
-                {
-                    text: 'iframe 嵌入',
-                    link: 'system/iframe.md',
                 },
                 {
                     text: '数据字典',
