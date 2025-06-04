@@ -165,7 +165,7 @@ const Login: React.FC = () => {
                 <a href="https://aiflowy.tech " style={{ color: "#fff" }} target="_blank">
                     AIFlowy.tech
                 </a>{" "}
-                (v1.0.4)
+                (v1.0.5)
             </div>
         </div>
     ) : (

@@ -95,7 +95,8 @@ public class AiPluginFunction  implements Function {
             parameter.setName((String) item.get("name"));
             parameter.setDescription((String) item.get("description"));
             parameter.setRequired((boolean) item.get("required"));
-            parameter.setType((String) item.get("type"));
+//            parameter.setType((String) item.get("type"));
+            parameter.setType("string");
             params[i] = parameter;
         }
         return params;
