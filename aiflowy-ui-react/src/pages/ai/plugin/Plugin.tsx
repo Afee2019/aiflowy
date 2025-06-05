@@ -14,7 +14,7 @@ import {
 	Button,
 	Card,
 	Col,
-	Dropdown,
+	Dropdown, Empty,
 	Form,
 	FormProps,
 	Input,
@@ -223,7 +223,7 @@ const Plugin: React.FC = () => {
 	const { doPost: doRemove } = usePostManual('/api/v1/aiPlugin/plugin/remove');
 
 	// 获取分类数据（假设有一个分类接口）
-	const { doGet: doGetCategories } = useGetManual('/api/v1/aiPluginCategories/list');
+	const { doGet: doGetCategories,loading: loadingCategories } = useGetManual('/api/v1/aiPluginCategories/list');
 
 	const { doPost: doSaveCategories } =usePostManual('/api/v1/aiPluginCategories/save');
 
@@ -391,7 +391,7 @@ const Plugin: React.FC = () => {
 		});
 	};
 	return (
-		<div style={{ height: 'calc(100vh - 68px)', overflowY: 'auto', display: 'flex'}}>
+		<div style={{  width: '100%', display: 'flex', flexDirection: 'row'}}>
 			{/* 左侧分类导航 */}
 			<div style={{ width: 240, paddingLeft: 8, paddingRight: 8, paddingTop: 16, borderRight: '1px solid #e8e8e8', backgroundColor: '#f8f9fa'}}>
 				<div style={{ backgroundColor: "white", height: '100%'}}>
@@ -399,20 +399,25 @@ const Plugin: React.FC = () => {
 				<Button  block icon={<PlusOutlined />} onClick={openAddCategoryModal} style={{ marginBottom: 16 }}>
 					新增分类
 				</Button>
+					{loadingCategories? (
 
-					<div style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-						{categories.map((cat) => (
-							<div
-								key={cat.id}
-								className={`category-item ${selectedCategoryId === cat.id ? 'selected' : ''}`}
-								style={{ position: 'relative'}}
-								onClick={() => handleSelectCategory(cat.id)}
-							>
+						<div style={{   width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+							<Spin spinning={loadingCategories} />
+						</div>
+					):(
+						<div style={{}}>
+					{categories.map((cat) => (
+						<div
+							key={cat.id}
+							className={`category-item ${selectedCategoryId === cat.id ? 'selected' : ''}`}
+							style={{ position: 'relative'}}
+							onClick={() => handleSelectCategory(cat.id)}
+						>
 								<span  style={{ cursor: 'pointer', flex: 1 }}>
         						{cat.name}
       							</span>
-								{
-									cat.id != 0 ? <span style={{position: 'absolute', right: '10px'}}>
+							{
+								cat.id != 0 ? <span style={{position: 'absolute', right: '10px'}}>
 										<Dropdown
 											menu={{
 												items: [
@@ -448,13 +453,14 @@ const Plugin: React.FC = () => {
 									/>
 								</Dropdown>
 								</span>
-										: ''
-								}
+									: ''
+							}
 
 
-							</div>
-						))}
-					</div>
+						</div>
+					))}
+				</div>)}
+
 
 				</div>
 			</div>
@@ -462,14 +468,16 @@ const Plugin: React.FC = () => {
 			{/* 右侧插件内容 */}
 			<div style={{ flex: 1}}>
 				<SearchForm columns={columnsConfig} colSpan={6} onSearch={handleSearch} />
-
+				<Spin spinning={loading} >
 				<Row className={"card-row"} gutter={[16, 16]}>
+
 					{loading ? (
-						<div style={{  height: '100vh', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-							<Spin />
+						<div style={{ display: 'flex', flexDirection: 'row',  justifyContent: 'center',
+							alignItems: 'center',  height: '100%', width: '100%' }}>
+								<Empty image={Empty.PRESENTED_IMAGE_SIMPLE} className={"empty-container"}/>
 						</div>
 
-					) : plugins.length > 0 ? (
+					) : plugins.length > 0 && (
 						plugins.map((item: any) => (
 							<Col span={6} key={item.id}>
 								<Card
@@ -576,24 +584,23 @@ const Plugin: React.FC = () => {
 								</Card>
 							</Col>
 						))
-					) : (
-						<div style={{ textAlign: 'center', width: '100%' }}>暂无插件</div>
-					)}
+					) }
 				</Row>
 
 				<Pagination
 					total={pagination.total}
-					align="end"
+					align="center"
 					showTotal={(total) => `共 ${total} 条数据`}
 					onChange={(page, pageSize) => {
 						setPagination({ ...pagination, current: page, pageSize });
 						doSearchPlugins({ pageNumber: page, pageSize });
 					}}
-					showSizeChanger={true}
-					pageSizeOptions={[10, 20, 30, 40, 50]}
+					current={pagination.current}
+					showQuickJumper={true}
 					defaultCurrent={1}
 					defaultPageSize={10}
 				/>
+				</Spin>
 			</div>
 
 			{/* 新增插件模态框 */}
