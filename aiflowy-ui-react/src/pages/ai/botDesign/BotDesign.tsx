@@ -2,9 +2,9 @@ import React, {useEffect, useState} from 'react';
 
 import {useLayout} from '../../../hooks/useLayout.tsx';
 import {Row} from 'antd/lib/index';
-import {App, Avatar, Button, Col, Collapse, Form, Input, Modal, Select, Space, Switch, Tooltip} from 'antd';
+import {App, Avatar, Badge, Button, Col, Collapse, Form, Input, Modal, Select, Space, Switch, Tooltip} from 'antd';
 import Title from 'antd/es/typography/Title';
-import {DeleteOutlined, PlusOutlined} from "@ant-design/icons";
+import {DeleteOutlined, PlusOutlined,} from "@ant-design/icons";
 import {
     useDetail,
     useGet,
@@ -30,7 +30,7 @@ const colStyle: React.CSSProperties = {
     padding: '8px',
     border: "1px solid #eee",
     height: 'calc(100vh - 68px)',
-    overflowY: 'auto'
+    overflowY: 'hidden',
 };
 
 
@@ -38,19 +38,32 @@ type CollapseLabelProps = {
     text: string,
     onClick: () => void,
     plusDisabled?: boolean
+    badgeCount?:number
 }
 
-const CollapseLabel: React.FC<CollapseLabelProps> = ({text, onClick, plusDisabled = false}) => {
+const CollapseLabel: React.FC<CollapseLabelProps> = ({text, onClick, plusDisabled = false,badgeCount = 0}) => {
     return <div style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
     }}>
         <span>{text}</span>
-        {!plusDisabled && <PlusOutlined onClick={(event) => {
-            event.stopPropagation();
-            onClick?.();
-        }}/>}
+        {!plusDisabled && <div style={{
+            display: "flex",
+            justifyContent:"space-between",
+            alignItems: "center",
+            gap:"15px",
+        }}>
+            <Badge
+                className="site-badge-count-109"
+                count={badgeCount}
+                style={{ backgroundColor: '#52c41a' }}
+            />
+            <PlusOutlined onClick={(event) => {
+                event.stopPropagation();
+                onClick?.();
+            }}/>
+        </div>}
     </div>
 }
 export interface PresetQuestion {
@@ -317,7 +330,7 @@ const BotDesign: React.FC = () => {
                                                doUpdateBotLLMOptions({systemPrompt: e.target.value})
                                            }}/>
                     </Col>
-                    <Col span={span} style={colStyle}>
+                    <Col span={span} style={{...colStyle,overflowY:"scroll"}}>
                         <div style={{margin: "10px 0 5px", color: "#666"}}>大模型</div>
                         <div style={{
                             background: "#f5f5f5",
@@ -372,7 +385,7 @@ const BotDesign: React.FC = () => {
                         <Collapse items={[
                             {
                                 key: 'workflow',
-                                label: <CollapseLabel text="工作流" onClick={() => {
+                                label: <CollapseLabel text="工作流" badgeCount={workflowResult?.data?.length ?? 0}  onClick={() => {
                                     setWorkflowOpen(true)
                                 }}/>,
                                 children:
@@ -406,7 +419,7 @@ const BotDesign: React.FC = () => {
                             },
                             {
                                 key: 'knowledge',
-                                label: <CollapseLabel text="知识库" onClick={() => {
+                                label: <CollapseLabel text="知识库" badgeCount={knowledgeResult?.data?.length ?? 0} onClick={() => {
                                     setKnowledgeOpen(true)
                                 }}/>,
                                 children:
@@ -440,7 +453,7 @@ const BotDesign: React.FC = () => {
                             },
                             {
                                 key: 'plugins',
-                                label: <CollapseLabel text="插件" onClick={() => {
+                                label: <CollapseLabel text="插件" badgeCount={pluginToolData?.length ?? 0} onClick={() => {
                                     setPluginOpen(true)
                                 }}/>,
                                 children:
@@ -486,7 +499,7 @@ const BotDesign: React.FC = () => {
                         <Collapse items={[
                             {
                                 key: 'questions',
-                                label: <CollapseLabel text="问题预设" onClick={() => {
+                                label: <CollapseLabel text="问题预设" badgeCount={presetQuestions.length ?? 0} onClick={() => {
                                     setIsOpenProblemPreset(true)
                                     // reGetDetail().then(res =>{
                                     //     setPresetQuestions(res?.data?.data?.options.presetQuestions)
@@ -494,7 +507,7 @@ const BotDesign: React.FC = () => {
                                     // })
                                 }}/>,
                                 children: (
-                                    <div style={{ padding: '0 16px' }}>
+                                    <div style={{ padding: '0' }}>
                                         {presetQuestions.length > 0 ? (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                                 {presetQuestions.map((question, index) => (
@@ -502,7 +515,7 @@ const BotDesign: React.FC = () => {
                                                         key={index}
                                                         style={{
                                                             padding: '8px 12px',
-                                                            background: '#f5f5f5',
+                                                            background: '#eaeaea',
                                                             borderRadius: '4px',
                                                             display: 'flex',
                                                             justifyContent: 'space-between',
