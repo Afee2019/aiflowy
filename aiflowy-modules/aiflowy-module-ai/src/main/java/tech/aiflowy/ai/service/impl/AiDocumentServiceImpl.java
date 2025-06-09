@@ -306,16 +306,21 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
     public Result saveTextResult(BigInteger knowledgeId, String previewListStr, String aiDocumentStr) {
         AiDocument aiDocument = JSON.parseObject(aiDocumentStr, AiDocument.class);
         List<AiDocumentChunk> aiDocumentChunks = JSON.parseArray(previewListStr, AiDocumentChunk.class);
-        this.getMapper().insert(aiDocument);
-        AtomicInteger sort = new AtomicInteger(1);
-        aiDocumentChunks.forEach(item ->{
-            item.setKnowledgeId(aiDocument.getKnowledgeId());
-            item.setSorting(sort.get());
-            item.setDocumentId(aiDocument.getId());
-            sort.getAndIncrement();
-            documentChunkService.save(item);
-        });
-        return storeDocument(aiDocument, aiDocumentChunks);
+
+        Result result = storeDocument(aiDocument, aiDocumentChunks);
+        if (result.isSuccess()) {
+            this.getMapper().insert(aiDocument);
+            AtomicInteger sort = new AtomicInteger(1);
+            aiDocumentChunks.forEach(item ->{
+                item.setKnowledgeId(aiDocument.getKnowledgeId());
+                item.setSorting(sort.get());
+                item.setDocumentId(aiDocument.getId());
+                sort.getAndIncrement();
+                documentChunkService.save(item);
+            });
+            return Result.success();
+        }
+        return Result.fail(1, "保存失败");
     }
     protected Result storeDocument(AiDocument entity, List<AiDocumentChunk> aiDocumentChunks) {
         AiKnowledge knowledge = knowledgeService.getById(entity.getKnowledgeId());
@@ -352,6 +357,7 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
         StoreResult result = documentStore.store(documents, options);
         if (!result.isSuccess()) {
             LoggerFactory.getLogger(AiDocumentController.class).error("DocumentStore.store failed: " + result);
+            return Result.fail();
         }
         AiKnowledge aiKnowledge = new AiKnowledge();
         aiKnowledge.setId(entity.getKnowledgeId());
