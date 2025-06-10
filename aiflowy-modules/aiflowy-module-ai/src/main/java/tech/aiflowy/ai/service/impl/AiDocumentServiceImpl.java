@@ -140,6 +140,7 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
         EmbeddingOptions embeddingOptions = new EmbeddingOptions();
         embeddingOptions.setModel(aiLlm.getLlmModel());
         options.setEmbeddingOptions(embeddingOptions);
+        options.setCollectionName(knowledge.getVectorStoreCollection());
         // 查询文本分割表tb_ai_document_chunk中对应的有哪些数据，找出来删除
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .select("id").from("tb_ai_document_chunk").where("document_id = ?", id);
