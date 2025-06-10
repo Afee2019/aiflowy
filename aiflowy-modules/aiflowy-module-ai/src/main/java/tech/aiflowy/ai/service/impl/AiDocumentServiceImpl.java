@@ -9,9 +9,13 @@ import com.agentsflex.core.document.splitter.SimpleDocumentSplitter;
 import com.agentsflex.core.document.splitter.SimpleTokenizeSplitter;
 import com.agentsflex.core.llm.embedding.EmbeddingOptions;
 import com.alibaba.fastjson.JSON;
+import com.mybatisflex.core.keygen.impl.FlexIDKeyGenerator;
+import com.mybatisflex.core.keygen.impl.SnowFlakeIDKeyGenerator;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.IdGenerator;
+import org.springframework.util.JdkIdGenerator;
 import org.springframework.web.multipart.MultipartFile;
 import tech.aiflowy.ai.controller.AiDocumentController;
 import tech.aiflowy.ai.entity.AiDocument;
@@ -275,9 +279,11 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
             document = documentParser.parse(inputStream);
         }
         List<com.agentsflex.core.document.Document> documents = documentSplitter.split(document);
+        FlexIDKeyGenerator flexIDKeyGenerator = new FlexIDKeyGenerator();
         int sort = 1;
         for (Document value : documents) {
             AiDocumentChunk chunk = new AiDocumentChunk();
+            chunk.setId(new BigInteger(String.valueOf(flexIDKeyGenerator.generate(chunk, null))));
             chunk.setContent(value.getContent());
             chunk.setSorting(sort);
             sort++;
@@ -307,7 +313,12 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
     public Result saveTextResult(BigInteger knowledgeId, String previewListStr, String aiDocumentStr) {
         AiDocument aiDocument = JSON.parseObject(aiDocumentStr, AiDocument.class);
         List<AiDocumentChunk> aiDocumentChunks = JSON.parseArray(previewListStr, AiDocumentChunk.class);
-
+        IdGenerator idGenerator = new IdGenerator() {
+            @Override
+            public UUID generateId() {
+                return null;
+            }
+        };
         Result result = storeDocument(aiDocument, aiDocumentChunks);
         if (result.isSuccess()) {
             this.getMapper().insert(aiDocument);
