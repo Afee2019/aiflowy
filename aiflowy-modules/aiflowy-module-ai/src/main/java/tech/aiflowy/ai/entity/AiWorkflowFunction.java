@@ -22,7 +22,7 @@ public class AiWorkflowFunction extends BaseFunction {
 
     public AiWorkflowFunction(AiWorkflow aiWorkflow) {
         this.workflowId = aiWorkflow.getId();
-        this.name = aiWorkflow.getId().toString();
+        this.name = aiWorkflow.getTitle();
         this.description = aiWorkflow.getDescription();
         this.parameters = toParameters(aiWorkflow);
     }
