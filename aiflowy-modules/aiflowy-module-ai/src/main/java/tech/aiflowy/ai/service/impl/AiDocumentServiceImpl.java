@@ -267,7 +267,7 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
             return Result.fail();
         }
 
-        if (knowledge.isSearchEngineEnable()) {
+        if (knowledge.isSearchEngineEnabled()) {
             // 获取搜索引擎
             DocumentSearcher searcher = searcherFactory.getSearcher();
             // 添加到搜索引擎

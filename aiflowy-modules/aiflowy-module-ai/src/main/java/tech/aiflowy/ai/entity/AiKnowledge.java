@@ -50,11 +50,11 @@ public class AiKnowledge extends AiKnowledgeBase {
         return null;
     }
 
-    public boolean isVectorStoreEnable() {
+    public boolean isVectorStoreEnabled() {
         return this.getVectorStoreEnable() != null && this.getVectorStoreEnable();
     }
 
-    public boolean isSearchEngineEnable() {
+    public boolean isSearchEngineEnabled() {
         return this.getSearchEngineEnable() != null && this.getSearchEngineEnable();
     }
 
