@@ -1,8 +1,12 @@
 # 节点上下文
 
-可以通过 `_context` 获取节点上下文的相关信息。
+## _context
 
-## isUpstreamFullyExecuted 方法
+`_context` 本质上是 `com.agentsflex.core.chain.NodeContext` 类。
+
+可以直接调用里面的方法。
+
+### isUpstreamFullyExecuted 方法
 
 在一些场景中，需要判断上游节点是否已经执行完毕，可以通过 `_context.isUpstreamFullyExecuted()` 方法来判断。
 
@@ -11,3 +15,15 @@
 如图：
 
 ![async-exec.png](resource/async-exec.png)
+
+### getExecuteCount() 方法
+`_context.getExecuteCount()` 方法可以获取节点已经执行的次数。
+
+### getTriggerCount() 方法
+`_context.getTriggerCount()` 方法可以获取节点触发的次数。
+
+## _chain
+
+`_chain` 本质上是 `com.agentsflex.core.chain.Chain` 类。
+
+同理，也可以直接调用里面的方法。
