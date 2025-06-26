@@ -21,6 +21,9 @@ spring:
   quartz:
     startup-delay: 1
     job-store-type: jdbc
+    jdbc:
+      platform: mysql
+      initialize-schema: never
     properties:
       org:
         quartz:

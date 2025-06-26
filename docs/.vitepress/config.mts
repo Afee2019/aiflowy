@@ -223,6 +223,7 @@ function sidebarProduct(): DefaultTheme.SidebarItem[] {
                 {text: '快速开始', link: 'workflow/quick_start'},
                 {text: '执行条件', link: 'workflow/execute-condition'},
                 {text: '节点上下文', link: 'workflow/node-context'},
+                {text: '节点循环执行', link: 'workflow/execute-cycle'},
                 {
                     text: '节点配置', collapsed: false, items: [
                         {text: '循环', link: 'workflow/nodes/loop'},
