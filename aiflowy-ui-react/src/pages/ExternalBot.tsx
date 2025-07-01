@@ -11,12 +11,12 @@ import {
 import {Button, type GetProp, Modal, Input, message} from 'antd';
 import {AiProChat, ChatMessage} from "../components/AiProChat/AiProChat.tsx";
 import {getExternalSessionId, setNewExternalSessionId, updateExternalSessionId} from "../libs/getExternalSessionId.ts";
-import {useSse} from "../hooks/useSse.ts";
-import {useParams} from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {useGetManual, usePostManual} from "../hooks/useApis.ts";
 import {uuid} from "../libs/uuid.ts";
 import {PresetQuestion} from "./ai/botDesign/BotDesign.tsx";
-import {parseAnswerUtil, processArray} from "../libs/parseAnswerUtil.ts";
+import {parseAnswerUtil, processArray} from "../libs/parseAnswerUtil.tsx";
+import {useSseWithEvent} from "../hooks/useSseWithEvent.ts";
 
 const useStyle = createStyles(({token, css}) => {
     return {
@@ -151,8 +151,8 @@ export const ExternalBot: React.FC = () => {
     const [conversationsItems, setConversationsItems] = React.useState<{ key: string; label: string }[]>([]);
     const [activeKey, setActiveKey] = React.useState('');
     const [open, setOpen] = useState(false);
-    const {doGet: doGetBotInfo, result: botInfo} = useGetManual("/api/v1/aiBot/getDetail")
-    const {start: startChat} = useSse("/api/v1/aiBot/chat");
+    const { doGet: doGetBotInfo, result: botInfo} =useGetManual("/api/v1/aiBot/getDetail")
+    const { start: startChat } = useSseWithEvent("/api/v1/aiBot/chat");
     // 查询会话列表的数据
     const {doGet: getConversationManualGet} = useGetManual('/api/v1/conversation/externalList');
     const {doGet: doGetMessageList} = useGetManual("/api/v1/aiBotMessage/messageList");
@@ -448,6 +448,26 @@ export const ExternalBot: React.FC = () => {
                     clearMessage={() => clearMessage(params.id, getExternalSessionId(), localStorage.getItem("tempUserId"))}
                     inputDisabled={inputDisabled}
                     prompts={presetQuestions}
+                    // setNewConversation={onAddConversation}
+                    onCustomEvent={(eventType) => {
+                        if (eventType === "refreshSession") {
+                            getConversationManualGet(
+                                {
+                                    params: {"botId": params?.id, "tempUserId": localStorage.getItem("tempUserId")}
+                                }
+                            ).then((r: any) => {
+                                setConversationsItems(getConversations(r?.data?.data?.cons));
+                            });
+                            return {handled:true};
+                        }
+                        return {handled: false};
+                    }}
+                    onCustomEventComplete={(eventType) => {
+                        if (eventType === "refreshSession") {
+                            return {handled:true};
+                        }
+                        return {handled: false};
+                    }}
                     request={async (messages) => {
                         const readableStream = new ReadableStream({
                             async start(controller) {
@@ -466,17 +486,6 @@ export const ExternalBot: React.FC = () => {
                                     onFinished: () => {
                                         controller.close();
                                     },
-                                    onEvent: (event: any) => {
-                                        if (event.event && event.event === "refreshSession"){
-                                            getConversationManualGet(
-                                                {
-                                                    params: {"botId": params?.id, "tempUserId": localStorage.getItem("tempUserId")}
-                                                }
-                                            ).then((r: any) => {
-                                                setConversationsItems(getConversations(r?.data?.data?.cons));
-                                            });
-                                        }
-                                    }
                                 })
                             },
                         });

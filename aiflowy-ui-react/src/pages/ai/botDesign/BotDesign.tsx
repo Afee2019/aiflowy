@@ -19,13 +19,14 @@ import {useParams} from "react-router-dom";
 import {WorkflowsModal} from "./Workflows.tsx";
 import {DebouncedTextArea} from "../../../components/DebouncedTextArea";
 import {LlmSlider} from "./LlmSlider.tsx";
-import {useSse} from "../../../hooks/useSse.ts";
 import {KnowledgeModal} from "./Knowledge.tsx";
 import TextArea from "antd/es/input/TextArea";
 import {getSessionId} from "../../../libs/getSessionId.ts";
 import {AiProChat, ChatMessage} from "../../../components/AiProChat/AiProChat";
 import {PluginTools} from "./PluginTools.tsx";
-import {parseAnswerUtil, processArray} from "../../../libs/parseAnswerUtil.ts";
+import { processArray} from "../../../libs/parseAnswerUtil.tsx";
+import {useSseWithEvent} from "../../../hooks/useSseWithEvent.ts";
+
 const colStyle: React.CSSProperties = {
     background: '#fafafa',
     padding: '8px',
@@ -212,7 +213,7 @@ const BotDesign: React.FC = () => {
 
     const {result} = useGet("/api/v1/aiLlm/list", {supportFunctionCalling: true});
 
-    const {start: startChat} = useSse("/api/v1/aiBot/chat");
+    const {start: startChat} = useSseWithEvent("/api/v1/aiBot/chat");
     const {doPost: doRemoveMsg} = usePostManual('/api/v1/aiBotMessage/removeMsg')
     const [chats, setChats] = useState<ChatMessage[]>([]);
     const {result: messageResult} = useList("aiBotMessage", {
@@ -227,40 +228,9 @@ const BotDesign: React.FC = () => {
 
 
         const messageList = messageResult?.data;
-        console.log(messageList)
-        if (messageList){
-            const formatList = messageList.map((message: { role: string; content: string; }) => {
-                if (message.role === "user"){
-                    return message;
-                }
+        const processedItems = processArray(messageList);
 
-                const result = parseAnswerUtil(message.content);
-
-                const originContent = message.content;
-
-
-                message.content = '';
-
-                if (result.thought) {
-                    message.content += `${result.thought}\n\n`;
-                }
-
-                if (result.finalAnswer) {
-                    message.content += `${result.finalAnswer}\n`;
-                }
-
-                if (!message.content.trim()) {
-                    message.content = originContent;
-                }
-                return message;
-            })
-
-            const processArr = processArray(formatList);
-
-            console.log(processArr)
-
-            setChats(processArr);
-        }
+        setChats(processedItems);
 
     }, [messageResult]);
     useEffect(() => {
@@ -738,10 +708,8 @@ const BotDesign: React.FC = () => {
                       onFinish={(values: Record<string, string>) => {
                     // 将表单值转换为 PresetQuestion[] 类型
                           const questions = Object.entries(values)
-                              // @ts-ignore
-                              .filter(([key, value]) => value) // 过滤空值
-                              // @ts-ignore
-                              .map(([key, value], index) => ({
+                              .filter(([_key, value]) => value) // 过滤空值
+                              .map(([_key, value], index) => ({
                                   key: (index + 1).toString(),
                                   description: value,
                                   // icon: '<ProductOutlined />',

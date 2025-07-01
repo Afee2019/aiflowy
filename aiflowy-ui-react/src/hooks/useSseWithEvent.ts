@@ -7,13 +7,14 @@ type StartParams = {
     onMessage: (message: string) => void,
     onError?: (err?: Error) => void,
     onFinished: () => void,
+    onEvent?:(event?:any,data?:string | undefined) => void,
 }
 
 const baseUrl = `${import.meta.env.VITE_APP_SERVER_ENDPOINT}/`;
 const authKey = `${import.meta.env.VITE_APP_AUTH_KEY || "authKey"}`;
 const tokenKey = `${import.meta.env.VITE_APP_TOKEN_KEY}`;
 
-export const useSse = (url: string, headers?: any, options?: any) => {
+export const useSseWithEvent = (url: string, headers?: any, options?: any) => {
 
     const ctrl = new AbortController();
     const [loading, setLoading] = useState(false)
@@ -40,7 +41,7 @@ export const useSse = (url: string, headers?: any, options?: any) => {
         start: async (params: StartParams) => {
             try {
                 setLoading(true)
-                let res = await fetch(sseUrl, {
+                const res = await fetch(sseUrl, {
                     method: "post",
                     signal: ctrl.signal,
                     headers: sseHeaders,
@@ -52,14 +53,19 @@ export const useSse = (url: string, headers?: any, options?: any) => {
                     return;
                 }
                 try {
-                    let msgEvents = events(res, ctrl.signal);
-                    for await (let event of msgEvents) {
+                    const msgEvents = events(res, ctrl.signal);
+                    for await (const event of msgEvents) {
+
                         if (event.data && "[DONE]" !== event.data.trim()) {
                             if (options === 'ollamaInstall'){
                                 params.onMessage(event.data)
                             } else {
-                                let temp = JSON.parse(event.data);
-                                params.onMessage(temp.content)
+                                const resp = {
+                                    event:event.event,
+                                    data:event.data,
+                                }
+
+                                params.onMessage(JSON.stringify(resp));
                             }
 
                         }
