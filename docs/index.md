@@ -6,6 +6,9 @@ hero:
   name: "AIFlowy"
   text: "开源的 AI 应用开发平台"
   tagline: 提供从 Bot 构建到 AI workflow 编排、RAG 检索、模型管理等能力，轻松构建和运营 AI 应用。
+#  image:
+#      src: /assets/images/bots.png
+#      alt: VitePress
   actions:
     - theme: brand
       text: 快速开始
@@ -29,3 +32,6 @@ features:
     details:  下载、使用、部署及微调大模型
 ---
 
+<div style="margin-top: 20px; padding:0; border: 1px solid #eee;border-radius: 7px;overflow: hidden">
+<img src="/assets/images/bots.png" alt="bots.png">
+</div>

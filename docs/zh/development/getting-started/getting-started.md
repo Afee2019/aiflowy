@@ -1,3 +1,6 @@
+
+![banner.png](../../../assets/images/banner.png)
+
 # 快速开始
 
 ## 前言

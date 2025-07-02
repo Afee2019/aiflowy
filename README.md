@@ -1,3 +1,5 @@
+![banner.png](docs/assets/images/banner.png)
+
 # AIFlowy： 一个 AI 产品的底座和基石
 
 AIFlowy 是一个基于 Java 开发的企业级的开源 AI 应用开发平台 ，致力于为中国开发者和企业提供高效、开放、本土化的 AI 工具与能力。我们对标字节 Coze、腾讯元器和 Dify 等产品，但更加聚焦于中国环境下的 toB 场景深度应用与落地实践。
