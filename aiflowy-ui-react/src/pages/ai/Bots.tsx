@@ -7,6 +7,7 @@ import {
 import CardPage from "../../components/CardPage";
 import {ColumnsConfig} from "../../components/AntdCrud";
 import {Space} from "antd";
+import noDataIcon from "../../../src/assets/noData.png"
 
 
 const columnsColumns: ColumnsConfig<any> = [
@@ -65,6 +66,11 @@ const Bots: React.FC<{ paramsToUrl: boolean }> = () => {
                           noDataText: "你还没有Bots,快来创建你的Bots吧!",
                           noDataAddButtonText: "创建Bots"
                       }}
+
+                      optionIconPath={{
+                          noDataIconPath: noDataIcon
+                      }}
+
                       customActions={(item, existNodes) => {
                           return [
                               <Space>

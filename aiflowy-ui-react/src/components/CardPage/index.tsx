@@ -28,7 +28,6 @@ import SearchForm from "../AntdCrud/SearchForm.tsx";
 import {Page} from "../../types/Page.ts";
 import {useUrlParams} from "../../hooks/useUrlParams.ts";
 import addCardIcon from "../../../src/assets/addCardIcon.png"
-import noDataIcon from "../../../src/assets/noData.png"
 import "../../pages/commons/commonStyle.less"
 import CustomDeleteIcon from "../CustomIcon/CustomDeleteIcon.tsx";
 export type CardPageProps = {
@@ -50,6 +49,9 @@ export type CardPageProps = {
         addCardTitle?: string, // 新增按钮的文本
         noDataText?: string, // 暂无数据的文本
         noDataAddButtonText?: string, // 无任何数据新增按钮的文本
+    },
+    optionIconPath?: {
+        noDataIconPath?: string, // 无任何数据时的图标
     }
 }
 
@@ -66,6 +68,7 @@ const CardPage: React.FC<CardPageProps> = forwardRef(({
                                                           , customActions = (_data: any, existNodes: any) => existNodes
                                                           , customHandleButton = () => []
                                                           , optionsText = {}
+                                                          , optionIconPath={},
                                                       },ref) => {
 
     useImperativeHandle(ref, () => ({
@@ -263,21 +266,33 @@ const CardPage: React.FC<CardPageProps> = forwardRef(({
                             </Card>
                         </Col>
                     )) : (<>
-                        <Empty
-                            image={noDataIcon}
-                            className={"empty-container"}
-                            description={
-                                <Typography.Text style={{color: '#969799'}}>
-                                    {optionsText.noDataText || "暂无数据"}
-                                </Typography.Text>
-                            }
-                        >
-                            <Button  style={{borderColor: '#0066FF', color: '#0066FF', width: '195px', height: '48px'}}
-                                     onClick={() => {
-                                         setIsEditOpen(true)
-                                     }}>
-                                {optionsText.noDataAddButtonText || "创建"}</Button>
-                        </Empty>
+
+                        {
+                            optionIconPath?.noDataIconPath ? (
+                                <Empty
+                                    image={optionIconPath?.noDataIconPath}
+                                    className={"empty-container"}
+                                    description={
+                                        <Typography.Text style={{color: '#969799'}}>
+                                            {optionsText.noDataText || "暂无数据"}
+                                        </Typography.Text>
+                                    }
+                                >
+                                    <Button  style={{borderColor: '#0066FF', color: '#0066FF', width: '195px', height: '48px'}}
+                                             onClick={() => {
+                                                 setIsEditOpen(true)
+                                             }}>
+                                        {optionsText.noDataAddButtonText || "创建"}</Button>
+                                </Empty>
+                            ) :
+                                (
+                                    <>
+                                        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} className={"empty-container"}/>
+                                    </>
+                                )
+                        }
+
+
                     </>)}
                 </Row>
                 {result?.data?.records?.length > 0 &&
