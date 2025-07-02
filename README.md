@@ -29,6 +29,13 @@ AIFlowy 是一个基于 Java 开发的企业级的开源 AI 应用开发平台 �
 - [ ] 增强稳定性（进行中...）
 - [ ] 优化用户体验（进行中...）
 
+## 产品截图
+
+![login.png](docs/assets/images/login.png)
+<span style="display:block;text-align:center;">登录</span>
+
+![bots.png](docs/assets/images/bots.png)
+<span style="display:block;text-align:center;">Bots</span>
 ## 快速开始
 
 ```shell
@@ -69,7 +76,7 @@ Star 本项目后，截图发给微信： fuh99777，拉您进群，讨论 AIFlo
 - AIEditor：https://gitee.com/aieditor-team/aieditor
 
 
-这些项目产品，不仅成为了 AI 技术社区中的基石工具， 更荣幸地被评选为 GVP（Gitee Most Valuable Project） 项目，也展现了我们在人工智能领域的踏实积累和创新能力。
+这些项目产品，不仅成为了 AI 技术社区中的基石工具， 更荣幸地被评选为 GVP 项目，也展现了我们在人工智能领域的踏实积累和创新能力。
 
 ### 愿景 Vision
 
