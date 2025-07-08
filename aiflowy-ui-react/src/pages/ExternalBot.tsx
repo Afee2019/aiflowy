@@ -444,6 +444,7 @@ export const ExternalBot: React.FC = () => {
                     chats={chats}
                     onChatsChange={setChats} // 确保正确传递 onChatsChange
                     helloMessage={helloMessage}
+                    llmDetail={botInfo?.data}
                     botAvatar={botInfo?.data?.icon}
                     clearMessage={() => clearMessage(params.id, getExternalSessionId(), localStorage.getItem("tempUserId"))}
                     inputDisabled={inputDisabled}

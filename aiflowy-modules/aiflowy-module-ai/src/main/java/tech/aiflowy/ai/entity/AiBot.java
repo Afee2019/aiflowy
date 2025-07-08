@@ -1,5 +1,6 @@
 package tech.aiflowy.ai.entity;
 
+import com.mybatisflex.annotation.Column;
 import tech.aiflowy.ai.entity.base.AiBotBase;
 import com.mybatisflex.annotation.Table;
 
@@ -12,4 +13,5 @@ import com.mybatisflex.annotation.Table;
 
 @Table("tb_ai_bot")
 public class AiBot extends AiBotBase {
+
 }

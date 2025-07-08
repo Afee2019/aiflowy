@@ -11,7 +11,6 @@ import {
 } from '@ant-design/x';
 import {Badge, Button, GetProp, GetRef, Image, message, Space, Spin, Typography, UploadFile} from 'antd';
 import {
-    CloudUploadOutlined,
     CopyOutlined,
     FolderAddOutlined, LinkOutlined,
     OpenAIOutlined,
@@ -35,7 +34,7 @@ const fooAvatar: React.CSSProperties = {
 export type ChatMessage = {
     id: string;
     content: string;
-    files?:Array<string>;
+    files?: Array<string>;
     role: 'user' | 'assistant' | 'aiLoading' | string;
     created: number;
     updateAt?: number;
@@ -76,9 +75,10 @@ export type AiProChatProps = {
     customToolBarr?: React.ReactNode;
     onCustomEvent?: EventHandler;
     onCustomEventComplete?: EventHandler;
+    llmDetail?: any;
 };
 
-export const RenderMarkdown: React.FC<{ content: string,fileList?:Array<string> }> = ({content,fileList}) => {
+export const RenderMarkdown: React.FC<{ content: string, fileList?: Array<string> }> = ({content, fileList}) => {
 
     const md = markdownit({html: true, breaks: true});
     return (
@@ -110,6 +110,7 @@ export const AiProChat = ({
                               customToolBarr,
                               onCustomEvent,
                               onCustomEventComplete,
+                              llmDetail = {}
                           }: AiProChatProps) => {
     const isControlled = parentChats !== undefined && parentOnChatsChange !== undefined;
     const [internalChats, setInternalChats] = useState<ChatMessage[]>([]);
@@ -340,7 +341,7 @@ export const AiProChat = ({
         const userMessage: ChatMessage = {
             role: 'user',
             id: Date.now().toString(),
-            files:files,
+            files: files,
             content: messageContent,
             created: Date.now(),
             updateAt: Date.now(),
@@ -857,6 +858,7 @@ export const AiProChat = ({
     ];
 
     const senderHeader = (
+        llmDetail && llmDetail.llmOptions && llmDetail.llmOptions.multimodal &&
         <Sender.Header
             title={"文件上传"}
             open={headerOpen}
@@ -870,7 +872,7 @@ export const AiProChat = ({
             <Attachments
                 items={fileItems}
                 overflow={"scrollX"}
-                imageProps={{height:"100%",width:"100%"}}
+                imageProps={{height: "100%", width: "100%"}}
                 customRequest={async ({file, onSuccess}) => {
 
                     const uFile = file as UploadFile;
@@ -930,7 +932,7 @@ export const AiProChat = ({
 
                     }
 
-                    if (isDelete){
+                    if (isDelete) {
                         setFileUrlList((prev) => {
                             const newFileUrlList: { uid: string; url: string; }[] = [];
                             prev.forEach(fileUrl => {
@@ -943,7 +945,6 @@ export const AiProChat = ({
                     }
 
 
-
                     setFileItems(fileList)
 
 
@@ -954,7 +955,7 @@ export const AiProChat = ({
                             title: 'Drop file here',
                         }
                         : {
-                            icon: <PictureOutlined />,
+                            icon: <PictureOutlined/>,
                             title: '上传文件',
                             description: '点击或拖拽上传，目前仅支持图片',
                         }
@@ -970,7 +971,7 @@ export const AiProChat = ({
     const processorRef = useRef<ScriptProcessorNode | null>(null);
     const recordedBuffersRef = useRef<Int16Array[]>([])
     const [recording, setRecording] = React.useState(false);
-    const {doPost:voiceInput} = usePost("/api/v1/aiBot/voiceInput")
+    const {doPost: voiceInput} = usePost("/api/v1/aiBot/voiceInput")
 
     const startPCMRecording = async (): Promise<void> => {
         try {
@@ -1076,7 +1077,7 @@ export const AiProChat = ({
 
         try {
             const formData = new FormData();
-            const blob = new Blob([pcmData.buffer], { type: 'audio/pcm' });
+            const blob = new Blob([pcmData.buffer], {type: 'audio/pcm'});
 
             formData.append('audio', blob, 'voice_message.pcm');
             formData.append('sampleRate', '16000');
@@ -1085,7 +1086,7 @@ export const AiProChat = ({
             formData.append('duration', String(pcmData.length / 16000));
 
             const response = await voiceInput({
-                data:formData
+                data: formData
             })
 
             return response;
@@ -1094,7 +1095,6 @@ export const AiProChat = ({
             throw error;
         }
     };
-
 
 
     return (
@@ -1191,7 +1191,7 @@ export const AiProChat = ({
                             } else {
                                 console.log("录音结束，发送请求.");
                                 try {
-                                    message.loading({ content: '正在处理语音...', key: 'processing' });
+                                    message.loading({content: '正在处理语音...', key: 'processing'});
 
                                     const pcmData = await stopPCMRecording();
 
@@ -1200,7 +1200,7 @@ export const AiProChat = ({
 
 
                                         if (result) {
-                                            message.success({ content: '语音发送成功', key: 'processing' });
+                                            message.success({content: '语音发送成功', key: 'processing'});
 
                                             // 如果后端返回了转换的文本，可以填充到输入框
                                             if (result.data.data) {
@@ -1209,11 +1209,11 @@ export const AiProChat = ({
                                             }
                                         }
                                     } else {
-                                        message.warning({ content: '没有录制到音频', key: 'processing' });
+                                        message.warning({content: '没有录制到音频', key: 'processing'});
                                     }
 
                                 } catch (error) {
-                                    message.error({ content: '语音处理失败', key: 'processing' });
+                                    message.error({content: '语音处理失败', key: 'processing'});
                                     console.error('语音处理失败:', error);
                                 }
                             }
@@ -1225,6 +1225,7 @@ export const AiProChat = ({
                     disabled={inputDisabled}
                     header={senderHeader}
                     prefix={
+                        llmDetail && llmDetail.llmOptions && llmDetail.llmOptions.multimodal &&
                         <Badge dot={fileItems.length > 0 && !headerOpen}>
                             <Button onClick={() => setHeaderOpen(!headerOpen)} icon={<LinkOutlined/>}/>
                         </Badge>

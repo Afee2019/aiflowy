@@ -183,6 +183,13 @@ const columns: ColumnsConfig<any> = [
         hidden: true,
         form: {type: 'switch'}
     },
+    {
+        title: '多模态',
+        dataIndex: 'options.multimodal',
+        key: 'options.multimodal',
+        hidden: true,
+        form: {type: 'switch'},
+    },
 ];
 
 

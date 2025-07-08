@@ -193,6 +193,7 @@ const BotDesign: React.FC = () => {
         // 转换后端数据为新的格式
         setPresetQuestions(detail?.data?.options?.presetQuestions || [])
         setAnonymousEnabled(detail?.data?.options?.anonymousEnabled)
+        console.log(333,detail)
     }, [detail]);
 
     const {result: workflowResult, doGet: doGetWorkflow} = useList("aiBotWorkflow", {"botId": params.id});
@@ -777,6 +778,7 @@ const BotDesign: React.FC = () => {
                                 prompts={presetQuestions}
                                 onChatsChange={setChats} // 确保正确传递 onChatsChange
                                 // style={{ height: '600px' }}
+                                llmDetail={detail?.data}
                                 helloMessage={detail?.data?.options?.welcomeMessage}
                                 clearMessage={clearMessage}
                                 request={async (messages) => {

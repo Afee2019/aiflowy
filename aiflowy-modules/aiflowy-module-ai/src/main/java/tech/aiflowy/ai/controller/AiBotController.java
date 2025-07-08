@@ -868,6 +868,31 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     }
 
     @Override
+    public Result detail(String id) {
+        Result detail = super.detail(id);
+        AiBot data = detail.get("data");
+        Map<String, Object> llmOptions = data.getLlmOptions();
+        if (llmOptions == null) {
+            llmOptions = new HashMap<>();
+        }
+
+        BigInteger llmId = data.getLlmId();
+        AiLlm llm = aiLlmService.getById(llmId);
+
+        Map<String, Object> options = llm.getOptions();
+
+        if (options != null && !options.isEmpty()) {
+
+            // 获取是否多模态
+            Boolean multimodal = (Boolean) options.get("multimodal");
+            llmOptions.put("multimodal", multimodal != null && multimodal);
+
+        }
+
+        return detail;
+    }
+
+    @Override
     protected Result onSaveOrUpdateBefore(AiBot entity, boolean isSave) {
         if (isSave) {
             // 设置默认值

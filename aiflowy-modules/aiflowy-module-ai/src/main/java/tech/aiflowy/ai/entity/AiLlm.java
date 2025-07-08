@@ -74,6 +74,14 @@ public class AiLlm extends AiLlmBase {
         if (getSupportImageToVideo() != null && getSupportImageToVideo()) {
             features.add("图生视频");
         }
+
+        if (getOptions() != null && !getOptions().isEmpty()){
+            Boolean multimodal = (Boolean) getOptions().get("multimodal");
+            if (multimodal != null && multimodal){
+                features.add("多模态");
+            }
+        }
+
         return features;
     }
 
