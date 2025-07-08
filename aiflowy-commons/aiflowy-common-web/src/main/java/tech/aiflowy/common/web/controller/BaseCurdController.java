@@ -191,6 +191,14 @@ public class BaseCurdController<S extends IService<M>, M> extends BaseController
             return queryWrapper;
         }
 
+        String[] isQueryOrs = parameterMap.get("isQueryOr");
+        boolean isQueryOrBool = false;
+
+        if (isQueryOrs != null && isQueryOrs.length > 0) {
+            String isQueryOr = isQueryOrs[0];
+            isQueryOrBool = "true".equals(isQueryOr);
+        }
+
         Map<String, String> propertyColumnMapping = TableInfoFactory.ofEntityClass(getEntityClass())
                 .getPropertyColumnMapping();
         for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
@@ -210,7 +218,11 @@ public class BaseCurdController<S extends IService<M>, M> extends BaseController
                             if (StringUtil.isNumeric(value)) {
                                 queryWrapper.eq(columnName, value);
                             } else {
-                                queryWrapper.like(columnName, value);
+                                if (isQueryOrBool){
+                                    queryWrapper.or(columnName + " like " +  "'%" + value + "%' ");
+                                } else {
+                                    queryWrapper.like(columnName, value);
+                                }
                             }
                         }
                     }
