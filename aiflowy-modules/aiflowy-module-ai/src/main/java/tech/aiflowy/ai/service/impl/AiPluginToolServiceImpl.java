@@ -129,6 +129,15 @@ public class AiPluginToolServiceImpl extends ServiceImpl<AiPluginToolMapper, AiP
         return Result.success(aiPluginFunction.runPluginTool(null, inputData, pluginToolId));
     }
 
+    @Override
+    public List<AiPluginTool> getByPluginId(String id) {
+
+        QueryWrapper queryWrapper = QueryWrapper.create();
+        queryWrapper.eq("plugin_id", id);
+
+        return list(queryWrapper);
+    }
+
     public static String switchParams(String paramString) {
         ObjectMapper mapper = new ObjectMapper();
         // 1. 将JSON解析为Map<String, Parameter>

@@ -3,6 +3,7 @@ package tech.aiflowy.ai.controller;
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.mybatisflex.core.query.QueryWrapper;
 import tech.aiflowy.ai.entity.AiKnowledge;
+import tech.aiflowy.ai.service.AiBotKnowledgeService;
 import tech.aiflowy.ai.service.AiDocumentChunkService;
 import tech.aiflowy.ai.service.AiKnowledgeService;
 import tech.aiflowy.ai.service.AiLlmService;
@@ -14,7 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
+import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,6 +34,9 @@ public class AiKnowledgeController extends BaseCurdController<AiKnowledgeService
 
     private final AiDocumentChunkService chunkService;
     private final AiLlmService llmService;
+
+    @Resource
+    private AiBotKnowledgeService aiBotKnowledgeService;
 
     public AiKnowledgeController(AiKnowledgeService service, AiDocumentChunkService chunkService, AiLlmService llmService) {
         super(service);
@@ -56,4 +63,18 @@ public class AiKnowledgeController extends BaseCurdController<AiKnowledgeService
         return service.search(id, keyword);
     }
 
+
+    @Override
+    protected Result onRemoveBefore(Collection<Serializable> ids) {
+
+        QueryWrapper queryWrapper = QueryWrapper.create();
+        queryWrapper.in("knowledge_id", ids);
+
+        boolean exists = aiBotKnowledgeService.exists(queryWrapper);
+        if (exists){
+            return  Result.fail(1, "此知识库还关联着bot，请先取消关联！");
+        }
+
+        return null;
+    }
 }

@@ -6,11 +6,13 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.mybatisflex.core.query.QueryWrapper;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tech.aiflowy.ai.entity.AiPluginTool;
+import tech.aiflowy.ai.service.AiBotPluginsService;
 import tech.aiflowy.ai.service.AiPluginToolService;
 import tech.aiflowy.common.annotation.UsePermission;
 import tech.aiflowy.common.domain.Result;
@@ -18,7 +20,9 @@ import tech.aiflowy.common.web.controller.BaseCurdController;
 import tech.aiflowy.common.web.jsonbody.JsonBody;
 
 import javax.annotation.Resource;
+import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.Collection;
 
 /**
  *  控制层。
@@ -36,6 +40,9 @@ public class AiPluginToolController extends BaseCurdController<AiPluginToolServi
 
     @Resource
     private AiPluginToolService aiPluginToolService;
+
+    @Resource
+    private AiBotPluginsService aiBotPluginsService;
 
     @PostMapping("/tool/save")
     @SaCheckPermission("/api/v1/aiPlugin/save")
@@ -125,5 +132,19 @@ public class AiPluginToolController extends BaseCurdController<AiPluginToolServi
                 handleArray(children);
             }
         }
+    }
+
+    @Override
+    protected Result onRemoveBefore(Collection<Serializable> ids) {
+
+        QueryWrapper queryWrapper = QueryWrapper.create();
+        queryWrapper.in("plugin_tool_id", ids);
+
+        boolean exists = aiBotPluginsService.exists(queryWrapper);
+        if (exists){
+            return Result.fail(1, "此工具还关联着bot，请先取消关联！");
+        }
+
+        return null;
     }
 }

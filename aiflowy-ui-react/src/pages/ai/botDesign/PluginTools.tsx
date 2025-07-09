@@ -106,9 +106,9 @@ export const PluginTools: React.FC<PluginToolsProps> = (props) => {
     return (
         <Modal title={'选择插件'} footer={null} {...props} width={"1000px"}
                height={"600px"}
-               afterOpenChange={(open) => {
-                   if (open && !pageData?.data) {
-                       fetchData(pageParams);
+               afterOpenChange={async (open) => {
+                   if (open) {
+                       await fetchData(pageParams);
                    }
                }}
         >

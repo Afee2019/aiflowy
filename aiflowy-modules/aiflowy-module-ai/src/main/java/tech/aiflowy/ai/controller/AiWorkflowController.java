@@ -13,6 +13,7 @@ import com.agentsflex.core.chain.event.ChainStatusChangeEvent;
 import com.agentsflex.core.chain.event.NodeEndEvent;
 import com.agentsflex.core.chain.event.NodeStartEvent;
 import com.alibaba.fastjson.JSONObject;
+import com.mybatisflex.core.query.QueryWrapper;
 import dev.tinyflow.core.Tinyflow;
 import dev.tinyflow.core.parser.NodeParser;
 import org.springframework.http.MediaType;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import tech.aiflowy.ai.entity.AiWorkflow;
+import tech.aiflowy.ai.service.AiBotWorkflowService;
 import tech.aiflowy.ai.service.AiLlmService;
 import tech.aiflowy.ai.service.AiWorkflowService;
 import tech.aiflowy.common.ai.MySseEmitter;
@@ -34,12 +36,10 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 控制层。
@@ -54,6 +54,9 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
 
     @Resource
     private SysApiKeyService apiKeyService;
+
+    @Resource
+    private AiBotWorkflowService aiBotWorkflowService;
 
     public AiWorkflowController(AiWorkflowService service, AiLlmService aiLlmService) {
         super(service);
@@ -304,5 +307,18 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
                 parameter.setDataType(refToDataTypeMap.get(ref));
             }
         }
+    }
+
+
+    @Override
+    protected Result onRemoveBefore(Collection<Serializable> ids) {
+        QueryWrapper queryWrapper = QueryWrapper.create();
+        queryWrapper.in("workflow_id", ids);
+        boolean exists = aiBotWorkflowService.exists(queryWrapper);
+        if (exists) {
+            return Result.fail(1, "此工作流还关联有bot，请先取消关联后再删除！");
+        }
+
+        return null;
     }
 }
