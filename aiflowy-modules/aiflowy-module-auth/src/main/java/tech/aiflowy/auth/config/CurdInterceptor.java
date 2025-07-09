@@ -1,9 +1,12 @@
 package tech.aiflowy.auth.config;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
+import cn.dev33.satoken.annotation.SaIgnore;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.StrUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import tech.aiflowy.common.annotation.UsePermission;
@@ -13,13 +16,28 @@ import javax.servlet.http.HttpServletResponse;
 
 public class CurdInterceptor implements HandlerInterceptor {
 
+    private static final Logger log = LoggerFactory.getLogger(CurdInterceptor.class);
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+
+        String requestURI = request.getRequestURI();
+
+        log.info("进入 CurdInterceptor  requestURI:{}", requestURI);
 
         String groupName = "";
         // 检查handler是否是HandlerMethod类型
         if (handler instanceof HandlerMethod) {
             HandlerMethod handlerMethod = (HandlerMethod) handler;
+
+
+           SaIgnore saIgnoreAnnotation = handlerMethod.getBeanType().getAnnotation(SaIgnore.class);
+           SaIgnore saIgnoreAnnotationMethod = handlerMethod.getMethodAnnotation(SaIgnore.class);
+           if (saIgnoreAnnotation != null ||  saIgnoreAnnotationMethod != null) {
+               log.info("{}-----------------> 放行：  saIgnoreAnnotation:{}", requestURI,saIgnoreAnnotation);
+               return true;
+           }
+
 
             // 获取类上的特定注解
             UsePermission classAnnotation = handlerMethod.getBeanType().getAnnotation(UsePermission.class);
