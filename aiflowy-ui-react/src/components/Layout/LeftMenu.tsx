@@ -21,7 +21,6 @@ const LeftMenu: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {
                     ...item,
                     children: item.children.map(child => ({
                         ...child,
-                        label: !collapsed && child.label ? child.label : null,
                     })),
                 };
             }
