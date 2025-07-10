@@ -4,8 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import tech.aiflowy.ai.asr.AsrResponse;
-import tech.aiflowy.ai.asr.VolcengineAsrClient;
+import tech.aiflowy.ai.voice.volcengine.asr.volcengine.AsrResponse;
+import tech.aiflowy.ai.voice.volcengine.asr.volcengine.VolcengineAsrClient;
 import tech.aiflowy.ai.service.AsrService;
 
 import java.io.InputStream;

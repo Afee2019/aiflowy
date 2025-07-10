@@ -1,4 +1,4 @@
-package tech.aiflowy.ai.asr;
+package tech.aiflowy.ai.voice.volcengine.asr.volcengine;
 
 public class AsrResponse {
     private String reqid = "unknow";
