@@ -348,15 +348,15 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
             cache.put(messageSessionId, result);
 
-            if (StringUtils.hasLength(result)) {
-                File file = new File(messageSessionId + "_" + System.currentTimeMillis() + ".mp3");
-                try (FileOutputStream fos = new FileOutputStream(file)){
-                    byte[] decode = Base64.getDecoder().decode(result);
-                    fos.write(decode);
-                }catch (IOException e) {
-                    logger.error("合并语音文件失败", e);
-                }
-            }
+//            if (StringUtils.hasLength(result)) {
+//                File file = new File(messageSessionId + "_" + System.currentTimeMillis() + ".mp3");
+//                try (FileOutputStream fos = new FileOutputStream(file)){
+//                    byte[] decode = Base64.getDecoder().decode(result);
+//                    fos.write(decode);
+//                }catch (IOException e) {
+//                    logger.error("合并语音文件失败", e);
+//                }
+//            }
 
         });
 
@@ -418,7 +418,10 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                                 message.setMetadataMap(Maps.of("messageSessionId",messageSessionId));
 
 
-                                ttsService.sendTTSMessage(webSocket,messageSessionId,finalContent);
+                                if (StringUtils.hasLength(finalContent)) {
+                                    ttsService.sendTTSMessage(webSocket,messageSessionId,finalContent);
+                                }
+
 
                                 parsed = true;
                                 return;
@@ -481,7 +484,9 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                             emitter.send(JSON.toJSONString(aiMessage));
                             logger.info("发送final answer:" + content);
 
-                            ttsService.sendTTSMessage(webSocket,messageSessionId,content);
+                            if (StringUtils.hasLength(content)) {
+                                ttsService.sendTTSMessage(webSocket,messageSessionId,content);
+                            }
 
                         } else {
                             // Thought模式：发送thought事件
@@ -512,6 +517,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 logger.info("onFinalAnswer,{}", finalAnswer);
 
                 RequestContextHolder.setRequestAttributes(sra, true);
+
 
                 ttsService.sendTTSMessage(webSocket,messageSessionId,"_end_");
 
@@ -564,9 +570,12 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 message.setMetadataMap(Maps.of("messageSessionId", messageSessionId));
                 emitter.sendAndComplete(JSON.toJSONString(message));
 
-                ttsService.sendTTSMessage(webSocket,messageSessionId,fullContent);
+                if (StringUtils.hasLength(fullContent)) {
+                    ttsService.sendTTSMessage(webSocket,messageSessionId,fullContent);
 
-                ttsService.sendTTSMessage(webSocket,messageSessionId,"_end_");
+                    ttsService.sendTTSMessage(webSocket,messageSessionId,"_end_");
+                }
+
 
 
             }

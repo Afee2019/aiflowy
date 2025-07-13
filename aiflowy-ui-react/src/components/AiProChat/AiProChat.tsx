@@ -137,6 +137,86 @@ export const AiProChat = ({
     const currentEventType = useRef<string | null>(null);
     const eventContent = useRef<string>(''); // 当前事件累积的内容
 
+    const voiceMapRef = useRef<Map<string, string[]>>(new Map());
+    const currentSessionIdRef = useRef<string | null>(null);
+    const isPlayingRef = useRef<boolean>(false);
+    const audioPlayContextRef = useRef<AudioContext | null>(null);
+    const currentAudioSourceRef = useRef<AudioBufferSourceNode | null>(null);
+
+    const playAudioQueue = async (sessionId:string) => {
+
+        const voiceMap = voiceMapRef.current;
+        const queue = voiceMap.get(sessionId);
+
+        if (!queue || queue.length === 0) return;
+
+        const audioContext = audioContextRef.current ?? new AudioContext();
+        audioContextRef.current = audioContext;
+
+        currentSessionIdRef.current = sessionId;
+        isPlayingRef.current = true;
+
+        let i = 0;
+        while (i < queue.length) {
+            if (currentSessionIdRef.current !== sessionId) {
+                return;
+            }
+
+            const base64 = queue[i];
+            try {
+                await playSingleBase64(base64, audioContext);
+                i++; // 正常播放，继续下一个
+            } catch (err) {
+                console.warn(`⚠️ 播放失败，已跳过 index=${i}`, err);
+
+                // 移除出错的项
+                queue.splice(i, 1); // 不递增 i，继续尝试播放当前位置
+            }
+        }
+
+        isPlayingRef.current = false;
+
+    }
+
+    const playSingleBase64 = (base64:string,audioContext:AudioContext):Promise<void> => {
+        return new Promise((resolve, reject) => {
+
+            const binary = atob(base64);
+            const bytes = new Uint8Array(binary.length);
+
+            for (let i = 0; i < binary.length;i++){
+                bytes[i] = binary.charCodeAt(i)
+            }
+
+            audioContext.decodeAudioData(bytes.buffer)
+                .then((audioBuffer) => {
+                    const source = audioContext.createBufferSource();
+                    source.buffer = audioBuffer;
+                    source.connect(audioContext.destination)
+                    source.onended = () => {
+                        resolve();
+                    };
+
+                    source.start();
+
+                    currentAudioSourceRef.current = source;
+                })
+                .catch(reject)
+        })
+    }
+
+    const stopCurrentPlayback = () => {
+        const source = currentAudioSourceRef.current;
+        if (source){
+            try {
+                source.stop();
+            }catch (e){
+                console.log("停止播放出错")
+            }
+        }
+
+        isPlayingRef.current = false;
+    }
 
 
     useEffect(() => {
@@ -153,7 +233,20 @@ export const AiProChat = ({
         webSocket.onmessage = (event: MessageEvent) => {
             const voiceData: {data: string, messageSessionId: string} = JSON.parse(event.data);
 
-            console.log(voiceData)
+            const voiceMap = voiceMapRef.current;
+
+            if (!voiceMap.has(voiceData.messageSessionId)){
+                voiceMap.set(voiceData.messageSessionId,[])
+            }
+
+            voiceMap?.get(voiceData.messageSessionId)?.push(voiceData.data);
+
+            if (currentSessionIdRef.current !== voiceData.messageSessionId) {
+                // 切换播放 session
+                stopCurrentPlayback();
+                playAudioQueue(voiceData.messageSessionId);
+            }
+
 
         };
 
@@ -168,6 +261,8 @@ export const AiProChat = ({
         }
 
     }, [sessionId]);
+
+
 
 
 
