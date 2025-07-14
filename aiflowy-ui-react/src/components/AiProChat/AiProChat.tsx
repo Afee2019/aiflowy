@@ -27,12 +27,16 @@ import {
 import logo from "/favicon.png";
 import './aiprochat.less'
 import markdownit from 'markdown-it';
-import {usePost} from "../../hooks/useApis.ts";
+import {usePost, usePostManual} from "../../hooks/useApis.ts";
 
 const fooAvatar: React.CSSProperties = {
     color: '#fff',
     backgroundColor: '#87d068',
 };
+
+export interface ChatOptions {
+    messageSessionId: string;
+}
 
 export type ChatMessage = {
     id: string;
@@ -43,8 +47,10 @@ export type ChatMessage = {
     updateAt?: number;
     loading?: boolean;
     thoughtChains?: Array<ThoughtChainItem>
-    options?: object;
+    options?: ChatOptions;
 };
+
+
 
 
 
@@ -157,69 +163,85 @@ export const AiProChat = ({
     // 当前正在播放的音频源（用于手动停止）
     const currentAudioSourceRef = useRef<AudioBufferSourceNode | null>(null);
 
+    const {loading:findVoiceLoading,doPost:findVoice} = usePostManual("/api/v1/aiBot/findVoice");
 
     // 播放指定 sessionId 的音频片段队列
     const playAudioQueue = async (sessionId: string) => {
         const voiceMap = voiceMapRef.current;
         const queue = voiceMap.get(sessionId);
 
-        if (!queue || queue.length === 0) return;
+        if (!queue || queue.length === 0) {
+            console.warn(`Session ${sessionId} 的音频队列为空`);
+            return;
+        }
 
         // 创建或复用 AudioContext
         const audioContext = audioPlayContextRef.current ?? new AudioContext();
         audioPlayContextRef.current = audioContext;
 
+        // 设置播放状态
         currentSessionIdRef.current = sessionId;
-        setPlayingSessionId(sessionId)
         isPlayingRef.current = true;
+        setPlayingSessionId(sessionId);
 
-        let playIndex = 0; // 当前播放起始片段索引
+        let playIndex = 0;
 
-        while (playIndex < queue.length) {
-            // 如果 sessionId 被切换，终止当前播放
-            if (currentSessionIdRef.current !== sessionId ) return;
+        try {
+            while (playIndex < queue.length) {
+                // 检查是否被中断
+                if (currentSessionIdRef.current !== sessionId) {
+                    console.log(`播放被中断，sessionId: ${sessionId}`);
+                    return;
+                }
 
-            let chunkCount = CHUNK_SIZE;
-            let audioBuffer: AudioBuffer | null = null;
+                let chunkCount = CHUNK_SIZE;
+                let audioBuffer: AudioBuffer | null = null;
 
-            // 动态尝试从当前位置起合并 chunkCount 个片段进行解码
-            while (playIndex + chunkCount <= queue.length) {
-                const base64List = queue.slice(playIndex, playIndex + chunkCount);
-                const mergedBuffer = mergeBase64Buffers(base64List);
+                // 动态尝试从当前位置起合并 chunkCount 个片段进行解码
+                while (playIndex + chunkCount <= queue.length) {
+                    const base64List = queue.slice(playIndex, playIndex + chunkCount);
+                    const mergedBuffer = mergeBase64Buffers(base64List);
+                    try {
+                        audioBuffer = await audioContext.decodeAudioData(mergedBuffer);
+                        break;
+                    } catch (e) {
+                        chunkCount += 1;
+                    }
+                }
+
+                // 如果解码失败且不足 CHUNK_SIZE，则尝试将剩余部分拼接解码
+                if (!audioBuffer && playIndex < queue.length) {
+                    const base64List = queue.slice(playIndex);
+                    const mergedBuffer = mergeBase64Buffers(base64List);
+                    try {
+                        audioBuffer = await audioContext.decodeAudioData(mergedBuffer);
+                        chunkCount = queue.length - playIndex;
+                    } catch (e) {
+                        console.warn("解码失败，跳过剩余段", e);
+                        break;
+                    }
+                }
+
+                if (!audioBuffer) break;
+
                 try {
-                    audioBuffer = await audioContext.decodeAudioData(mergedBuffer);
-                    break; // 解码成功退出循环
+                    await playAudioBuffer(audioBuffer, audioContext);
+                    playIndex += chunkCount;
                 } catch (e) {
-                    chunkCount += 1; // 解码失败，增加片段数继续尝试
+                    console.warn(`播放失败，跳过 index=${playIndex}`, e);
+                    playIndex += chunkCount;
                 }
             }
-
-            // 如果解码失败且不足 CHUNK_SIZE，则尝试将剩余部分拼接解码
-            if (!audioBuffer && playIndex < queue.length) {
-                const base64List = queue.slice(playIndex);
-                const mergedBuffer = mergeBase64Buffers(base64List);
-                try {
-                    audioBuffer = await audioContext.decodeAudioData(mergedBuffer);
-                    chunkCount = queue.length - playIndex;
-                } catch (e) {
-                    console.warn("解码失败，跳过剩余段", e);
-                    break; // 解码失败终止播放
-                }
-            }
-
-            if (!audioBuffer) break;
-
-            try {
-                // 播放解码成功的音频
-                await playAudioBuffer(audioBuffer, audioContext);
-                playIndex += chunkCount; // 播放成功推进指针
-            } catch (e) {
-                console.warn(`播放失败，跳过 index=${playIndex}`, e);
-                playIndex += chunkCount; // 出错也推进，防止死循环
+        } finally {
+            // 确保播放完成后重置状态
+            if (currentSessionIdRef.current === sessionId) {
+                stopCurrentPlayback();
             }
         }
+    };
 
-        isPlayingRef.current = false;
+    const isSessionPlaying = (sessionId: string): boolean => {
+        return isPlayingRef.current && currentSessionIdRef.current === sessionId;
     };
 
     // 将多个 base64 音频片段合并为一个 ArrayBuffer，供 AudioContext 解码
@@ -263,9 +285,8 @@ export const AiProChat = ({
         }
 
         currentSessionIdRef.current = null;
-        setPlayingSessionId(null)
-
         isPlayingRef.current = false;
+        setPlayingSessionId(null);
     };
 
     useEffect(() => {
@@ -364,7 +385,6 @@ export const AiProChat = ({
     const handleEventProgress = async (eventType: EventType, eventData: any): Promise<boolean> => {
         if (onCustomEvent) {
             try {
-                console.log("自定义事件处理")
                 const result = await onCustomEvent(eventType, eventData, {
                     chats,
                     setChats,
@@ -488,16 +508,11 @@ export const AiProChat = ({
                 }
 
 
-
-
-
                 return newChats;
             });
 
             return true;
-        }
-
-        if (['messageSessionId'].includes(eventType)) {
+        }else if(['messageSessionId'].includes(eventType)) {
             setChats((prevChats: ChatMessage[]) => {
                 const newChats = [...prevChats];
 
@@ -698,8 +713,14 @@ export const AiProChat = ({
                             if (lastMsg?.role === 'assistant') {
                                 lastMsg.loading = false;
                                 lastMsg.content = currentContent;
+
+                                if (respData.metadataMap && respData.metadataMap.messageSessionId){
+                                    lastMsg.options = {messageSessionId: respData.metadataMap.messageSessionId};
+                                }
+
                                 lastMsg.updateAt = Date.now();
                             }
+
 
                             return newChats;
                         });
@@ -1017,19 +1038,55 @@ export const AiProChat = ({
                                     color="default"
                                     variant="text"
                                     size="small"
-                                    icon={playingSessionId === chat.options.messageSessionId ? <PauseCircleOutlined /> :<PlayCircleOutlined />}
+                                    loading={findVoiceLoading}
+                                    icon={ chat.options?.messageSessionId && playingSessionId === chat.options?.messageSessionId ? <PauseCircleOutlined /> :<PlayCircleOutlined  />}
                                     onClick={async () => {
-                                        if (currentSessionIdRef.current === chat.options?.messageSessionId ) {
-                                            // 如果正在播放，则停止
+                                        // 如果没有 messageSessionId，先获取音频
+                                        if (!chat.options || !chat.options.messageSessionId) {
+                                            const resp = await findVoice({
+                                                data: {
+                                                    fullText: chat.content,
+                                                }
+                                            });
+
+                                            if (resp.data.errorCode == 0) {
+                                                const { base64, messageSessionId } = resp.data.data;
+                                                if (!chat.options) {
+                                                    chat.options = { messageSessionId: "" };
+                                                }
+                                                chat.options.messageSessionId = messageSessionId;
+                                                const voiceMap = voiceMapRef.current;
+
+                                                if (!voiceMap.has(messageSessionId)) {
+                                                    voiceMap.set(messageSessionId, []);
+                                                }
+
+                                                voiceMap.get(messageSessionId)!.push(base64);
+                                                // 如果正在播放当前消息的音频，则停止
+                                                stopCurrentPlayback();
+                                                playAudioQueue(messageSessionId);
+                                            }
+                                            return;
+                                        }
+
+                                        const messageSessionId = chat.options.messageSessionId;
+
+                                        if (isSessionPlaying(messageSessionId)) {
+                                            // 如果正在播放当前消息的音频，则停止
                                             stopCurrentPlayback();
                                         } else {
-                                            // 如果没有播放，则开始播放（如果需要的话）
-                                            const messageSessionId = chat?.options?.messageSessionId;
-                                            if (messageSessionId) {
-                                                stopCurrentPlayback(); // 先停止其他播放
-                                                playAudioQueue(messageSessionId); // 播放当前消息的音频
+                                            // 如果没有播放或播放的是其他消息，则开始播放当前消息
+                                            stopCurrentPlayback(); // 先停止任何正在播放的音频
+
+                                            // 确保音频队列存在且不为空
+                                            const voiceMap = voiceMapRef.current;
+                                            if (voiceMap.has(messageSessionId) && voiceMap.get(messageSessionId)!.length > 0) {
+                                                playAudioQueue(messageSessionId);
+                                            } else {
+                                                console.warn(`Session ${messageSessionId} 没有可播放的音频数据`);
                                             }
                                         }
+
                                     }}
                                 >
 
