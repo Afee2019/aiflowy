@@ -115,7 +115,7 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
 
     @GetMapping("documentList")
     @SaCheckPermission("/api/v1/aiKnowledge/query")
-    public Result documentList(@RequestParam(name="fileName", required = false) String fileName, @RequestParam(name="pageSize") int pageSize, @RequestParam(name = "current") int current) {
+    public Result documentList(@RequestParam(name="title", required = false) String fileName, @RequestParam(name="pageSize") int pageSize, @RequestParam(name = "current") int current) {
         String kbSlug = RequestUtil.getParamAsString("id");
         if (StringUtil.noText(kbSlug)) {
             return Result.fail(1, "知识库id不能为空");
@@ -141,7 +141,7 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
 
     /**
      * 文本拆分
-     * @param file 文件
+     * @param filePath 文件路径
      * @param splitterName 拆分器名称
      * @param chunkSize 分段大小
      * @param overlapSize 重叠大小
@@ -151,7 +151,8 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
     @PostMapping(value = "textSplit", produces = MediaType.APPLICATION_JSON_VALUE)
     @SaCheckPermission("/api/v1/aiKnowledge/save")
     public Result textSplit(
-                              @RequestParam("file") MultipartFile file,
+                              @RequestParam("filePath") String filePath,
+                              @RequestParam("fileOriginName") String fileOriginName,
                               @RequestParam(name="knowledgeId") BigInteger knowledgeId,
                               @RequestParam(name="splitterName", required = false) String splitterName,
                               @RequestParam(name="chunkSize", required = false) Integer chunkSize,
@@ -168,7 +169,7 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
         if (rowsPerChunk == null){
             rowsPerChunk = 1;
         }
-        return aiDocumentService.textSplit(knowledgeId, file, splitterName, chunkSize, overlapSize, regex, rowsPerChunk);
+        return aiDocumentService.textSplit(knowledgeId, filePath, fileOriginName,  splitterName, chunkSize, overlapSize, regex, rowsPerChunk);
 
     }
 

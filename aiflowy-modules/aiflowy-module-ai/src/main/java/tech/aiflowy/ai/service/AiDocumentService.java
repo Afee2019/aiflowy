@@ -24,7 +24,7 @@ public interface AiDocumentService extends IService<AiDocument> {
 
     boolean removeDoc(String id);
 
-    Result textSplit(BigInteger knowledgeIdm, MultipartFile file, String splitterName, Integer chunkSize, Integer overlapSize, String regex, Integer rowsPerChunk);
+    Result textSplit(BigInteger knowledgeIdm, String filePath, String originFileName, String splitterName, Integer chunkSize, Integer overlapSize, String regex, Integer rowsPerChunk);
 
     Result saveTextResult(BigInteger knowledgeId, String previewList, String aiDocument);
 }

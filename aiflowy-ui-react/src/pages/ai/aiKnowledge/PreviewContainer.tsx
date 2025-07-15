@@ -29,7 +29,6 @@ const PreviewContainer: React.FC<PreviewContainerProps> = ({
                                                                onConfirm = () => {},
                                                                isSearching = false,
                                                            }) => {
-    console.log('data', data);
     return (
         <div className="preview-container">
             <div className="preview-header">

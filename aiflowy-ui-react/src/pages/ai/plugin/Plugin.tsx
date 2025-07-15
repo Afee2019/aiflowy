@@ -32,7 +32,6 @@ import TextArea from 'antd/es/input/TextArea';
 import {CheckboxGroupProps} from "antd/es/checkbox";
 import {useNavigate} from "react-router-dom";
 import './less/plugin.less'
-import CustomDeleteIcon from "../../../components/CustomIcon/CustomDeleteIcon.tsx";
 import "../../../components/CardPage/card_page.less"
 import {useCheckPermission} from "../../../hooks/usePermissions.tsx";
 import Sider from "antd/es/layout/Sider";
@@ -41,6 +40,7 @@ import CustomToolIcon from "../../../components/CustomIcon/CustomToolIcon.tsx";
 import CustomClassifyIcon from "../../../components/CustomIcon/CustomClassifyIcon.tsx";
 import pluginNoDataLogon from '../../../assets/pluginNoData.png'
 import KeywordSearchForm from "../../../components/AntdCrud/KeywordSearchForm.tsx";
+import CustomCardDropdownMenuDeleteIcon from "../../../components/CustomIcon/CustomCardDropdownMenuDeleteIcon.tsx";
 
 interface Category {
 	id: number;
@@ -405,7 +405,7 @@ const Plugin: React.FC = () => {
 				style={{background: "#FFFFFF", height: "100%", width: '100%', borderRadius: '8px 8px 8px 8px'}}
 			>
 
-				<div style={{  width: '100%', display: 'flex', flexDirection: 'row'}}>
+				<div style={{  width: '100%', display: 'flex', flexDirection: 'row'}} className="plugin-container">
 					{/* 左侧分类导航 */}
 
 					<Sider style={{background: "white",  borderRadius: '8px 8px 8px 8px', height: "100%"}} width={220}  className="header-container"
@@ -414,7 +414,8 @@ const Plugin: React.FC = () => {
 							  variant="borderless"
 							  style={{
 								  height: "100%",
-								  borderRadius: '8px 8px 8px 8px'
+								  borderRadius: '8px 0px 0px 8px',
+								  boxShadow: 'inset -1px 0px 0px 0px #F0F0F0'
 							  }}
 							  styles={{
 								  header: {
@@ -434,22 +435,6 @@ const Plugin: React.FC = () => {
 										  </>
 
 									  }
-
-									  {/*{*/}
-									  {/*  collapsed ?*/}
-									  {/*	  (*/}
-									  {/*		  <span onClick={() => setCollapsed(!collapsed)} style={{cursor: "pointer"}}>*/}
-									  {/*       <DoubleRightOutlined />*/}
-									  {/*    </span>*/}
-									  {/*	  )*/}
-									  {/*	  :*/}
-									  {/*	  (*/}
-									  {/*		  <span onClick={() => setCollapsed(!collapsed)} style={{cursor: "pointer"}}>*/}
-									  {/*             <DoubleLeftOutlined />*/}
-									  {/*        </span>*/}
-									  {/*	  )*/}
-
-									  {/*}*/}
 
 								  </div>
 							  </Space>}
@@ -503,8 +488,8 @@ const Plugin: React.FC = () => {
 													},
 													{
 														key: 'delete',
-														icon: <CustomDeleteIcon />,
-														label: '删除',
+														icon: <span style={{marginRight: '8px'}}><CustomCardDropdownMenuDeleteIcon /></span>,
+														label: <span style={{ color: 'red' }}>删除</span>,
 														danger: true,
 														onClick: (e) => {
 															e.domEvent.stopPropagation(); // 阻止事件冒泡
@@ -538,7 +523,7 @@ const Plugin: React.FC = () => {
 					</Sider>
 
 					{/* 右侧插件内容 */}
-					<div style={{ flex: 1, maxWidth: 'calc(100% - 230px)', padding: '20px 22px 16px 22px'}}>
+					<div style={{ flex: 1, maxWidth: 'calc(100% - 230px)', overflow: "auto",padding: '20px 22px 16px 22px'}}>
 						<Spin spinning={loading} >
 							<Row className={"card-row"} gutter={[16, 16]}>
 
@@ -551,11 +536,11 @@ const Plugin: React.FC = () => {
 								) : plugins.length > 0 ? (
 
 										plugins.map((item: any) => (
-											<Col span={6} key={item.id}
+											<Col span={8} key={item.id}
 												 xs={24}
 												 sm={12}
 												 md={8}
-												 lg={6}
+												 lg={8}
 											>
 												<Card
 													style={{
@@ -636,8 +621,8 @@ const Plugin: React.FC = () => {
 															items: [
 																...(hasRemovePermission ? [	{
 																	key: 'delete',
-																	label: '删除',
-																	icon: <CustomDeleteIcon />,
+																	label: <span style={{ color: 'red'}} > 删除 </span>,
+																	icon: <span style={{ marginLeft: '8px' }}><CustomCardDropdownMenuDeleteIcon  /></span>,
 																	danger: true,
 																	onClick: () => {
 																		Modal.confirm({
