@@ -96,9 +96,9 @@ const KeywordSearchForm: React.FC<KeywordSearchFormProps> = ({
                         }
                         {customHandleButton}
                         {customMenuItems && customMenuItems.length > 0 && (
-                            <div>
-                                <Dropdown menu={{ items: customMenuItems }} placement="bottomLeft">
-                                    <Button>
+                            <div >
+                                <Dropdown menu={{ items: customMenuItems }} placement="bottomLeft" >
+                                    <Button style={{ width: 32, height: 32}}>
                                         <EllipsisOutlined />
                                     </Button>
                                 </Dropdown>

@@ -161,10 +161,16 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
 
 
     @Override
-    public Result textSplit(BigInteger knowledgeId, MultipartFile file, String splitterName, Integer chunkSize, Integer overlapSize, String regex, Integer rowsPerChunk) {
+    public Result textSplit(BigInteger knowledgeId, String filePath, String originalFilename, String splitterName, Integer chunkSize, Integer overlapSize, String regex, Integer rowsPerChunk) {
         try {
-            InputStream inputStream = file.getInputStream();
-            DocumentParser documentParser = DocumentParserFactory.getDocumentParser(file.getOriginalFilename());
+            InputStream inputStream = storageService.readStream(filePath);
+            String fileExtension = null;
+            if (getFileExtension(filePath) == null){
+                Log.error("获取文件后缀失败");
+                return Result.fail();
+            }
+            fileExtension = getFileExtension(filePath);
+            DocumentParser documentParser = DocumentParserFactory.getDocumentParser(filePath);
             AiDocument aiDocument = new AiDocument();
             List<AiDocumentChunk> previewList = new ArrayList<>();
             DocumentSplitter documentSplitter = getDocumentSplitter(splitterName, chunkSize, overlapSize, regex, rowsPerChunk);
@@ -184,8 +190,7 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
                 sort++;
                 previewList.add(chunk);
             }
-            String fileTypeByExtension = JudgeFileTypeUtil.getFileTypeByExtension(file.getOriginalFilename());
-            String filePath = storageService.save(file);
+            String fileTypeByExtension = JudgeFileTypeUtil.getFileTypeByExtension(filePath);
             aiDocument.setDocumentType(fileTypeByExtension);
             aiDocument.setKnowledgeId(knowledgeId);
             aiDocument.setDocumentPath(filePath);
@@ -197,7 +202,7 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
             }
             aiDocument.setChunkSize(chunkSize);
             aiDocument.setOverlapSize(overlapSize);
-            aiDocument.setTitle(StringUtil.removeFileExtension(file.getOriginalFilename()));
+            aiDocument.setTitle(originalFilename);
             Map<String, Object> res = new HashMap<>();
             res.put("previewData", previewList);
             res.put("aiDocumentData", aiDocument);
@@ -316,5 +321,19 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
 
     }
 
+    public static String getFileExtension(String filePath) {
+        int lastDotIndex = filePath.lastIndexOf('.');
+        if (lastDotIndex != -1) {
+            return filePath.substring(lastDotIndex + 1);
+        }
+        return null;
+    }
 
+    public static String getFileName(String filePath) {
+        int lastDotIndex = filePath.lastIndexOf('.');
+        if (lastDotIndex != -1) {
+            return filePath.substring(lastDotIndex + 1);
+        }
+        return null;
+    }
 }
