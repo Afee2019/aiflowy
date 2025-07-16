@@ -353,7 +353,7 @@ const PluginToolEdit: React.FC = () => {
                     </div>
                 </div>
 
-                <div>
+                <div className={"plugin-tool-edit-collapse"}>
                     <Collapse
                         bordered={false}
                         defaultActiveKey={['1', '2', '3']}

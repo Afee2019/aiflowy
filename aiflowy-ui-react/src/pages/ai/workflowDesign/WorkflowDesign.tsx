@@ -1,7 +1,7 @@
 // @ts-ignore
 import React, {useEffect, useRef, useState} from 'react';
 import {useLayout} from '../../../hooks/useLayout.tsx';
-import {App, Button, Collapse, Drawer, Empty, Form, Input, Skeleton, Spin} from "antd";
+import {App, Button, Collapse, Drawer, Empty, Form, Input, Skeleton, Space, Spin} from "antd";
 import {useParams} from "react-router-dom";
 import {useDetail, useGet, useGetManual, useUpdate} from "../../../hooks/useApis.ts";
 import {
@@ -23,6 +23,8 @@ import JsonView from "react18-json-view";
 import {useSse} from "../../../hooks/useSse.ts";
 import {sortNodes} from "../../../libs/workflowUtil";
 import '../style/workflow.design.css'
+import {ConfirmItem} from "./components/ConfirmItem.tsx";
+import {ConfirmItemMulti} from "./components/ConfirmItemMulti.tsx";
 
 export const WorkflowDesign = () => {
 
@@ -102,7 +104,7 @@ export const WorkflowDesign = () => {
     const tinyflowRef = useRef<TinyflowHandle>(null);
 
     const saveHandler = () => {
-        console.log("data: ", tinyflowRef.current!.getData())
+        //console.log("data: ", tinyflowRef.current!.getData())
         setSaveLoading(true)
         doUpdate({
             data: {
@@ -184,70 +186,219 @@ export const WorkflowDesign = () => {
     const {start: runWithStream} = useSse("/api/v1/aiWorkflow/tryRunningStream");
 
     const onFinish = (values: any) => {
-        //console.log('submit', values)
-        setSubmitLoading(true)
-        // tryRunning({
-        //     data: {
-        //         id: params.id,
-        //         variables: values
-        //     }
-        // }).then((resp) => {
-        //     if (resp.data.errorCode === 0) {
-        //         message.success("成功")
-        //     }
-        //     setSubmitLoading(false)
-        //     setExecuteResult(JSON.stringify(resp.data))
-        // })
         collapseItems.map((item: any) => {
             item.extra = ""
             item.children = ""
         })
         setCollapseItems([...collapseItems])
+        setSubmitLoading(true)
         runWithStream({
             data: {
                 id: params.id,
                 variables: values
             },
             onMessage: (msg: any) => {
-                //console.log(msg)
-                if (msg.execResult) {
-                    setExecuteResult(msg.execResult)
-                }
-                if (msg.status === 'error') {
-                    setExecuteResult(msg)
-                    collapseItems.map((item: any) => {
-                        item.extra = <Spin indicator={<ExclamationCircleOutlined style={{color: "#EABB00"}} />} />
-                    })
-                    setCollapseItems([...collapseItems])
-                }
-                if (msg.nodeId && msg.status) {
-                    collapseItems.map((item: any) => {
-                        if (item.key == msg.nodeId) {
-                            if (msg.status === 'start') {
-                                item.extra = <Spin indicator={<LoadingOutlined/>}/>
-                                item.children = ""
-                            }
-                            if (msg.status === 'end') {
-                                item.extra = <Spin indicator={<CheckCircleOutlined style={{color: 'green'}} />} />
-                                item.children = msg.res ?
-                                    <div style={{wordWrap: "break-word",}}>
-                                        <JsonView src={msg.res}/>
-                                    </div> : ""
-                            }
-                            if (msg.status === 'nodeError') {
-                                item.extra = <Spin indicator={<CloseCircleOutlined style={{color: 'red'}} />} />
-                                item.children = <JsonView src={msg.errorMsg}/>
-                            }
-                        }
-                    })
-                    setCollapseItems([...collapseItems])
-                }
+                handleStreamMsg(msg)
             },
             onFinished: () => {
                 setSubmitLoading(false)
             },
         })
     };
+
+    const handleStreamMsg = (msg: any) => {
+        //console.log(msg)
+        if (msg.status === 'execOnce') {
+            message.warning("流程已执行完毕，请重新发起。")
+        }
+        if (msg.execResult) {
+            message.success('执行完毕')
+            setExecuteResult(msg.execResult)
+        }
+        if (msg.status === 'error') {
+            message.error('执行错误')
+            setExecuteResult(msg)
+            collapseItems.map((item: any) => {
+                item.extra = <Spin indicator={<ExclamationCircleOutlined style={{color: "#EABB00"}}/>}/>
+            })
+            setCollapseItems([...collapseItems])
+        }
+        if (msg.nodeId && msg.status) {
+            collapseItems.map((item: any) => {
+                if (item.key == msg.nodeId) {
+                    if (msg.status === 'start') {
+                        item.extra = <Spin indicator={<LoadingOutlined/>}/>
+                        item.children = ""
+                    }
+                    if (msg.status === 'end') {
+                        item.extra = <Spin indicator={<CheckCircleOutlined style={{color: 'green'}}/>}/>
+                        item.children = msg.res ?
+                            <div style={{wordWrap: "break-word",}}>
+                                <JsonView src={msg.res}/>
+                            </div> : ""
+                    }
+                    if (msg.status === 'nodeError') {
+                        item.extra = <Spin indicator={<CloseCircleOutlined style={{color: 'red'}}/>}/>
+                        item.children = <JsonView src={msg.errorMsg}/>
+                    }
+                    if (msg.status === 'confirm') {
+                        message.success("有待确认的内容，请先确认！")
+                        setActiveCol(msg.nodeId)
+                        handleConfirmStep(msg, item)
+                    }
+                }
+            })
+            setCollapseItems([...collapseItems])
+        }
+    }
+    const [confirmForm] = Form.useForm();
+
+    const confirmBtnRef = useRef<any>(null)
+
+    const handleConfirmStep = (msg: any, item: any) => {
+        //console.log(msg)
+        const confirmKey = msg.suspendForParameters[0].name;
+
+        item.children = <>
+            <div style={{
+                fontWeight: "bold",
+                backgroundColor: "#0066FF",
+                borderRadius: "8px",
+                padding: "12px 21px",
+                marginBottom: "-24px"
+            }}>
+                <div style={{
+                    color: "#fff",
+                    marginBottom: "24px",
+                    wordBreak: "break-all",
+                }}>
+                    {msg.chainMessage}
+                </div>
+            </div>
+            <Form
+                form={confirmForm}
+                style={{
+                    backgroundColor: "#F5F8FD",
+                    borderRadius: "8px",
+                    padding: "24px 24px 8px 24px",
+                }}
+            >
+                {msg.suspendForParameters.map((ops: any, i: number) => {
+                    // formLabel formDescription
+                    if (ops.selectionMode === 'confirm') {
+                        return null
+                    }
+                    const selectKey = ops.name;
+                    const selectionDataType = ops.selectionDataType ? ops.selectionDataType : "text"
+                    const selectionMode = ops.selectionMode ? ops.selectionMode : "single"
+                    const selectionData = ops.selectionData
+
+                    return (
+                        <>
+                            <div
+                                style={{
+                                    fontWeight: "bold",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    wordBreak: "break-all",
+                                }}>
+                                <div style={{
+                                    display: "inline-block",
+                                    width: "2px",
+                                    borderRadius: "1px",
+                                    height: "16px",
+                                    marginLeft: "-24px",
+                                    marginRight: "24px",
+                                    backgroundColor: "#0066FF"
+                                }}>
+                                    &nbsp;
+                                </div>
+                                {ops.formLabel}
+                            </div>
+                            <div style={{
+                                marginBottom: "20px",
+                                color: "#969799",
+                                wordBreak: "break-all",
+                            }}>
+                                {ops.formDescription}
+                            </div>
+                            <Form.Item
+                                key={i}
+                                style={{
+                                    wordBreak: "break-all",
+                                }}
+                                name={selectKey}
+                                rules={[{required: true, message: '请选择内容'}]}
+                            >
+                                {selectionMode === 'single' ?
+                                    <ConfirmItem selectionDataType={selectionDataType} selectionData={selectionData}/> :
+                                    <ConfirmItemMulti selectionDataType={selectionDataType}
+                                                      selectionData={selectionData}/>
+                                }
+                            </Form.Item>
+                            {i !== (msg.suspendForParameters.length - 1) &&
+                                <div style={{
+                                    width: "calc(100% + 48px)",
+                                    borderBottom: "1px solid #D8DEE6",
+                                    marginLeft: "-24px",
+                                    marginRight: "-24px",
+                                    marginBottom: "24px"
+                                }}></div>
+                            }
+                        </>
+                    )
+                })}
+            </Form>
+            <div style={{marginTop: "20px", display: "flex", justifyContent: "flex-end"}}>
+                <Space>
+                    <Button
+                        ref={confirmBtnRef}
+                        type="primary"
+                        disabled={item.confirmBtnDisabled}
+                        onClick={() => {
+                            confirmForm.validateFields().then((values) => {
+                                const value = {
+                                    chainId: msg.chainId,
+                                    confirmParams: {
+                                        [confirmKey]: 'yes',
+                                        ...values
+                                    }
+                                }
+                                handleConfirmSubmit(value)
+                            }).catch(() => {
+                                message.warning("请选择内容")
+                            })
+                        }}
+                    >
+                        确认
+                    </Button>
+                </Space>
+            </div>
+        </>
+    }
+
+    const {start: runResume} = useSse("/api/v1/aiWorkflow/resumeChain");
+
+    const handleConfirmSubmit = (values: any) => {
+
+        setSubmitLoading(true)
+        if (confirmBtnRef.current) {
+            confirmBtnRef.current.disabled = true;
+        }
+        runResume({
+            data: {
+                ...values
+            },
+            onMessage: (msg: any) => {
+                handleStreamMsg(msg)
+            },
+            onFinished: () => {
+                setSubmitLoading(false)
+            }
+        })
+    };
+
+    const [activeCol, setActiveCol] = useState('')
 
     const onFinishFailed = (errorInfo: any) => {
         setSubmitLoading(false)
@@ -400,7 +551,9 @@ export const WorkflowDesign = () => {
                 <div style={{marginTop: "10px"}}>
                     <div>执行步骤：</div>
                     <div style={{marginTop: "10px"}}>
-                        <Collapse items={collapseItems}/>
+                        <Collapse activeKey={activeCol} items={collapseItems} onChange={(k: any) => {
+                            setActiveCol(k)
+                        }}/>
                     </div>
                 </div>
             </Drawer>
@@ -413,7 +566,7 @@ export const WorkflowDesign = () => {
                 onClose={onSingleRunClose}
                 open={singleRunOpen}
             >
-            <SingleRun ref={singleRunRef} workflowId={params.id} node={currentNode} />
+                <SingleRun ref={singleRunRef} workflowId={params.id} node={currentNode}/>
             </Drawer>
 
             <div style={{height: 'calc(100vh - 50px)', display: "flex"}} className={"agentsflow"}>
@@ -437,12 +590,14 @@ export const WorkflowDesign = () => {
                             <FormOutlined/>
                         </div>
                         <div style={{display: "flex", gap: "10px"}}>
-                            <Button type={"default"} loading={runLoading} onClick={showRunningParameters}> <SendOutlined/> 试运行</Button>
-                            <Button type={"primary"} loading={saveLoading} onClick={saveHandler}>保存 (Ctrl + s)</Button>
+                            <Button type={"default"} loading={runLoading} onClick={showRunningParameters}>
+                                <SendOutlined/> 试运行</Button>
+                            <Button type={"primary"} loading={saveLoading} onClick={saveHandler}>保存 (Ctrl +
+                                s)</Button>
                         </div>
                     </div>
                     {showTinyflow ?
-                        <Spin spinning={pageLoading} >
+                        <Spin spinning={pageLoading}>
                             <Tinyflow ref={tinyflowRef} data={workflowData}
                                       provider={provider}
                                       onNodeExecute={async (node) => {

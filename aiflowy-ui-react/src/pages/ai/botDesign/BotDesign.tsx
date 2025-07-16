@@ -204,7 +204,8 @@ const BotDesign: React.FC = () => {
         setWelcomeMessage(detail?.data?.options?.welcomeMessage)
         // 转换后端数据为新的格式
         setPresetQuestions(detail?.data?.options?.presetQuestions || [])
-        setAnonymousEnabled(detail?.data?.options?.anonymousEnabled)
+        setAnonymousEnabled(detail?.data?.options?.anonymousEnabled ?? false)
+        setVoicePlayEnabled(detail?.data?.options?.voiceEnabled ?? false)
     }, [detail]);
 
     const {result: workflowResult, doGet: doGetWorkflow} = useList("aiBotWorkflow", {"botId": params.id});
@@ -293,6 +294,9 @@ const BotDesign: React.FC = () => {
 
     const [anonymousEnabled,setAnonymousEnabled] = useState<boolean>(false)
     const [anonymousSwitchLoading,setAnonymousSwitchLoading] = useState<boolean>(false)
+
+    const [voicePlayEnabled,setVoicePlayEnabled] = useState<boolean>(false)
+    const [voicePlaySwitchLoading,setVoicePlaySwitchLoading] = useState<boolean>(false)
 
     return (
         <>
@@ -435,16 +439,8 @@ const BotDesign: React.FC = () => {
                                 placeholder="请选择大模型"
                                 allowClear
                                 disabled={!llmQueryPermission || !botSavePermission}
-                                // fieldNames={{label: 'title', value: 'id'}}
-                                // options={[
-                                //     ...llmResult?.data || []
-                                // ]}
-
                                 value={llmQueryPermission ? detail?.data?.llmId : "no_access"}
                                 onChange={(value: any) => {
-
-                                    console.log(value)
-
                                     value = value || ''
                                     updateBot({ llmId: value === 'no_access' ? '' : value || '' });
                                 }}
@@ -715,6 +711,42 @@ const BotDesign: React.FC = () => {
                                         }}
                                         placeholder="请输入欢迎语"
                                         autoSize={{minRows: 2, maxRows: 6}}
+                                    />
+                                </div>,
+                            },
+                            {
+                                key: 'voicePlay',
+                                label: <CollapseLabel text="语音播报" onClick={() => {
+                                }} plusDisabled/>,
+                                children: <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                                    <span>启用语音播报</span>
+                                    <Switch
+                                        checked={voicePlayEnabled}
+                                        loading={voicePlaySwitchLoading}
+                                        onChange={async (checked) => {
+
+                                            if (!botSavePermission) {
+                                                message.warning("你没有配置bot的权限！")
+                                                setVoicePlayEnabled(false)
+                                                return;
+                                            }
+
+
+                                            setVoicePlaySwitchLoading(true)
+                                            const resp = await updateBotOptions({
+                                                data: {
+                                                    options: {voiceEnabled: checked},
+                                                    id: params.id,
+                                                }
+                                            })
+                                            if (resp?.data?.errorCode === 0){
+                                                const reGetResp = await reGetDetail();
+                                                console.log(reGetResp.data?.data?.options.voiceEnabled)
+                                                setVoicePlayEnabled(reGetResp.data?.data?.options.voiceEnabled)
+                                            }
+
+                                            setVoicePlaySwitchLoading(false)
+                                        }}
                                     />
                                 </div>,
                             },

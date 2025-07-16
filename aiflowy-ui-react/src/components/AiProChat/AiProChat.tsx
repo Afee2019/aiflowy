@@ -7,19 +7,15 @@ import {
     Sender,
     ThoughtChain,
     ThoughtChainItem,
-    Welcome
 } from '@ant-design/x';
-import {Badge, Button, GetProp, GetRef, Image, message, Space, Spin, Typography, UploadFile} from 'antd';
+import {Avatar, Badge, Button, GetProp, GetRef, Image, message, Space, Spin, Typography, UploadFile} from 'antd';
 import {
     CopyOutlined,
     FolderAddOutlined,
-    LinkOutlined,
-    OpenAIOutlined,
     PauseCircleOutlined,
     PictureOutlined,
     PlayCircleOutlined,
     SyncOutlined,
-    UserOutlined
 } from '@ant-design/icons';
 // import ReactMarkdown from 'react-markdown';
 // import remarkGfm from 'remark-gfm';
@@ -28,14 +24,19 @@ import logo from "/favicon.png";
 import './aiprochat.less'
 import markdownit from 'markdown-it';
 import {usePost, usePostManual} from "../../hooks/useApis.ts";
-
-const fooAvatar: React.CSSProperties = {
-    color: '#fff',
-    backgroundColor: '#87d068',
-};
+import senderIcon from "../../assets/senderIcon.png"
+import clearButtonIcon from "../../assets/clearButton.png"
+import fileIcon from "../../assets/fileLink.png"
+// const fooAvatar: React.CSSProperties = {
+//     color: '#fff',
+//     backgroundColor: '#87d068',
+// };
 
 export interface ChatOptions {
-    messageSessionId: string;
+    messageSessionId?: string;
+    botTitle?: string;
+    botDescription?: string;
+    fileList?:string[];
 }
 
 export type ChatMessage = {
@@ -49,9 +50,6 @@ export type ChatMessage = {
     thoughtChains?: Array<ThoughtChainItem>
     options?: ChatOptions;
 };
-
-
-
 
 
 // 事件类型
@@ -88,12 +86,14 @@ export type AiProChatProps = {
     onCustomEventComplete?: EventHandler;
     llmDetail?: any;
     sessionId?: string;
+    options?: any;
 };
 
 export const RenderMarkdown: React.FC<{ content: string, fileList?: Array<string> }> = ({content, fileList}) => {
 
     const md = markdownit({html: true, breaks: true});
     return (
+
         <>
             <div style={{display: "flex", flexDirection: "column", gap: "10px"}}>
                 {fileList && fileList.length > 0 && fileList.map(file => {
@@ -108,13 +108,16 @@ export const RenderMarkdown: React.FC<{ content: string, fileList?: Array<string
     );
 };
 
+
 export const AiProChat = ({
                               loading,
                               chats: parentChats,
                               onChatsChange: parentOnChatsChange,
                               style = {},
                               appStyle = {},
+                              // @ts-ignore
                               helloMessage = '欢迎使用 AIFlowy',
+                              // @ts-ignore
                               botAvatar = `${logo}`,
                               request,
                               showQaButton = false,
@@ -127,7 +130,8 @@ export const AiProChat = ({
                               onCustomEvent,
                               onCustomEventComplete,
                               llmDetail = {},
-                              sessionId
+                              sessionId,
+                              options
                           }: AiProChatProps) => {
     const isControlled = parentChats !== undefined && parentOnChatsChange !== undefined;
     const [internalChats, setInternalChats] = useState<ChatMessage[]>([]);
@@ -155,7 +159,7 @@ export const AiProChat = ({
     const voiceMapRef = useRef<Map<string, string[]>>(new Map());
     // 当前正在播放的 sessionId，用于多会话控制
     const currentSessionIdRef = useRef<string | null>(null);
-    const [playingSessionId,setPlayingSessionId] = useState<string | null>()
+    const [playingSessionId, setPlayingSessionId] = useState<string | null>()
     // 当前是否处于播放状态
     const isPlayingRef = useRef<boolean>(false);
     // 音频上下文 AudioContext 实例
@@ -163,7 +167,7 @@ export const AiProChat = ({
     // 当前正在播放的音频源（用于手动停止）
     const currentAudioSourceRef = useRef<AudioBufferSourceNode | null>(null);
 
-    const {loading:findVoiceLoading,doPost:findVoice} = usePostManual("/api/v1/aiBot/findVoice");
+    const {loading: findVoiceLoading, doPost: findVoice} = usePostManual("/api/v1/aiBot/findVoice");
 
     // 播放指定 sessionId 的音频片段队列
     const playAudioQueue = async (sessionId: string) => {
@@ -517,7 +521,6 @@ export const AiProChat = ({
                         }
 
 
-
                     } else {
                         console.warn(`Event ${eventType} has no id, skipping ThoughtChain processing`);
                     }
@@ -532,32 +535,6 @@ export const AiProChat = ({
 
             return true;
         }
-
-        // if (['messageSessionId'].includes(eventType)) {
-        //     setChats((prevChats: ChatMessage[]) => {
-        //         const newChats = [...prevChats];
-        //
-        //         // 找到最后一条 assistant 消息
-        //         const lastAiIndex = (() => {
-        //             for (let i = newChats.length - 1; i >= 0; i--) {
-        //                 if (newChats[i].role === 'assistant') {
-        //                     return i;
-        //                 }
-        //             }
-        //             return -1;
-        //         })();
-        //
-        //         if (lastAiIndex !== -1) {
-        //             const aiMessage = newChats[lastAiIndex];
-        //             if (!aiMessage.options){
-        //                 aiMessage.options = {};
-        //             }
-        //             aiMessage.options['messageSessionId'] = eventData;
-        //         }
-        //
-        //         return newChats;
-        //     });
-        // }
 
         return true;
     };
@@ -652,11 +629,11 @@ export const AiProChat = ({
                 const respData = JSON.parse(parse.data);
 
                 // 🔍 调试：打印收到的数据
-                console.log('📥 收到数据:', {
-                    event: parse.event,
-                    content: respData.content,
-                    contentLength: (respData.content || '').length
-                });
+                // console.log('📥 收到数据:', {
+                //     event: parse.event,
+                //     content: respData.content,
+                //     contentLength: (respData.content || '').length
+                // });
 
                 const incomingEventType = parse.event || 'content';
 
@@ -707,10 +684,10 @@ export const AiProChat = ({
                     console.warn('🚨 检测到重复内容，跳过累积:', newContent);
                 }
 
-                console.log('📚 累积内容:', {
-                    partialLength: partial.length,
-                    partialContent: partial.substring(Math.max(0, partial.length - 50))
-                });
+                // console.log('📚 累积内容:', {
+                //     partialLength: partial.length,
+                //     partialContent: partial.substring(Math.max(0, partial.length - 50))
+                // });
 
                 // 清除之前的打字间隔
                 if (typingIntervalId) {
@@ -731,7 +708,7 @@ export const AiProChat = ({
                                 lastMsg.loading = false;
                                 lastMsg.content = currentContent;
 
-                                if (respData.metadataMap && respData.metadataMap.messageSessionId){
+                                if (!lastMsg.options?.messageSessionId && respData.metadataMap && respData.metadataMap.messageSessionId) {
                                     lastMsg.options = {messageSessionId: respData.metadataMap.messageSessionId};
                                 }
 
@@ -906,51 +883,57 @@ export const AiProChat = ({
                         console.warn('🚨 检测到重复内容，跳过累积:', newContent);
                     }
 
-                    console.log('📚 累积内容:', {
-                        partialLength: partial.length,
-                        partialContent: partial.substring(Math.max(0, partial.length - 50))
-                    });
+                    // console.log('📚 累积内容:', {
+                    //     partialLength: partial.length,
+                    //     partialContent: partial.substring(Math.max(0, partial.length - 50))
+                    // });
+                    // 清除之前的打字间隔
+                    if (typingIntervalId) {
+                        clearInterval(typingIntervalId);
+                    }
+
+                    // 开始新的打字效果
+                    typingIntervalId = setInterval(() => {
+                        if (currentContent.length < partial.length) {
+                            currentContent = isStreamFinished ? partial : partial.slice(0, currentContent.length + 2);
+                            setChats?.((prev: ChatMessage[]) => {
+                                const newChats = [...(prev || [])];
+                                const lastMsg = newChats[newChats.length - 1];
+
+                                if (!lastMsg) {
+                                    return prev;
+                                }
+
+                                if (lastMsg.role === 'assistant') {
+                                    lastMsg.loading = false;
+                                    lastMsg.content = currentContent;
+
+                                    if (!lastMsg.options?.messageSessionId && respData.metadataMap && respData.metadataMap.messageSessionId) {
+                                        lastMsg.options = {messageSessionId: respData.metadataMap.messageSessionId};
+                                    }
+
+                                    lastMsg.updateAt = Date.now();
+                                }
+                                return newChats;
+                            });
+
+                            if (autoScrollEnabled.current) {
+                                scrollToBottom();
+                            }
+                        }
+
+                        // 当前内容已经追上完整内容时停止
+                        if (currentContent === partial || isStreamFinished) {
+                            clearInterval(typingIntervalId!);
+                            typingIntervalId = null;
+                        }
+                    }, 50);
                 } catch (error) {
                     //  如果解析失败，当作普通内容处理（兼容旧格式）
                     partial += decode;
                 }
 
-                // 清除之前的打字间隔
-                if (typingIntervalId) {
-                    clearInterval(typingIntervalId);
-                }
 
-                // 开始新的打字效果
-                typingIntervalId = setInterval(() => {
-                    if (currentContent.length < partial.length) {
-                        currentContent = isStreamFinished ? partial : partial.slice(0, currentContent.length + 2);
-                        setChats?.((prev: ChatMessage[]) => {
-                            const newChats = [...(prev || [])];
-                            const lastMsg = newChats[newChats.length - 1];
-
-                            if (!lastMsg) {
-                                return prev;
-                            }
-
-                            if (lastMsg.role === 'assistant') {
-                                lastMsg.loading = false;
-                                lastMsg.content = currentContent;
-                                lastMsg.updateAt = Date.now();
-                            }
-                            return newChats;
-                        });
-
-                        if (autoScrollEnabled.current) {
-                            scrollToBottom();
-                        }
-                    }
-
-                    // 当前内容已经追上完整内容时停止
-                    if (currentContent === partial || isStreamFinished) {
-                        clearInterval(typingIntervalId!);
-                        typingIntervalId = null;
-                    }
-                }, 50);
             }
 
             // 等待最后的打字效果完成
@@ -976,18 +959,20 @@ export const AiProChat = ({
     const renderMessages = () => {
         if (!chats?.length) {
             return (
-                <Welcome
-                    variant="borderless"
-                    icon={<img
-                        src={botAvatar}
-                        style={{width: 32, height: 32, borderRadius: '50%'}}
-                        alt="AI Avatar"
-                    />}
-                    description={helloMessage}
-                    styles={{icon: {width: 40, height: 40}}}
-                />
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingTop: '103px'
+                }}>
+                    <Avatar size={88} src={botAvatar} style={{marginBottom: '10px'}}/>
+                    <div className={"bot-chat-title"}>{options?.botTitle}</div>
+                    <div className={"bot-chat-description"}>{options?.botDescription}</div>
+                </div>
             );
         }
+
         return (
             <Bubble.List
                 autoScroll={true}
@@ -995,7 +980,7 @@ export const AiProChat = ({
                     key: chat.id + Math.random().toString(),
                     // typing: {suffix: <>💗</>},
                     header: (
-                        <Space>
+                        <Space className={"bubble-header"}>
                             {new Date(chat.created).toLocaleString()}
                         </Space>
                     ),
@@ -1049,27 +1034,29 @@ export const AiProChat = ({
                                 }}
                             ></Button>}
                             {(
-                                chat.role === "assistant" &&
+                                chat.role === "assistant" && llmDetail?.options?.voiceEnabled &&
                                 !isStreaming &&
                                 <Button
                                     color="default"
                                     variant="text"
                                     size="small"
                                     loading={findVoiceLoading}
-                                    icon={ chat.options?.messageSessionId && playingSessionId === chat.options?.messageSessionId ? <PauseCircleOutlined /> :<PlayCircleOutlined  />}
+                                    icon={chat.options?.messageSessionId && playingSessionId === chat.options?.messageSessionId ?
+                                        <PauseCircleOutlined/> : <PlayCircleOutlined/>}
                                     onClick={async () => {
                                         // 如果没有 messageSessionId，先获取音频
-                                        if (!chat.options || !chat.options.messageSessionId) {
+                                        if (!chat.options || !chat.options.messageSessionId || !(voiceMapRef.current.has(chat.options.messageSessionId) && voiceMapRef.current.get(chat.options.messageSessionId)!.length > 0)) {
                                             const resp = await findVoice({
                                                 data: {
+                                                    botId:llmDetail.id,
                                                     fullText: chat.content,
                                                 }
                                             });
 
                                             if (resp.data.errorCode == 0) {
-                                                const { base64, messageSessionId } = resp.data.data;
+                                                const {base64, messageSessionId} = resp.data.data;
                                                 if (!chat.options) {
-                                                    chat.options = { messageSessionId: "" };
+                                                    chat.options = {messageSessionId: ""};
                                                 }
                                                 chat.options.messageSessionId = messageSessionId;
                                                 const voiceMap = voiceMapRef.current;
@@ -1095,13 +1082,7 @@ export const AiProChat = ({
                                             // 如果没有播放或播放的是其他消息，则开始播放当前消息
                                             stopCurrentPlayback(); // 先停止任何正在播放的音频
 
-                                            // 确保音频队列存在且不为空
-                                            const voiceMap = voiceMapRef.current;
-                                            if (voiceMap.has(messageSessionId) && voiceMap.get(messageSessionId)!.length > 0) {
-                                                playAudioQueue(messageSessionId);
-                                            } else {
-                                                console.warn(`Session ${messageSessionId} 没有可播放的音频数据`);
-                                            }
+                                            playAudioQueue(messageSessionId);
                                         }
 
                                     }}
@@ -1123,16 +1104,16 @@ export const AiProChat = ({
                             )}
 
                             {/* 🌟 渲染主要内容 */}
-                            <RenderMarkdown content={chat.content} fileList={chat.files}/>
+                            <RenderMarkdown content={chat.content} fileList={chat?.options?.fileList}/>
                         </div>
-                    ) : <RenderMarkdown content={chat.content} fileList={chat.files}/>,
-                    avatar: chat.role === 'assistant' ? (
-                        <img
-                            src={botAvatar}
-                            style={{width: 32, height: 32, borderRadius: '50%'}}
-                            alt="AI Avatar"
-                        />
-                    ) : {icon: <UserOutlined/>, style: fooAvatar},
+                    ) : <RenderMarkdown content={chat.content} fileList={chat?.options?.fileList}/>,
+                    // avatar: chat.role === 'assistant' ? (
+                    //     <img
+                    //         src={botAvatar}
+                    //         style={{width: 32, height: 32, borderRadius: '50%'}}
+                    //         alt="AI Avatar"
+                    //     />
+                    // ) : {icon: <UserOutlined/>, style: fooAvatar},
                 }))}
                 roles={{ai: {placement: 'start'}, local: {placement: 'end'}}}
             />
@@ -1400,20 +1381,20 @@ export const AiProChat = ({
             return null;
         }
 
-            const formData = new FormData();
-            const blob = new Blob([pcmData.buffer], {type: 'audio/pcm'});
+        const formData = new FormData();
+        const blob = new Blob([pcmData.buffer], {type: 'audio/pcm'});
 
-            formData.append('audio', blob, 'voice_message.pcm');
-            formData.append('sampleRate', '16000');
-            formData.append('channels', '1');
-            formData.append('bitDepth', '16');
-            formData.append('duration', String(pcmData.length / 16000));
+        formData.append('audio', blob, 'voice_message.pcm');
+        formData.append('sampleRate', '16000');
+        formData.append('channels', '1');
+        formData.append('bitDepth', '16');
+        formData.append('duration', String(pcmData.length / 16000));
 
-            const response = await voiceInput({
-                data: formData
-            })
+        const response = await voiceInput({
+            data: formData
+        })
 
-            return response;
+        return response;
 
     };
 
@@ -1426,7 +1407,6 @@ export const AiProChat = ({
                 display: 'flex',
                 flexDirection: 'column',
                 background: '#fff',
-                border: '1px solid #f3f3f3',
                 ...appStyle,
                 ...style,
             }}
@@ -1455,7 +1435,6 @@ export const AiProChat = ({
 
             <div
                 style={{
-                    borderTop: '1px solid #eee',
                     padding: '12px',
                     display: 'flex',
                     flexDirection: "column",
@@ -1464,15 +1443,41 @@ export const AiProChat = ({
             >
 
                 {/* 🌟 提示词 */}
-                <Prompts
-                    items={SENDER_PROMPTS}
-                    onItemClick={(info) => {
-                        handleSubmit(info.data.description as string)
-                    }}
-                    styles={{
-                        item: {padding: '6px 12px'},
-                    }}
-                />
+                <div style={{display: "flex", flexDirection: "row", gap: "8px", justifyContent: "space-between", paddingBottom: 10}}>
+                    <Prompts
+                        items={SENDER_PROMPTS}
+                        onItemClick={(info) => {
+                            handleSubmit(info.data.description as string)
+                        }}
+                        styles={{
+                            item: {padding: '6px 12px', borderRadius: '8px', height: 36, border: '1px solid #C7C7C7'},
+                        }}
+                    />
+                    <div className={"chat-clear-text"}>
+                        { chats?.length > 0 &&
+                            <Button
+                                // disabled={(sendLoading || isStreaming || recording || fileUploading) ? true : !fileItems.length && !chats?.length}  // 强制不禁用
+                                onClick={async (e: any) => {
+                                    e.preventDefault();  // 阻止默认行为（如果有）
+                                    setSendLoading(true)
+                                    await clearMessage?.();
+                                    setSendLoading(false)
+                                    setFileItems([])
+                                    setFileUrlList([])
+                                    setHeaderOpen(false)
+                                }}
+                            >
+                                <img src={clearButtonIcon} style={{width: 24, height: 24}} alt="delete"/>
+                                <span className={"chat-clear-button-text"}>
+                                    清除上下文
+                                </span>
+                            </Button>
+                        }
+
+                    </div>
+
+                </div>
+
 
                 {customToolBarr ?
                     <div style={{
@@ -1485,105 +1490,113 @@ export const AiProChat = ({
                     </div> : <></>
                 }
 
-                <Sender
-                    ref={senderRef}
-                    value={content}
-                    onChange={setContent}
-                    onSubmit={handleSubmit}
-                    // onKeyDown={(e) => {
-                    //     if (e.key === 'Enter' && !e.shiftKey) {
-                    //         e.preventDefault(); // 防止换行（如果是 textarea）
-                    //         handleSubmit(content);
-                    //     }
-                    // }}
-                    allowSpeech={{
-                        // When setting `recording`, the built-in speech recognition feature will be disabled
-                        recording,
-                        onRecordingChange: async (nextRecording) => {
+                <div className={"chat-sender"}>
+                    <Sender
+                        ref={senderRef}
+                        value={content}
+                        onChange={setContent}
+                        onSubmit={handleSubmit}
+                        // onKeyDown={(e) => {
+                        //     if (e.key === 'Enter' && !e.shiftKey) {
+                        //         e.preventDefault(); // 防止换行（如果是 textarea）
+                        //         handleSubmit(content);
+                        //     }
+                        // }}
+                        allowSpeech={{
+                            // When setting `recording`, the built-in speech recognition feature will be disabled
+                            recording,
+                            onRecordingChange: async (nextRecording) => {
 
-                            if (nextRecording) {
-                                console.log("录音中....");
-                                try {
-                                    await startPCMRecording();
-                                } catch (error) {
-                                    setRecording(false);
-                                    return;
-                                }
-                            } else {
-                                console.log("录音结束，发送请求.");
-                                try {
-                                    message.loading({content: '正在处理语音...', key: 'processing'});
+                                if (nextRecording) {
+                                    console.log("录音中....");
+                                    try {
+                                        await startPCMRecording();
+                                    } catch (error) {
+                                        setRecording(false);
+                                        return;
+                                    }
+                                } else {
+                                    console.log("录音结束，发送请求.");
+                                    try {
+                                        message.loading({content: '正在处理语音...', key: 'processing'});
 
-                                    const pcmData = await stopPCMRecording();
+                                        const pcmData = await stopPCMRecording();
 
-                                    if (pcmData) {
-                                        const result = await uploadPCMData(pcmData);
+                                        if (pcmData) {
+                                            const result = await uploadPCMData(pcmData);
 
 
-                                        if (result) {
-                                            message.success({content: '语音发送成功', key: 'processing'});
+                                            if (result) {
+                                                message.success({content: '语音发送成功', key: 'processing'});
 
-                                            // 如果后端返回了转换的文本
-                                            if (result.data.data) {
-                                                setContent(result.data.data);
-                                                handleSubmit(result.data.data)
+                                                // 如果后端返回了转换的文本
+                                                if (result.data.data) {
+                                                    setContent(result.data.data);
+                                                    handleSubmit(result.data.data)
+                                                }
                                             }
+                                        } else {
+                                            message.warning({content: '没有录制到音频', key: 'processing'});
                                         }
-                                    } else {
-                                        message.warning({content: '没有录制到音频', key: 'processing'});
+
+                                    } catch (error) {
+                                        message.error({content: '语音处理失败', key: 'processing'});
+                                        console.error('语音处理失败:', error);
+                                    }
+                                }
+
+                                setRecording(nextRecording);
+                            },
+                        }}
+                        loading={sendLoading || isStreaming || fileUploading}
+                        disabled={inputDisabled}
+                        // header={<div style={{ display: "flex", alignItems: "center" , paddingTop: 8, height: 32, paddingLeft: 30}}>
+                        //     <AntdVoiceWave
+                        //         isRecording={true}
+                        //         color="#1890ff"
+                        //     />
+                        // </div>}
+
+                        header={senderHeader}
+                        actions={false}
+                        autoSize={{ minRows: 4, maxRows: 4}}
+                        footer={({ components }) => {
+                            const {SendButton, SpeechButton} = components ;
+                            return (
+                                <Space size="small" style={{display: "flex", justifyContent: "flex-end"}}>
+
+                                    {/*{*/}
+                                    {/*<div className={"file-link-item ant-space-item"} onClick={() =>{*/}
+                                    {/*}}> <img alt="" src={fileIcon} style={{width: 16, height: 16}}/></div>*/}
+                                    {/*}*/}
+
+                                    {
+                                        llmDetail && llmDetail.llmOptions && llmDetail.llmOptions.multimodal &&
+                                        <Badge dot={fileItems.length > 0 && !headerOpen}>
+                                            <div className={"file-link-item"} onClick={() => setHeaderOpen(!headerOpen)} >
+                                                <img src={fileIcon} alt="" style={{width: 16, height: 16}}/>
+                                            </div>
+                                        </Badge>
                                     }
 
-                                } catch (error) {
-                                    message.error({content: '语音处理失败', key: 'processing'});
-                                    console.error('语音处理失败:', error);
-                                }
-                            }
-
-                            setRecording(nextRecording);
-                        },
-                    }}
-                    loading={sendLoading || isStreaming || fileUploading}
-                    disabled={inputDisabled}
-                    header={senderHeader}
-                    prefix={
-                        llmDetail && llmDetail.llmOptions && llmDetail.llmOptions.multimodal &&
-                        <Badge dot={fileItems.length > 0 && !headerOpen}>
-                            <Button onClick={() => setHeaderOpen(!headerOpen)} icon={<LinkOutlined/>}/>
-                        </Badge>
-                    }
-                    actions={(_, info) => {
+                                    <SpeechButton className={"speech-button"}
+                                                  disabled={sendLoading || isStreaming || fileUploading}
+                                    />
+                                    <SendButton
+                                        type="primary"
+                                        // onClick={() => handleSubmit(content)}
+                                        disabled={inputDisabled || recording || fileUploading}
+                                        icon={<img alt="" src={senderIcon} style={{width: 30, height: 30}}/>}
+                                        loading={sendLoading || isStreaming}
+                                    />
 
 
-                        const {SendButton, ClearButton, SpeechButton} = info.components;
+                                </Space>
+                            );
+                        }}
+                    />
+                </div>
 
-                        return <Space size="small">
-                            <ClearButton
-                                disabled={(sendLoading || isStreaming || recording || fileUploading) ? true : !fileItems.length && !chats?.length}  // 强制不禁用
-                                title="删除对话记录"
-                                style={{fontSize: 20}}
-                                onClick={async (e) => {
-                                    e.preventDefault();  // 阻止默认行为（如果有）
-                                    setSendLoading(true)
-                                    await clearMessage?.();
-                                    setSendLoading(false)
-                                    setFileItems([])
-                                    setFileUrlList([])
-                                    setHeaderOpen(false)
-                                }}
-                            />
-                            <SpeechButton
-                                disabled={sendLoading || isStreaming || fileUploading}
-                            />
-                            <SendButton
-                                type="primary"
-                                // onClick={() => handleSubmit(content)}
-                                disabled={inputDisabled || recording || fileUploading}
-                                icon={<OpenAIOutlined/>}
-                                loading={sendLoading || isStreaming}
-                            />
-                        </Space>
-                    }}
-                />
             </div>
         </div>
     );

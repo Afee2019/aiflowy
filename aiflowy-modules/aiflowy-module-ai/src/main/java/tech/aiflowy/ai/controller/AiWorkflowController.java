@@ -7,6 +7,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.thread.ThreadUtil;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.agentsflex.core.chain.*;
 import com.agentsflex.core.chain.event.ChainStatusChangeEvent;
@@ -14,7 +15,9 @@ import com.agentsflex.core.chain.event.NodeEndEvent;
 import com.agentsflex.core.chain.event.NodeStartEvent;
 import com.agentsflex.core.chain.listener.ChainEventListener;
 import com.agentsflex.core.chain.listener.NodeErrorListener;
+import com.agentsflex.core.chain.node.ConfirmNode;
 import com.alibaba.fastjson.JSONObject;
+import com.alicp.jetcache.Cache;
 import com.mybatisflex.core.query.QueryWrapper;
 import dev.tinyflow.core.Tinyflow;
 import dev.tinyflow.core.parser.NodeParser;
@@ -28,6 +31,7 @@ import tech.aiflowy.ai.service.AiLlmService;
 import tech.aiflowy.ai.service.AiWorkflowService;
 import tech.aiflowy.common.ai.MySseEmitter;
 import tech.aiflowy.common.constant.Constants;
+import tech.aiflowy.common.constant.RedisKey;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.satoken.util.SaTokenUtil;
 import tech.aiflowy.common.web.controller.BaseCurdController;
@@ -42,6 +46,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 控制层。
@@ -59,6 +64,8 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
 
     @Resource
     private AiBotWorkflowService aiBotWorkflowService;
+    @Resource(name = "defaultCache")
+    private Cache<String, Object> defaultCache;
 
     public AiWorkflowController(AiWorkflowService service, AiLlmService aiLlmService) {
         super(service);
@@ -153,12 +160,75 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
 
         JSONObject json = new JSONObject();
 
+        addChainEvent(chain, json, emitter, false);
+
+        ThreadUtil.execAsync(() -> {
+            try {
+                Map<String, Object> result = chain.executeForResult(variables);
+                JSONObject content = new JSONObject();
+                content.put("execResult", result);
+                json.put("content", content);
+                emitter.sendAndComplete(json.toJSONString());
+            } catch (ChainSuspendException e) {
+                handleChainSuspendException(chain, json, emitter);
+            }
+        });
+
+        return emitter;
+    }
+
+    @PostMapping("/resumeChain")
+    public SseEmitter resumeChain(
+            @JsonBody(value = "chainId", required = true) String chainId,
+            @JsonBody("confirmParams") Map<String, Object> confirmParams,
+            HttpServletResponse response) {
+        response.setContentType("text/event-stream");
+        JSONObject json = new JSONObject();
+        MySseEmitter emitter = new MySseEmitter((long) (1000 * 60 * 10));
+        Object obj = defaultCache.get(RedisKey.CHAIN_SUSPEND_KEY + chainId);
+        if (obj == null) {
+            JSONObject content = new JSONObject();
+            content.put("status", "execOnce");
+            json.put("content", content);
+            emitter.sendAndComplete(json.toJSONString());
+            return emitter;
+        }
+        String chainJson = obj.toString();
+        defaultCache.remove(RedisKey.CHAIN_SUSPEND_KEY + chainId);
+        Chain chain = Chain.fromJSON(chainJson);
+
+        addChainEvent(chain, json, emitter, true);
+
+        ThreadUtil.execAsync(() -> {
+            try {
+                chain.resume(confirmParams);
+                Map<String, Object> result = chain.getExecuteResult();
+                JSONObject content = new JSONObject();
+                content.put("execResult", result);
+                json.put("content", content);
+                emitter.sendAndComplete(json.toJSONString());
+            } catch (ChainSuspendException e) {
+                handleChainSuspendException(chain, json, emitter);
+            }
+        });
+
+        return emitter;
+    }
+
+    private void addChainEvent(Chain chain, JSONObject json, MySseEmitter emitter, boolean isResume) {
         chain.addEventListener(new ChainEventListener() {
             @Override
             public void onEvent(ChainEvent event, Chain chain) {
                 if (event instanceof NodeStartEvent) {
                     JSONObject content = new JSONObject();
                     ChainNode node = ((NodeStartEvent) event).getNode();
+                    if ((node instanceof ConfirmNode)) {
+                        chain.getMemory().put("confirmNodeId", node.getId());
+                        //System.out.println("确认节点开始 ---> " + node.getId());
+                        if (isResume) {
+                            return;
+                        }
+                    }
                     content.put("nodeId", node.getId());
                     content.put("status", "start");
                     json.put("content", content);
@@ -166,6 +236,13 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
                 }
                 if (event instanceof NodeEndEvent) {
                     ChainNode node = ((NodeEndEvent) event).getNode();
+                    if ((node instanceof ConfirmNode)) {
+                        chain.getMemory().put("confirmNodeId", node.getId());
+                        //System.out.println("确认节点结束 ---> " + node.getId());
+                        if (isResume) {
+                            return;
+                        }
+                    }
                     Map<String, Object> result = ((NodeEndEvent) event).getResult();
                     JSONObject content = new JSONObject();
                     content.put("nodeId", node.getId());
@@ -191,25 +268,35 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
         chain.addNodeErrorListener(new NodeErrorListener() {
             @Override
             public void onError(Throwable e, ChainNode node, Map<String, Object> map, Chain chain) {
-                String message = ExceptionUtil.getRootCauseMessage(e);
-                JSONObject content = new JSONObject();
-                content.put("nodeId", node.getId());
-                content.put("status", "nodeError");
-                content.put("errorMsg", message);
-                json.put("content", content);
-                emitter.sendAndComplete(json.toJSONString());
+                if (!(e instanceof ChainSuspendException)) {
+                    String message = ExceptionUtil.getRootCauseMessage(e);
+                    JSONObject content = new JSONObject();
+                    content.put("nodeId", node.getId());
+                    content.put("status", "nodeError");
+                    content.put("errorMsg", message);
+                    json.put("content", content);
+                    emitter.sendAndComplete(json.toJSONString());
+                }
             }
         });
+    }
 
-        ThreadUtil.execAsync(() -> {
-            Map<String, Object> result = chain.executeForResult(variables);
-            JSONObject content = new JSONObject();
-            content.put("execResult", result);
-            json.put("content", content);
-            emitter.sendAndComplete(json.toJSONString());
-        });
-
-        return emitter;
+    private void handleChainSuspendException(Chain chain, JSONObject json, MySseEmitter emitter) {
+        Object confirmNodeId = chain.getMemory().get("confirmNodeId");
+        //System.out.println("流程挂起 ---> " + confirmNodeId);
+        String message = chain.getMessage();
+        List<Parameter> suspendForParameters = chain.getSuspendForParameters();
+        JSONObject content = new JSONObject();
+        content.put("chainMessage", message);
+        content.put("nodeId", confirmNodeId);
+        content.put("status", "confirm");
+        content.put("suspendForParameters", suspendForParameters);
+        String chainId = IdUtil.fastSimpleUUID();
+        String chainJson = chain.toJSON();
+        content.put("chainId", chainId);
+        defaultCache.put(RedisKey.CHAIN_SUSPEND_KEY + chainId, chainJson, 1, TimeUnit.HOURS);
+        json.put("content", content);
+        emitter.sendAndComplete(json.toJSONString());
     }
 
     @SaIgnore
