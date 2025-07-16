@@ -6,7 +6,6 @@ import React, {useEffect, useRef, useState} from 'react';
 import {
     DeleteOutlined,
     EditOutlined, ExclamationCircleFilled,
-    PlusOutlined,
 } from '@ant-design/icons';
 import {Button, type GetProp, Modal, Input, message} from 'antd';
 import {AiProChat, ChatMessage} from "../components/AiProChat/AiProChat.tsx";
@@ -17,7 +16,8 @@ import {uuid} from "../libs/uuid.ts";
 import {PresetQuestion} from "./ai/botDesign/BotDesign.tsx";
 import { processArray} from "../libs/parseAnswerUtil.tsx";
 import {useSseWithEvent} from "../hooks/useSseWithEvent.ts";
-
+import messageIcon from '../assets/message.png'
+import "./externalBot.less"
 const useStyle = createStyles(({token, css}) => {
     return {
         layout: css`
@@ -35,14 +35,13 @@ const useStyle = createStyles(({token, css}) => {
         `,
         menu: css`
             background: ${token.colorBgLayout}80;
-            width: 300px;
-            min-width: 300px;
-            height: 100%;
+            width: 239px;
+            min-width: 239px;
             display: flex;
             flex-direction: column;
         `,
         conversations: css`
-            padding: 0 12px;
+            padding: 0 15px;
             flex: 1;
             overflow-y: auto;
         `,
@@ -50,10 +49,10 @@ const useStyle = createStyles(({token, css}) => {
             height: 100%;
             width: 100%;
             margin: 0 auto;
+            padding: 0 213px 67px 213px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            padding: ${token.paddingLG}px;
             gap: 16px;
         `,
         messages: css`
@@ -67,10 +66,9 @@ const useStyle = createStyles(({token, css}) => {
         `,
         logo: css`
             display: flex;
-            height: 72px;
             align-items: center;
-            justify-content: start;
-            padding: 0 24px;
+            justify-content: center;
+            padding: 27px 24px 27px 24px;
             box-sizing: border-box;
 
             img {
@@ -88,10 +86,12 @@ const useStyle = createStyles(({token, css}) => {
             }
         `,
         addBtn: css`
-            background: #1677ff0f;
-            border: 1px solid #1677ff34;
             width: calc(100% - 24px);
             margin: 0 12px 24px 12px;
+            height: 40px;
+            background: rgba(0,102,255,0.06);
+            border-radius: 8px;
+            border: 1px solid #0066FF;
         `,
     };
 });
@@ -262,12 +262,10 @@ export const ExternalBot: React.FC = () => {
             setActiveKey(getExternalSessionId());
             setConversationsItems(getConversations(r?.data?.data?.cons));
         });
-
     }, [])
 
     const onAddConversation = () => {
         setNewExternalSessionId();
-        // setConversationsItems(prev => [ { key: getExternalSessionId(), label: '新建会话' }, ...prev]);
         setActiveKey(getExternalSessionId());
         setChats([])
     };
@@ -393,14 +391,17 @@ export const ExternalBot: React.FC = () => {
                 {/* 🌟 Logo */}
                 {logoNode}
                 {/* 🌟 添加会话 */}
-                <Button
-                    onClick={onAddConversation}
-                    type="link"
-                    className={styles.addBtn}
-                    icon={<PlusOutlined/>}
-                >
-                    新建会话
-                </Button>
+                <div className={"external-bot-button"}>
+                    <Button
+                        onClick={onAddConversation}
+                        type="link"
+                        className={styles.addBtn}
+                        icon={<img src={messageIcon} style={{width: 20, height: 20}} alt=""/>}
+                    >
+                        新建会话
+                    </Button>
+                </div>
+
                 {/* 🌟 会话管理 */}
                 {conversationsItems && (
                     <Conversations
@@ -422,7 +423,10 @@ export const ExternalBot: React.FC = () => {
                     clearMessage={() => clearMessage(params.id, getExternalSessionId(), localStorage.getItem("tempUserId"))}
                     inputDisabled={inputDisabled}
                     prompts={presetQuestions}
-                    sessionId={getExternalSessionId()}
+                    options={{
+                        botTitle: botInfo?.data?.title,
+                        botDescription: botInfo?.data?.description
+                    }}
                     // setNewConversation={onAddConversation}
                     onCustomEvent={(eventType) => {
                         console.log("收到收到事件：",eventType)

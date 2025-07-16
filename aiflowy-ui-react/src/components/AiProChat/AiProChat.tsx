@@ -7,19 +7,15 @@ import {
     Sender,
     ThoughtChain,
     ThoughtChainItem,
-    Welcome
 } from '@ant-design/x';
-import {Badge, Button, GetProp, GetRef, Image, message, Space, Spin, Typography, UploadFile} from 'antd';
+import {Avatar, Badge, Button, GetProp, GetRef, Image, message, Space, Spin, Typography, UploadFile} from 'antd';
 import {
     CopyOutlined,
     FolderAddOutlined,
-    LinkOutlined,
-    OpenAIOutlined,
     PauseCircleOutlined,
     PictureOutlined,
     PlayCircleOutlined,
     SyncOutlined,
-    UserOutlined
 } from '@ant-design/icons';
 // import ReactMarkdown from 'react-markdown';
 // import remarkGfm from 'remark-gfm';
@@ -28,14 +24,18 @@ import logo from "/favicon.png";
 import './aiprochat.less'
 import markdownit from 'markdown-it';
 import {usePost, usePostManual} from "../../hooks/useApis.ts";
-
-const fooAvatar: React.CSSProperties = {
-    color: '#fff',
-    backgroundColor: '#87d068',
-};
+import senderIcon from "../../assets/senderIcon.png"
+import clearButtonIcon from "../../assets/clearButton.png"
+import fileIcon from "../../assets/fileLink.png"
+// const fooAvatar: React.CSSProperties = {
+//     color: '#fff',
+//     backgroundColor: '#87d068',
+// };
 
 export interface ChatOptions {
-    messageSessionId: string;
+    messageSessionId?: string;
+    botTitle?: string;
+    botDescription?: string;
 }
 
 export type ChatMessage = {
@@ -85,6 +85,7 @@ export type AiProChatProps = {
     onCustomEventComplete?: EventHandler;
     llmDetail?: any;
     sessionId?: string;
+    options?: any;
 };
 
 export const RenderMarkdown: React.FC<{ content: string, fileList?: Array<string> }> = ({content, fileList}) => {
@@ -105,13 +106,16 @@ export const RenderMarkdown: React.FC<{ content: string, fileList?: Array<string
     );
 };
 
+
 export const AiProChat = ({
                               loading,
                               chats: parentChats,
                               onChatsChange: parentOnChatsChange,
                               style = {},
                               appStyle = {},
+                              // @ts-ignore
                               helloMessage = '欢迎使用 AIFlowy',
+                              // @ts-ignore
                               botAvatar = `${logo}`,
                               request,
                               showQaButton = false,
@@ -124,7 +128,8 @@ export const AiProChat = ({
                               onCustomEvent,
                               onCustomEventComplete,
                               llmDetail = {},
-                              sessionId
+                              sessionId,
+                              options
                           }: AiProChatProps) => {
     const isControlled = parentChats !== undefined && parentOnChatsChange !== undefined;
     const [internalChats, setInternalChats] = useState<ChatMessage[]>([]);
@@ -952,18 +957,20 @@ export const AiProChat = ({
     const renderMessages = () => {
         if (!chats?.length) {
             return (
-                <Welcome
-                    variant="borderless"
-                    icon={<img
-                        src={botAvatar}
-                        style={{width: 32, height: 32, borderRadius: '50%'}}
-                        alt="AI Avatar"
-                    />}
-                    description={helloMessage}
-                    styles={{icon: {width: 40, height: 40}}}
-                />
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingTop: '103px'
+                }}>
+                    <Avatar size={88} src={botAvatar} style={{marginBottom: '10px'}}/>
+                    <div className={"bot-chat-title"}>{options?.botTitle}</div>
+                    <div className={"bot-chat-description"}>{options?.botDescription}</div>
+                </div>
             );
         }
+
         return (
             <Bubble.List
                 autoScroll={true}
@@ -971,7 +978,7 @@ export const AiProChat = ({
                     key: chat.id + Math.random().toString(),
                     // typing: {suffix: <>💗</>},
                     header: (
-                        <Space>
+                        <Space className={"bubble-header"}>
                             {new Date(chat.created).toLocaleString()}
                         </Space>
                     ),
@@ -1098,13 +1105,13 @@ export const AiProChat = ({
                             <RenderMarkdown content={chat.content} fileList={chat.files}/>
                         </div>
                     ) : <RenderMarkdown content={chat.content} fileList={chat.files}/>,
-                    avatar: chat.role === 'assistant' ? (
-                        <img
-                            src={botAvatar}
-                            style={{width: 32, height: 32, borderRadius: '50%'}}
-                            alt="AI Avatar"
-                        />
-                    ) : {icon: <UserOutlined/>, style: fooAvatar},
+                    // avatar: chat.role === 'assistant' ? (
+                    //     <img
+                    //         src={botAvatar}
+                    //         style={{width: 32, height: 32, borderRadius: '50%'}}
+                    //         alt="AI Avatar"
+                    //     />
+                    // ) : {icon: <UserOutlined/>, style: fooAvatar},
                 }))}
                 roles={{ai: {placement: 'start'}, local: {placement: 'end'}}}
             />
@@ -1398,7 +1405,6 @@ export const AiProChat = ({
                 display: 'flex',
                 flexDirection: 'column',
                 background: '#fff',
-                border: '1px solid #f3f3f3',
                 ...appStyle,
                 ...style,
             }}
@@ -1427,7 +1433,6 @@ export const AiProChat = ({
 
             <div
                 style={{
-                    borderTop: '1px solid #eee',
                     padding: '12px',
                     display: 'flex',
                     flexDirection: "column",
@@ -1436,15 +1441,41 @@ export const AiProChat = ({
             >
 
                 {/* 🌟 提示词 */}
-                <Prompts
-                    items={SENDER_PROMPTS}
-                    onItemClick={(info) => {
-                        handleSubmit(info.data.description as string)
-                    }}
-                    styles={{
-                        item: {padding: '6px 12px'},
-                    }}
-                />
+                <div style={{display: "flex", flexDirection: "row", gap: "8px", justifyContent: "space-between", paddingBottom: 10}}>
+                    <Prompts
+                        items={SENDER_PROMPTS}
+                        onItemClick={(info) => {
+                            handleSubmit(info.data.description as string)
+                        }}
+                        styles={{
+                            item: {padding: '6px 12px', borderRadius: '8px', height: 36, border: '1px solid #C7C7C7'},
+                        }}
+                    />
+                    <div className={"chat-clear-text"}>
+                        { chats?.length > 0 &&
+                            <Button
+                                // disabled={(sendLoading || isStreaming || recording || fileUploading) ? true : !fileItems.length && !chats?.length}  // 强制不禁用
+                                onClick={async (e: any) => {
+                                    e.preventDefault();  // 阻止默认行为（如果有）
+                                    setSendLoading(true)
+                                    await clearMessage?.();
+                                    setSendLoading(false)
+                                    setFileItems([])
+                                    setFileUrlList([])
+                                    setHeaderOpen(false)
+                                }}
+                            >
+                                <img src={clearButtonIcon} style={{width: 24, height: 24}} alt="delete"/>
+                                <span className={"chat-clear-button-text"}>
+                                    清除上下文
+                                </span>
+                            </Button>
+                        }
+
+                    </div>
+
+                </div>
+
 
                 {customToolBarr ?
                     <div style={{
@@ -1457,105 +1488,113 @@ export const AiProChat = ({
                     </div> : <></>
                 }
 
-                <Sender
-                    ref={senderRef}
-                    value={content}
-                    onChange={setContent}
-                    onSubmit={handleSubmit}
-                    // onKeyDown={(e) => {
-                    //     if (e.key === 'Enter' && !e.shiftKey) {
-                    //         e.preventDefault(); // 防止换行（如果是 textarea）
-                    //         handleSubmit(content);
-                    //     }
-                    // }}
-                    allowSpeech={{
-                        // When setting `recording`, the built-in speech recognition feature will be disabled
-                        recording,
-                        onRecordingChange: async (nextRecording) => {
+                <div className={"chat-sender"}>
+                    <Sender
+                        ref={senderRef}
+                        value={content}
+                        onChange={setContent}
+                        onSubmit={handleSubmit}
+                        // onKeyDown={(e) => {
+                        //     if (e.key === 'Enter' && !e.shiftKey) {
+                        //         e.preventDefault(); // 防止换行（如果是 textarea）
+                        //         handleSubmit(content);
+                        //     }
+                        // }}
+                        allowSpeech={{
+                            // When setting `recording`, the built-in speech recognition feature will be disabled
+                            recording,
+                            onRecordingChange: async (nextRecording) => {
 
-                            if (nextRecording) {
-                                console.log("录音中....");
-                                try {
-                                    await startPCMRecording();
-                                } catch (error) {
-                                    setRecording(false);
-                                    return;
-                                }
-                            } else {
-                                console.log("录音结束，发送请求.");
-                                try {
-                                    message.loading({content: '正在处理语音...', key: 'processing'});
+                                if (nextRecording) {
+                                    console.log("录音中....");
+                                    try {
+                                        await startPCMRecording();
+                                    } catch (error) {
+                                        setRecording(false);
+                                        return;
+                                    }
+                                } else {
+                                    console.log("录音结束，发送请求.");
+                                    try {
+                                        message.loading({content: '正在处理语音...', key: 'processing'});
 
-                                    const pcmData = await stopPCMRecording();
+                                        const pcmData = await stopPCMRecording();
 
-                                    if (pcmData) {
-                                        const result = await uploadPCMData(pcmData);
+                                        if (pcmData) {
+                                            const result = await uploadPCMData(pcmData);
 
 
-                                        if (result) {
-                                            message.success({content: '语音发送成功', key: 'processing'});
+                                            if (result) {
+                                                message.success({content: '语音发送成功', key: 'processing'});
 
-                                            // 如果后端返回了转换的文本
-                                            if (result.data.data) {
-                                                setContent(result.data.data);
-                                                handleSubmit(result.data.data)
+                                                // 如果后端返回了转换的文本
+                                                if (result.data.data) {
+                                                    setContent(result.data.data);
+                                                    handleSubmit(result.data.data)
+                                                }
                                             }
+                                        } else {
+                                            message.warning({content: '没有录制到音频', key: 'processing'});
                                         }
-                                    } else {
-                                        message.warning({content: '没有录制到音频', key: 'processing'});
+
+                                    } catch (error) {
+                                        message.error({content: '语音处理失败', key: 'processing'});
+                                        console.error('语音处理失败:', error);
+                                    }
+                                }
+
+                                setRecording(nextRecording);
+                            },
+                        }}
+                        loading={sendLoading || isStreaming || fileUploading}
+                        disabled={inputDisabled}
+                        // header={<div style={{ display: "flex", alignItems: "center" , paddingTop: 8, height: 32, paddingLeft: 30}}>
+                        //     <AntdVoiceWave
+                        //         isRecording={true}
+                        //         color="#1890ff"
+                        //     />
+                        // </div>}
+
+                        header={senderHeader}
+                        actions={false}
+                        autoSize={{ minRows: 4, maxRows: 4}}
+                        footer={({ components }) => {
+                            const {SendButton, SpeechButton} = components ;
+                            return (
+                                <Space size="small" style={{display: "flex", justifyContent: "flex-end"}}>
+
+                                    {/*{*/}
+                                    {/*<div className={"file-link-item ant-space-item"} onClick={() =>{*/}
+                                    {/*}}> <img alt="" src={fileIcon} style={{width: 16, height: 16}}/></div>*/}
+                                    {/*}*/}
+
+                                    {
+                                        llmDetail && llmDetail.llmOptions && llmDetail.llmOptions.multimodal &&
+                                        <Badge dot={fileItems.length > 0 && !headerOpen}>
+                                            <div className={"file-link-item"} onClick={() => setHeaderOpen(!headerOpen)} >
+                                                <img src={fileIcon} alt="" style={{width: 16, height: 16}}/>
+                                            </div>
+                                        </Badge>
                                     }
 
-                                } catch (error) {
-                                    message.error({content: '语音处理失败', key: 'processing'});
-                                    console.error('语音处理失败:', error);
-                                }
-                            }
-
-                            setRecording(nextRecording);
-                        },
-                    }}
-                    loading={sendLoading || isStreaming || fileUploading}
-                    disabled={inputDisabled}
-                    header={senderHeader}
-                    prefix={
-                        llmDetail && llmDetail.llmOptions && llmDetail.llmOptions.multimodal &&
-                        <Badge dot={fileItems.length > 0 && !headerOpen}>
-                            <Button onClick={() => setHeaderOpen(!headerOpen)} icon={<LinkOutlined/>}/>
-                        </Badge>
-                    }
-                    actions={(_, info) => {
+                                    <SpeechButton className={"speech-button"}
+                                                  disabled={sendLoading || isStreaming || fileUploading}
+                                    />
+                                    <SendButton
+                                        type="primary"
+                                        // onClick={() => handleSubmit(content)}
+                                        disabled={inputDisabled || recording || fileUploading}
+                                        icon={<img alt="" src={senderIcon} style={{width: 30, height: 30}}/>}
+                                        loading={sendLoading || isStreaming}
+                                    />
 
 
-                        const {SendButton, ClearButton, SpeechButton} = info.components;
+                                </Space>
+                            );
+                        }}
+                    />
+                </div>
 
-                        return <Space size="small">
-                            <ClearButton
-                                disabled={(sendLoading || isStreaming || recording || fileUploading) ? true : !fileItems.length && !chats?.length}  // 强制不禁用
-                                title="删除对话记录"
-                                style={{fontSize: 20}}
-                                onClick={async (e) => {
-                                    e.preventDefault();  // 阻止默认行为（如果有）
-                                    setSendLoading(true)
-                                    await clearMessage?.();
-                                    setSendLoading(false)
-                                    setFileItems([])
-                                    setFileUrlList([])
-                                    setHeaderOpen(false)
-                                }}
-                            />
-                            <SpeechButton
-                                disabled={sendLoading || isStreaming || fileUploading}
-                            />
-                            <SendButton
-                                type="primary"
-                                // onClick={() => handleSubmit(content)}
-                                disabled={inputDisabled || recording || fileUploading}
-                                icon={<OpenAIOutlined/>}
-                                loading={sendLoading || isStreaming}
-                            />
-                        </Space>
-                    }}
-                />
             </div>
         </div>
     );
