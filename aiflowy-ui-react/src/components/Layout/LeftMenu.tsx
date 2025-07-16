@@ -79,15 +79,16 @@ const LeftMenu: React.FC<{ collapsed: boolean }> = ({ collapsed }) => {
                             width: "100%",
                             margin: "auto",
                             background: "#fff",
-                            padding: "5px 5px 5px 20px",
+                            padding: "8px 5px 8px 20px",
+                            height: "48px",
                             display: "flex",
                         }}>
                         <div>
                             {
                                 collapsed === true ? (
-                                    <img alt="AIFlowy" src={tabIcon} style={{ height: "38px" }} />
+                                    <img alt="AIFlowy" src={tabIcon} style={{ height: "100%" }} />
                                 ) : (
-                                    <img alt="AIFlowy" src={logo} style={{ height: "38px" }} />
+                                    <img alt="AIFlowy" src={logo} style={{ height: "100%" }} />
                                 )
                             }
                         </div>
