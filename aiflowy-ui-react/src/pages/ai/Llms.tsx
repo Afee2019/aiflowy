@@ -19,7 +19,7 @@ const columns: ColumnsConfig<any> = [
     },
     {
         title: '自定义输入标识',
-        key: 'llmExtraConfig.isCustomInput',
+        key: 'options.isCustomInput',
         hidden: true,
         form: {
             type: "hidden"
@@ -99,8 +99,8 @@ const columns: ColumnsConfig<any> = [
     },
     {
         title: 'API Secret',
-        dataIndex: 'llmExtraConfig.apiSecret',
-        key: 'llmExtraConfig.apiSecret',
+        dataIndex: 'options.apiSecret',
+        key: 'options.apiSecret',
         hidden: true,
         form: {
             type: "input",
@@ -111,8 +111,8 @@ const columns: ColumnsConfig<any> = [
     },
     {
         title: 'App Id',
-        dataIndex: 'llmExtraConfig.appId',
-        key: 'llmExtraConfig.appId',
+        dataIndex: 'options.appId',
+        key: 'options.appId',
         hidden: true,
         form: {
             type: "input",
@@ -123,8 +123,8 @@ const columns: ColumnsConfig<any> = [
     },
     {
         title: 'Version',
-        dataIndex: 'llmExtraConfig.version',
-        key: 'llmExtraConfig.version',
+        dataIndex: 'options.version',
+        key: 'options.version',
         hidden: true,
         form: {
             type: "input",
@@ -135,8 +135,8 @@ const columns: ColumnsConfig<any> = [
     },
     {
         title: '对话路径',
-        dataIndex: 'llmExtraConfig.chatPath',
-        key: 'llmExtraConfig.chatPath',
+        dataIndex: 'options.chatPath',
+        key: 'options.chatPath',
         hidden: true,
         form: {type: 'input'},
         editCondition: (data) => {
@@ -145,8 +145,8 @@ const columns: ColumnsConfig<any> = [
     },
     {
         title: '向量化路径',
-        dataIndex: 'llmExtraConfig.embedPath',
-        key: 'llmExtraConfig.embedPath',
+        dataIndex: 'options.embedPath',
+        key: 'options.embedPath',
         hidden: true,
         form: {type: 'input'},
         editCondition: (data) => {
@@ -332,8 +332,8 @@ const ModelNameInput: React.FC<{
         if (!brandValue) {
             form.setFieldValue("brand", undefined);
             form.setFieldValue("llmEndpoint", undefined);
-            form.setFieldValue("llmExtraConfig.chatPath", undefined);
-            form.setFieldValue("llmExtraConfig.embedPath", undefined);
+            form.setFieldValue("options.chatPath", undefined);
+            form.setFieldValue("options.embedPath", undefined);
 
             // 只有在非编辑状态下且品牌发生变化时才清空模型名称和描述
             const formId = form.getFieldValue('id');
@@ -349,8 +349,8 @@ const ModelNameInput: React.FC<{
             if (brandData) {
                 const options = brandData.options;
                 form.setFieldValue("llmEndpoint", options.llmEndpoint);
-                form.setFieldValue("llmExtraConfig.chatPath", options.chatPath);
-                form.setFieldValue("llmExtraConfig.embedPath", options.embedPath);
+                form.setFieldValue("options.chatPath", options.chatPath);
+                form.setFieldValue("options.embedPath", options.embedPath);
 
                 // 品牌变化时，如果不是编辑状态，清空模型名称
                 const formId = form.getFieldValue('id');
@@ -373,7 +373,7 @@ const ModelNameInput: React.FC<{
 
     useEffect(() => {
         if (isCustomInput == null) {
-            const dbIsCustomInput = form.getFieldValue('llmExtraConfig.isCustomInput');
+            const dbIsCustomInput = form.getFieldValue('options.isCustomInput');
 
 
             if (dbIsCustomInput !== undefined && dbIsCustomInput !== null) {
@@ -412,11 +412,9 @@ const ModelNameInput: React.FC<{
         };
 
         form.setFieldsValue(updatedFields);
-        form.setFieldValue("llmExtraConfig.isCustomInput", isCustomInput);
+        form.setFieldValue("options.isCustomInput", isCustomInput);
         form.setFieldValue("isCustomInput", isCustomInput);
-
-        const allValues = form.getFieldsValue();
-
+        form.getFieldsValue();
         columns.forEach(column => {
             if (column.onValuesChange){
                 column.onValuesChange(column, "");
@@ -456,7 +454,7 @@ const ModelNameInput: React.FC<{
         }
 
         if (model.version) {
-            form.setFieldValue("llmExtraConfig.version", model.version);
+            form.setFieldValue("options.version", model.version);
         }
 
 
@@ -538,13 +536,13 @@ const ModelNameInput: React.FC<{
             <div style={{marginTop: 8}}>
                 <Switch
                     size="small"
-                    checked={isCustomInput}
+                    checked={isCustomInput || false}
                     onChange={(checked) => {
                         setIsCustomInput(checked);
                         // 切换时清空当前值
                         onChange?.('');
                         form.setFieldValue('llmModel', '');
-                        form.setFieldValue('llmExtraConfig.isCustomInput', checked);
+                        form.setFieldValue('options.isCustomInput', checked);
                         form.setFieldValue('isCustomInput', checked);
 
                     }}

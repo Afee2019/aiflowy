@@ -17,9 +17,7 @@ import {
     PlayCircleOutlined,
     SyncOutlined,
 } from '@ant-design/icons';
-// import ReactMarkdown from 'react-markdown';
-// import remarkGfm from 'remark-gfm';
-// import remarkBreaks from 'remark-breaks';
+
 import logo from "/favicon.png";
 import './aiprochat.less'
 import markdownit from 'markdown-it';
