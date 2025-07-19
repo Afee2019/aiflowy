@@ -65,6 +65,8 @@ aiflowy:
     host: http://127.0.0.1:11434
   login:
     excludes: /api/v1/auth/**, /static/**
+  aiBot:
+    apiKeyMasterKey: x9y8z7w6v5u4t3s2r1q0p9o8n7m6l5k4
 node:
   reader: 'defaultReader'
   gitee:
