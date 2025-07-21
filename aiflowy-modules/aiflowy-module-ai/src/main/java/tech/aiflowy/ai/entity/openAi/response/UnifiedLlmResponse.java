@@ -11,6 +11,7 @@ import java.math.BigInteger;
  */
 public class UnifiedLlmResponse {
 
+
     /**
      * 响应ID，唯一标识符
      */
@@ -534,5 +535,18 @@ public class UnifiedLlmResponse {
         this.systemFingerprint = systemFingerprint;
     }
 
-    
+
+    @Override
+    public String toString() {
+        return "UnifiedLlmResponse{" +
+                "id='" + id + '\'' +
+                ", object='" + object + '\'' +
+                ", created=" + created +
+                ", model='" + model + '\'' +
+                ", serviceTier='" + serviceTier + '\'' +
+                ", choices=" + choices +
+                ", usage=" + usage +
+                ", systemFingerprint='" + systemFingerprint + '\'' +
+                '}';
+    }
 }

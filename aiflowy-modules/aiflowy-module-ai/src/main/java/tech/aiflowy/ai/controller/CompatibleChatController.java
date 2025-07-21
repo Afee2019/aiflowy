@@ -7,8 +7,13 @@ import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.functions.Function;
 import com.agentsflex.core.llm.functions.Parameter;
 import com.agentsflex.core.llm.response.FunctionCaller;
+import com.agentsflex.core.message.FunctionCall;
+import com.agentsflex.core.message.Message;
+import com.agentsflex.core.message.ToolMessage;
 import com.agentsflex.core.prompt.Prompt;
 import com.agentsflex.core.prompt.TextPrompt;
+import com.agentsflex.core.prompt.ToolPrompt;
+import com.agentsflex.core.util.StringUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
@@ -40,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import tech.aiflowy.ai.entity.AiKnowledge;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.ai.entity.AiBotPlugins;
@@ -81,7 +87,8 @@ public class CompatibleChatController {
     private AiPluginToolService aiPluginToolService;
 
     @Resource
-    private AiBotKnowledgeService aiBotKnowledgeService;;
+    private AiBotKnowledgeService aiBotKnowledgeService;
+    ;
 
     @Resource
     private AiKnowledgeService aiKnowledgeService;
@@ -94,7 +101,7 @@ public class CompatibleChatController {
 
     @PostMapping("/v1/chat/completions")
     public Object chat(@RequestBody
-    OpenAiChatRequest params, HttpServletRequest request, HttpServletResponse response) {
+                       OpenAiChatRequest params, HttpServletRequest request, HttpServletResponse response) {
 
         // 校验 apiKey
         String authorization = request.getHeader("Authorization");
@@ -136,18 +143,18 @@ public class CompatibleChatController {
 
         ChatOptions chatOptions = buildChatOptions(params, aiLlm);
 
-        buildFunctions(aiBot, chatOptions);
+        List<Function> functionList = buildFunctions(aiBot, chatOptions);
 
         if (stream) {
-            return handleStreamChat(aiLlm, chatOptions, response);
+            return handleStreamChat(aiLlm, chatOptions, functionList, response);
         } else {
-            return handleNotStreamChat(aiLlm, chatOptions, response);
+            return handleNotStreamChat(aiLlm, chatOptions, functionList, response);
         }
 
     }
 
-    private Object handleNotStreamChat(AiLlm aiLlm, ChatOptions chatOptions,
-        HttpServletResponse response) {
+    private Object handleNotStreamChat(AiLlm aiLlm, ChatOptions chatOptions, List<Function> functionList,
+                                       HttpServletResponse response) {
 
         response.setContentType("application/json;charset=utf-8");
 
@@ -159,17 +166,37 @@ public class CompatibleChatController {
         Llm llm = aiLlm.toLlm();
         chatOptions.setEnableThinking(false);
         AiMessageResponse aiResponse = llm.chat(new TextPrompt(""), chatOptions);
+
+        if (aiResponse.isFunctionCall()){
+
+            buildToolCallResult(aiResponse,functionList,chatOptions);
+            aiResponse = llm.chat(new TextPrompt(""), chatOptions);
+
+        }
+
+
+
         UnifiedLlmResponse convertResponse = ResponseConverter.handleResponse(aiResponse.getResponse(),
-            platformType);
+                platformType);
         String json = JSON.toJSONString(convertResponse);
 
         logger.info("大模型回复：{}", json);
 
+        if (json.equalsIgnoreCase("{}")){
+            return aiResponse.getResponse();
+        }
+
+
         return convertResponse;
+
+
+
+
+
     }
 
-    private SseEmitter handleStreamChat(AiLlm aiLlm, ChatOptions chatOptions,
-        HttpServletResponse response) {
+    private SseEmitter handleStreamChat(AiLlm aiLlm, ChatOptions chatOptions, List<Function> functionList,
+                                        HttpServletResponse response) {
 
         response.setContentType("text/event-stream");
         response.setCharacterEncoding("UTF-8");
@@ -181,43 +208,156 @@ public class CompatibleChatController {
 
         PlatformType platformType = PlatformType.getByBrand(aiLlm.getBrand());
 
+        Boolean[] needClose = new Boolean[]{true};
+
         Llm llm = aiLlm.toLlm();
         llm.chatStream("", new StreamResponseListener() {
             @Override
             public void onMessage(ChatContext chatContext, AiMessageResponse aiMessageResponse) {
-                List<FunctionCaller> functionCallers = aiMessageResponse.getFunctionCallers();
 
-                if (functionCallers != null && !functionCallers.isEmpty()) {
+                if (aiMessageResponse.isFunctionCall()) {
+                    needClose[0] = false;
+                    buildToolCallResult(aiMessageResponse,functionList,chatOptions);
+                    llm.chatStream("", new StreamResponseListener() {
+                        @Override
+                        public void onMessage(ChatContext context, AiMessageResponse response) {
+                            UnifiedLlmResponse convertResponse = ResponseConverter.handleResponse(aiMessageResponse
+                                            .getResponse(),
+                                    platformType);
+                            String json = JSON.toJSONString(convertResponse);
+                            logger.info("大模型 function calling 回复：{}", json);
+                            mySseEmitter.send(json);
+                        }
 
-                    // todo function calling 逻辑
+                        @Override
+                        public void onStop(ChatContext context) {
+                            mySseEmitter.complete();
+                        }
 
-                } else {
-                    UnifiedLlmResponse convertResponse = ResponseConverter.handleResponse(aiMessageResponse
-                        .getResponse(),
+                        @Override
+                        public void onFailure(ChatContext context, Throwable throwable) {
+                            logger.error("function fail:{}", throwable.getMessage());
+                            mySseEmitter.send(JSON.toJSONString(throwable.getMessage()));
+                            mySseEmitter.complete();
+                        }
+                    },chatOptions);
+
+
+                }
+
+                if ("[DONE]".equalsIgnoreCase(aiMessageResponse.getResponse())) {
+                    return;
+                }
+
+                UnifiedLlmResponse convertResponse = ResponseConverter.handleResponse(aiMessageResponse
+                                .getResponse(),
                         platformType);
-                    String json = JSON.toJSONString(convertResponse);
-                    logger.info("大模型回复：{}", json);
-                    mySseEmitter.send(json);
+                String json = JSON.toJSONString(convertResponse);
+                logger.info("大模型回复：{}", json);
+                mySseEmitter.send(json);
+
+            }
+
+
+
+            @Override
+            public void onStop(ChatContext context) {
+                if (needClose[0]) {
+                    mySseEmitter.complete();
                 }
 
             }
 
             @Override
-            public void onStop(ChatContext context) {
-                mySseEmitter.complete();
-            }
-
-            @Override
             public void onFailure(ChatContext context, Throwable throwable) {
                 logger.error("fail:{}", throwable.getMessage());
-                mySseEmitter.send(throwable.getMessage());
-                mySseEmitter.completeWithError(throwable);
+                OpenAiErrorResponse error = new OpenAiErrorResponse(throwable.getMessage(), "error", null, "500");
+                mySseEmitter.send(JSON.toJSONString(error));
+                mySseEmitter.complete();
             }
 
         }, chatOptions);
 
         return mySseEmitter;
 
+    }
+
+    /**
+     * 构建工具调用后的 chatOptions
+     * @param aiMessageResponse 大模型响应
+     * @param functionList 工具列表
+     * @param chatOptions chat配置
+     */
+    private void buildToolCallResult(AiMessageResponse aiMessageResponse,List<Function> functionList,ChatOptions chatOptions) {
+        List<FunctionCall> calls = aiMessageResponse.getMessage().getCalls();
+        logger.info("isFunctionCall:{}", calls);
+
+        List<FunctionCaller> functionCallers = new ArrayList<>(calls.size());
+        for (FunctionCall call : calls) {
+            Function function = functionList.stream().filter(fun -> fun.getName().equals(call.getName())).findFirst().orElse(null);
+            if (function != null) {
+                functionCallers.add(new FunctionCaller(function, call));
+            }
+        }
+
+        List<Map<String, Object>> messages = (List<Map<String, Object>>) chatOptions.getExtra().get("messages");
+        HashMap<String, Object> toolCallsMessage = new HashMap<>();
+        toolCallsMessage.put("content", "");
+        toolCallsMessage.put("role", "assistant");
+        for (FunctionCaller functionCaller : functionCallers) {
+
+            HashMap<String, Object> toolMessage = new HashMap<>();
+            String callId = functionCaller.getFunctionCall().getId();
+
+
+            toolMessage.put("role", "tool");
+
+            ArrayList<Map<String, Object>> toolCalls = (ArrayList<Map<String, Object>>) toolCallsMessage.get("tool_calls");
+
+            if (toolCalls == null) {
+                toolCalls = new ArrayList<>();
+            }
+
+            if (StringUtil.hasText(callId)) {
+                toolCalls.add(
+                        Maps.of(
+                                        "function",
+                                        Maps.of(
+                                                        "name", functionCaller.getFunctionCall().getName()
+                                                )
+                                                .set("arguments", functionCaller.getFunctionCall().getArgs())
+                                )
+                                .set("type", "function").set("id", callId)
+                );
+                toolMessage.put("tool_call_id", callId);
+            } else {
+
+                toolCalls.add(
+                        Maps.of(
+                                        "function",
+                                        Maps.of(
+                                                        "name", functionCaller.getFunctionCall().getName()
+                                                )
+                                                .set("arguments", JSON.toJSONString(functionCaller.getFunctionCall().getArgs()))
+                                )
+                                .set("type", "function")
+                                .set("id", functionCaller.getFunctionCall().getName())
+                );
+                toolMessage.put("tool_call_id", functionCaller.getFunctionCall().getName());
+            }
+            toolCallsMessage.put("tool_calls", toolCalls);
+            Object object = functionCaller.call();
+            if (object instanceof CharSequence || object instanceof Number) {
+                toolMessage.put("content", object.toString());
+            } else {
+                toolMessage.put("content", JSON.toJSONString(object));
+            }
+
+            messages.add(toolMessage);
+
+        }
+
+        messages.add(toolCallsMessage);
     }
 
     private ChatOptions buildChatOptions(OpenAiChatRequest params, AiLlm aiLlm) {
@@ -252,7 +392,7 @@ public class CompatibleChatController {
     }
 
     private void addParameters(Parameter[] parameters, Map<String, Object> propertiesObj,
-        Map<String, Object> parametersObj) {
+                               Map<String, Object> parametersObj) {
         List<String> requiredProperties = new ArrayList<>();
         for (Parameter parameter : parameters) {
             Map<String, Object> parameterObj = new HashMap<>();
@@ -287,8 +427,8 @@ public class CompatibleChatController {
         List<AiBotKnowledge> aiBotKnowledgeList = aiBotKnowledgeService.listByBotId(botId);
         if (aiBotKnowledgeList != null && !aiBotKnowledgeList.isEmpty()) {
             List<BigInteger> knowledgeIds = aiBotKnowledgeList.stream()
-                .map(AiBotKnowledge::getKnowledgeId)
-                .collect(Collectors.toList());
+                    .map(AiBotKnowledge::getKnowledgeId)
+                    .collect(Collectors.toList());
             List<AiKnowledge> aiKnowledgeList = aiKnowledgeService.listByIds(knowledgeIds);
 
             if (aiKnowledgeList != null && !aiKnowledgeList.isEmpty()) {
@@ -312,8 +452,8 @@ public class CompatibleChatController {
         List<AiBotWorkflow> aiBotWorkflowList = aiBotWorkflowService.listByBotId(botId);
         if (aiBotWorkflowList != null && !aiBotWorkflowList.isEmpty()) {
             List<BigInteger> workflowIds = aiBotWorkflowList.stream()
-                .map(AiBotWorkflow::getWorkflowId)
-                .collect(Collectors.toList());
+                    .map(AiBotWorkflow::getWorkflowId)
+                    .collect(Collectors.toList());
             List<AiWorkflow> aiWorkflowList = aiWorkflowService.listByIds(workflowIds);
 
             if (aiWorkflowList != null && !aiWorkflowList.isEmpty()) {
@@ -338,10 +478,10 @@ public class CompatibleChatController {
                     functionJsonArray.forEach(function -> {
                         Map<String, Object> functionObj = (Map<String, Object>) function.get("function");
                         sparkFunctions.add(
-                            Maps.of("name", functionObj.get("name"))
-                                .set("description", functionObj.get("description"))
-                                .set("parameters", functionObj.get("parameters"))
-                                .set("required", functionObj.get("required"))
+                                Maps.of("name", functionObj.get("name"))
+                                        .set("description", functionObj.get("description"))
+                                        .set("parameters", functionObj.get("parameters"))
+                                        .set("required", functionObj.get("required"))
                         );
 
                     });
