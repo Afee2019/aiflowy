@@ -894,7 +894,7 @@ const BotDesign: React.FC = () => {
                                             justifyContent: "center",
                                             flexDirection: "column"
                                         }}>
-                                            {apiKeyResult && apiKeyResult.data.length ? apiKeyResult.data.map((item:any) => {
+                                            {apiKeyResult && apiKeyResult?.data?.length ? apiKeyResult?.data?.map((item:any) => {
                                                 return (
                                                     <>
                                                         <div key={item.id} style={{
