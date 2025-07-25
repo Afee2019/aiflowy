@@ -55,6 +55,7 @@ public class SaveToDatacenterNode extends BaseNode {
                 service.saveValue(tableId, obj, account);
             } catch (Exception e) {
                 log.error("工作流保存数据到数据中枢失败，表ID：{}，具体值：{}", tableId, obj, e);
+                throw e;
             }
             successRows++;
         }
