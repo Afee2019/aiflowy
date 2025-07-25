@@ -4,16 +4,16 @@ apiKey 的作用是 用于身份认证，通过 apiKey 第三方可以携带对�
 
 ## 第三方接入 Bot 聊天地址：
 请求方式： POST
-请求地址： http://127.0.0.1:8080/api/v1/aiBot/externalChat
+请求地址： http://127.0.0.1:8080/v1/chat/completions
 
 
-
+### 此接口兼容 openAi api
 
 ### 默认请求方式以 JSON格式返回
 请求头：
 
 Headers: {
-Authorization: apiKey
+Authorization: Bearer 你在 bot 上生成的 apiKey
 }
 
 请求格式参数说明：
@@ -22,30 +22,33 @@ messages： 消息体
 botId： 第三方想要请求的 BotId
 ```
 
-请求示例：
+请求示例1：
 ```json
-{   
-    "messages": [
-
-        {
-            "role": "user",
-            "content": "你好"
-        },
-          {
-            "role": "assistant",
-            "content": "你好我是科大讯飞模型"
-        },
-         {
-            "role": "user",
-            "content": "帮我翻译 what's your name ?"
-        }
-    ],
-    "botId": "267848016181075968"
-   
-    
+{
+  "model": "gpt-4",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello, how are you?"
+    }
+  ]
 }
 ```
-
+请求示例2：
+```json
+{
+  "model": "gpt-4",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello, how are you?"
+    }
+  ],
+  "max_tokens": 500,
+  "temperature": 0.7,
+  "stream": false
+}
+```
 
 
 响应参数说明：
@@ -103,10 +106,8 @@ stream: true 表示以流式返回
             "role": "user",
             "content": "你叫什么名字?"
         }
-    ],
-    "botId": "267848016181075968"
-   
-    
+    ]
+  
 }
 ```
 
