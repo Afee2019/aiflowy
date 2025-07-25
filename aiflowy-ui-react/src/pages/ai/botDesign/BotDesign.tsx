@@ -738,19 +738,10 @@ const BotDesign: React.FC = () => {
                                 key: 'welcomeMessage',
                                 label: <CollapseLabel text="欢迎语" onClick={() => {
                                 }} plusDisabled/>,
-                                children: <div>
+                                children: <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
                                     <DebouncedTextArea
                                         disabled={!botSavePermission}
                                         value={welcomeMessage}
-                                        onChange={(value) => {
-
-                                            if (!botSavePermission) {
-                                                message.warning("你没有配置bot的权限！")
-                                                return;
-                                            }
-
-                                            doUpdateBotOptions({welcomeMessage: value.target.value.length ? value.target.value : defaultWelcomeMessage})
-                                        }}
                                         onChangeImmediately={(event) => {
 
                                             if (!botSavePermission) {
@@ -758,11 +749,16 @@ const BotDesign: React.FC = () => {
                                                 return;
                                             }
 
-                                            setWelcomeMessage(event.target.value ? event.target.value : defaultWelcomeMessage)
+                                            setWelcomeMessage( event.target.value)
                                         }}
                                         placeholder="请输入欢迎语"
                                         autoSize={{minRows: 2, maxRows: 6}}
                                     />
+                                    <Button color="primary" variant="solid" style={{maxWidth:"150px",alignSelf:"end"}} onClick={() => {
+                                        doUpdateBotOptions({welcomeMessage: welcomeMessage && welcomeMessage.length ? welcomeMessage : defaultWelcomeMessage})
+                                    }}>
+                                        保存
+                                    </Button>
                                 </div>,
                             },
                             {
