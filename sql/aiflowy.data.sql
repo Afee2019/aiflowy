@@ -1,4 +1,4 @@
-INSERT INTO `tb_ai_bot` VALUES (274724831961026560, 1, 1000000, '天气查询', '天气查询', NULL, 273418062806761472, '{\"systemPrompt\":\"你是天气查询助手\"}', NULL, '2025-04-29 15:19:24', 1, '2025-04-29 15:19:24', 1);
+INSERT INTO `tb_ai_bot` VALUES (274724831961026560,'bot_274724831961026560', 1, 1000000, '天气查询', '天气查询', NULL, 273418062806761472, '{\"systemPrompt\":\"你是天气查询助手\"}', NULL, '2025-04-29 15:19:24', 1, '2025-04-29 15:19:24', 1,1)
 
 
 
@@ -24,7 +24,7 @@ INSERT INTO `tb_ai_chat_topic` VALUES (269265123934486528, 1, '未命名', '2025
 INSERT INTO `tb_ai_llm` VALUES (273418062806761472, 1, 1000000, '星火大模型', 'spark', NULL, NULL, 1, 1, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'wss://spark-api.xf-yun.com/v3.5/chat', 'wss://spark-api.xf-yun.com/v3.5/chat', '', '', NULL);
 
 
-INSERT INTO `tb_ai_plugin` VALUES (273726420990324736, '和风天气', '每日天气预报API，提供全球城市未来3-30天天气预报，包括：日出日落、月升月落、最高最低温度、天气白天和夜间状况、风力、风速、风向、相对湿度、大气压强、降水量、露点温度、紫外线强度、能见度等。', NULL, 'https://jw54e3j6ha.re.qweatherapi.com', 'apiKey', '2025-04-26 21:12:04', '/attachment/2025/04-26/cfa688d9-9bc5-4d3f-a50c-2501604e8bed.jpg', 'query', '[{\"label\":\"X-QW-Api-Key\",\"value\":\"2ad5de1c5dddd44e589bece44fdad4258\"}]', 'q', '', NULL, NULL, NULL);
+INSERT INTO `tb_ai_plugin` VALUES (273726420990324736,'plugin_273726420990324736', '和风天气', '每日天气预报API，提供全球城市未来3-30天天气预报，包括：日出日落、月升月落、最高最低温度、天气白天和夜间状况、风力、风速、风向、相对湿度、大气压强、降水量、露点温度、紫外线强度、能见度等。', NULL, 'https://jw54e3j6ha.re.qweatherapi.com', 'apiKey', '2025-04-26 21:12:04', '/attachment/2025/04-26/cfa688d9-9bc5-4d3f-a50c-2501604e8bed.jpg', 'query', '[{\"label\":\"X-QW-Api-Key\",\"value\":\"2ad5de1c5dddd44e589bece44fdad4258\"}]', 'q', '', NULL, NULL, NULL);
 
 
 INSERT INTO `tb_ai_plugin_tool` VALUES (273931608955039744, 273726420990324736, 'get_weather', '查询某个城市地方未来三天的天气', '/v7/weather/3d', '2025-04-27 10:47:25', NULL, '[{\"name\":\"location\",\"description\":\"城市 LocationID（如 101010100 代表北京），可通过城市列表查询，当用户问及例如北京的天气的时候，大模型需要查询北京转换为对应的城市id\",\"type\":\"String\",\"method\":\"Query\",\"required\":true,\"defaultValue\":\"101010100\",\"enabled\":true,\"key\":\"1745905802390\"}]', NULL, 'Get', 0, 0);

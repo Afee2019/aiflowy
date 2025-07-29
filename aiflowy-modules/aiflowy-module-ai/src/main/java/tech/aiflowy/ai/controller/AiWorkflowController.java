@@ -208,6 +208,12 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
         return emitter;
     }
 
+
+    @Override
+    public Result detail(String id) {
+        return service.getDetail(id);
+    }
+
     private void addChainEvent(Chain chain, JSONObject json, MySseEmitter emitter) {
         chain.addEventListener(new ChainEventListener() {
             @Override

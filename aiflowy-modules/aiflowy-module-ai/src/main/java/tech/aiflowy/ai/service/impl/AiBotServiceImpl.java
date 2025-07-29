@@ -44,6 +44,7 @@ public class AiBotServiceImpl extends ServiceImpl<AiBotMapper, AiBot> implements
         return Result.success(aiBot);
     }
 
+    @Override
     public AiBot getByAlias(String alias){
         QueryWrapper queryWrapper = QueryWrapper.create();
         queryWrapper.eq("alias",alias);

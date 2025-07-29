@@ -15,4 +15,6 @@ public interface AiBotService extends IService<AiBot> {
     Result getDetail(String id);
 
     void updateBotLlmId(AiBot aiBot);
+
+    AiBot getByAlias(String alias);
 }
