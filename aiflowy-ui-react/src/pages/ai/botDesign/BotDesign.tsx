@@ -328,6 +328,10 @@ const BotDesign: React.FC = () => {
     const aiProChatRef = useRef<AiProChatHandle>(null);
 
 
+    const [reActModeEnabled, setReActModeEnabled] = useState<boolean>(false)
+    const [reActModeSwitchLoading, setReActModeSwitchLoading] = useState<boolean>(false)
+
+
     const [weChatMpForm] = Form.useForm();
     const [weChatMpModalOpen, setWeChatMpModalOpen] = useState<boolean>(false);
 
@@ -703,6 +707,42 @@ const BotDesign: React.FC = () => {
                                         }
                                     </div>
                                 ,
+                            },
+                            {
+                                key: 'reActMode',
+                                label: <CollapseLabel text="ReAct 模式" onClick={() => {
+                                }} plusDisabled/>,
+                                children: <div
+                                    style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+                                    <span>启用 ReAct 模式</span>
+                                    <Switch
+                                        checked={reActModeEnabled}
+                                        loading={reActModeSwitchLoading}
+                                        onChange={async (checked) => {
+
+                                            if (!botSavePermission) {
+                                                message.warning("你没有配置bot的权限！")
+                                                setReActModeEnabled(false)
+                                                return;
+                                            }
+
+
+                                            setReActModeSwitchLoading(true)
+                                            const resp = await updateBotOptions({
+                                                data: {
+                                                    options: {reActModeEnabled: checked},
+                                                    id: detail?.data?.id,
+                                                }
+                                            })
+                                            if (resp?.data?.errorCode === 0) {
+                                                const reGetResp = await reGetDetail();
+                                                setReActModeEnabled(reGetResp.data?.data?.options.reActModeEnabled)
+                                            }
+
+                                            setReActModeSwitchLoading(false)
+                                        }}
+                                    />
+                                </div>,
                             },
                         ]} bordered={false}/>
 
