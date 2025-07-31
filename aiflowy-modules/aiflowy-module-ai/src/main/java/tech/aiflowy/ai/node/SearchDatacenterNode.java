@@ -6,6 +6,7 @@ import com.agentsflex.core.chain.node.BaseNode;
 import com.agentsflex.core.util.StringUtil;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.row.Row;
+import com.mybatisflex.core.tenant.TenantManager;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.slf4j.Logger;
@@ -61,15 +62,20 @@ public class SearchDatacenterNode extends BaseNode {
         if (where != null) {
             setCondition(where, condition, map);
         }
-        Page<Row> pageData = service.getPageData(condition);
+        try {
+            TenantManager.ignoreTenantCondition();
+            Page<Row> pageData = service.getPageData(condition);
 
-        String key = "rows";
-        List<Parameter> outputDefs = getOutputDefs();
-        if (outputDefs != null && !outputDefs.isEmpty()) {
-            String defName = outputDefs.get(0).getName();
-            if (StringUtil.hasText(defName)) key = defName;
+            String key = "rows";
+            List<Parameter> outputDefs = getOutputDefs();
+            if (outputDefs != null && !outputDefs.isEmpty()) {
+                String defName = outputDefs.get(0).getName();
+                if (StringUtil.hasText(defName)) key = defName;
+            }
+            res.put(key, pageData.getRecords());
+        } finally {
+            TenantManager.restoreTenantCondition();
         }
-        res.put(key, pageData.getRecords());
         return res;
     }
 

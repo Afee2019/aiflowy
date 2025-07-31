@@ -4,6 +4,7 @@ import com.agentsflex.core.chain.Chain;
 import com.agentsflex.core.chain.node.BaseNode;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.mybatisflex.core.tenant.TenantManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tech.aiflowy.common.constant.Constants;
@@ -52,10 +53,13 @@ public class SaveToDatacenterNode extends BaseNode {
             JSONObject obj = new JSONObject((com.alibaba.fastjson.JSONObject) object);
             obj.put("table_id", tableId);
             try {
+                TenantManager.ignoreTenantCondition();
                 service.saveValue(tableId, obj, account);
             } catch (Exception e) {
                 log.error("工作流保存数据到数据中枢失败，表ID：{}，具体值：{}", tableId, obj, e);
                 throw e;
+            } finally {
+                TenantManager.restoreTenantCondition();
             }
             successRows++;
         }
