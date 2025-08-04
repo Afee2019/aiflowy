@@ -161,7 +161,8 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
 
         JSONObject json = new JSONObject();
 
-        addChainEvent(chain, json, emitter);
+        String chainExecId = IdUtil.fastSimpleUUID();
+        addChainEvent(chain, json, emitter, chainExecId);
 
         ThreadUtil.execAsync(() -> {
             Map<String, Object> result = chain.executeForResult(variables);
@@ -198,7 +199,7 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
             chain.getMemory().put(Constants.LOGIN_USER_KEY, SaTokenUtil.getLoginAccount());
         }
 
-        addChainEvent(chain, json, emitter);
+        addChainEvent(chain, json, emitter, chainId);
 
         ThreadUtil.execAsync(() -> {
             chain.resume(confirmParams);
@@ -218,7 +219,7 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
         return service.getDetail(id);
     }
 
-    private void addChainEvent(Chain chain, JSONObject json, MySseEmitter emitter) {
+    private void addChainEvent(Chain chain, JSONObject json, MySseEmitter emitter, String chainId) {
         chain.addEventListener(new ChainEventListener() {
             @Override
             public void onEvent(ChainEvent event, Chain chain) {
@@ -240,13 +241,23 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
                         chain.getMemory().put("confirmNodeId", node.getId());
                         //System.out.println("确认节点结束 ---> " + node.getId());
                     }
-                    Map<String, Object> result = ((NodeEndEvent) event).getResult();
-                    JSONObject content = new JSONObject();
-                    content.put("nodeId", node.getId());
-                    content.put("status", "end");
-                    content.put("res", result);
-                    json.put("content", content);
-                    emitter.send(json.toJSONString());
+                    Object errorInfo = node.getMemory().get(node.getId() + "|" + "errorInfo");
+                    if (errorInfo != null) {
+                        JSONObject content = new JSONObject();
+                        content.put("nodeId", node.getId());
+                        content.put("status", "nodeError");
+                        content.put("errorMsg", errorInfo);
+                        json.put("content", content);
+                        emitter.sendAndComplete(json.toJSONString());
+                    } else {
+                        Map<String, Object> result = ((NodeEndEvent) event).getResult();
+                        JSONObject content = new JSONObject();
+                        content.put("nodeId", node.getId());
+                        content.put("status", "end");
+                        content.put("res", result);
+                        json.put("content", content);
+                        emitter.send(json.toJSONString());
+                    }
                 }
                 if (event instanceof ChainStatusChangeEvent) {
                     ChainStatus status = ((ChainStatusChangeEvent) event).getStatus();
@@ -266,13 +277,8 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
             @Override
             public void onError(Throwable e, ChainNode node, Map<String, Object> map, Chain chain) {
                 if (!(e instanceof ChainSuspendException)) {
-                    String message = ExceptionUtil.getRootCauseMessage(e);
-                    JSONObject content = new JSONObject();
-                    content.put("nodeId", node.getId());
-                    content.put("status", "nodeError");
-                    content.put("errorMsg", message);
-                    json.put("content", content);
-                    emitter.sendAndComplete(json.toJSONString());
+                    String message = ExceptionUtil.getMessage(e);
+                    node.getMemory().put(node.getId() + "|" + "errorInfo",message);
                 }
             }
         });
@@ -289,7 +295,7 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
                 content.put("nodeId", confirmNodeId);
                 content.put("status", "confirm");
                 content.put("suspendForParameters", suspendForParameters);
-                String chainId = IdUtil.fastSimpleUUID();
+                //String chainId = IdUtil.fastSimpleUUID();
                 String chainJson = chain.toJSON();
                 content.put("chainId", chainId);
                 defaultCache.put(RedisKey.CHAIN_SUSPEND_KEY + chainId, chainJson, 1, TimeUnit.HOURS);
