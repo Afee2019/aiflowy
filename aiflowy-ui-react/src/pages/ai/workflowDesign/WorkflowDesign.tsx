@@ -114,7 +114,7 @@ export const WorkflowDesign = () => {
         setSaveLoading(true)
         doUpdate({
             data: {
-                id: workflow?.data?.id,
+                id: params.id,
                 content: tinyflowRef.current!.getData()
             }
         }).then(() => {
