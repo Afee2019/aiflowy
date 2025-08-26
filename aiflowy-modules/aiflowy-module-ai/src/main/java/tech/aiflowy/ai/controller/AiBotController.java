@@ -765,7 +765,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                     thinkingMessage.setContent("");
                     thinkingMessage.setMetadataMap(null);
                     thinkingIdMap.put("id", null);
-//                    thinkingIdMap.put("type", 0);
+                    thinkingIdMap.put("type", BotMessageTypeEnum.NORMAL.getValue());
                 }
 
                 RequestContextHolder.setRequestAttributes(sra, true);
@@ -843,7 +843,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
             // 构建多模态消息
 
             humanMessage.setMetadataMap(
-                    Maps.of("type", 1)
+                    Maps.of("type", BotMessageTypeEnum.USER_INPUT.getValue())
                             .set("fileList", fileList)
                             .set("user_input", prompt)
             );
@@ -896,7 +896,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                                     thinkingIdMap.put("id", IdUtil.getSnowflake(1, 1).nextId());
                                 }
                                 thinkingIdMap.put("chainTitle", "🧠 思考");
-                                thinkingIdMap.put("type", 0);
+                                thinkingIdMap.put("type", BotMessageTypeEnum.NORMAL.getValue());
 
                                 thinkingMessage.setContent(thinkingContent);
                                 thinkingMessage.setFullContent(fullReasoningContent);
@@ -1057,7 +1057,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         toolCallMessage.setContent("\n\n\uD83D\uDCCB 调用工具中..." + "\n\n");
         toolCallMessage.setFullContent("\n\n\uD83D\uDCCB 调用工具中..." + "\n\n");
         toolCallMessage.setMetadataMap(Maps.of("showContent", toolCallMessage.getContent())
-                .set("type", 1)
+                .set("type", BotMessageTypeEnum.REACT_THINKING.getValue())
                 .set("chainTitle", "\n\n\uD83D\uDCCB 调用工具" + "\n\n")
                 .set("chainContent", "\n\n\uD83D\uDCCB 调用工具中..." + "\n\n")
                 .set("id", IdUtil.getSnowflake(1, 1).nextId() + ""));

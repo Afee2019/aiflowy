@@ -59,11 +59,11 @@ public class AiBotMessageServiceImpl extends ServiceImpl<AiBotMessageMapper, AiB
             List<Maps> finalMessages = new ArrayList<>();
             for (AiBotMessage message : messages){
                 Map<String, Object> options = message.getOptions();
-                if (options != null && "user".equalsIgnoreCase(message.getRole()) && (Integer) options.get("type") == 2) {
+                if (options != null && "user".equalsIgnoreCase(message.getRole()) && (Integer) options.get("type") == BotMessageTypeEnum.TOOL_RESULT.getValue()) {
                     continue;
                 }
 
-                if (options != null && (Integer) options.get("type") == 1){
+                if (options != null && (Integer) options.get("type") == BotMessageTypeEnum.USER_INPUT.getValue()){
                     message.setContent((String) options.get("user_input"));
                 }
 
@@ -100,7 +100,7 @@ public class AiBotMessageServiceImpl extends ServiceImpl<AiBotMessageMapper, AiB
                             continue;
                         }
 
-                        if (options != null && (Integer) options.get("type") == BotMessageTypeEnum.REACT_THINKING.getValue()){
+                        if (options != null && (Integer) options.get("type") == BotMessageTypeEnum.USER_INPUT.getValue()){
                             aiBotMessage.setContent((String) options.get("user_input"));
                         }
 

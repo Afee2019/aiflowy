@@ -4,7 +4,8 @@ public enum BotMessageTypeEnum {
 
     NORMAL(0, "普通消息"),
     REACT_THINKING(1, "ReAct思维过程"),
-    TOOL_RESULT(2, "工具调用结果");
+    TOOL_RESULT(2, "工具调用结果"),
+    USER_INPUT(1, "工具调用结果");
 
     private final int value;
     private final String description;
