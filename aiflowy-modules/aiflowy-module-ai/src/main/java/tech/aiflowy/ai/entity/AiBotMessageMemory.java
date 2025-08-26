@@ -1,5 +1,6 @@
 package tech.aiflowy.ai.entity;
 
+import tech.aiflowy.ai.enums.BotMessageTypeEnum;
 import tech.aiflowy.ai.mapper.AiBotConversationMessageMapper;
 import tech.aiflowy.ai.service.AiBotConversationMessageService;
 import tech.aiflowy.ai.service.AiBotMessageService;
@@ -96,11 +97,11 @@ public class AiBotMessageMemory implements ChatMemory {
             Object type = metadataMap.get("type");
             if (type != null) {
                 String t = type.toString();
-                if (!t.equals("1")){
-                    metadataMap.put("type",2);
+                if (!t.equals(String.valueOf(BotMessageTypeEnum.REACT_THINKING.getValue()))){
+                    metadataMap.put("type", BotMessageTypeEnum.TOOL_RESULT.getValue());
                 }
-            }else {
-                metadataMap.put("type",0);
+            } else {
+                metadataMap.put("type", BotMessageTypeEnum.NORMAL.getValue());
             }
 
             aiMessage.setOptions(metadataMap);
