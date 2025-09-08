@@ -7,7 +7,7 @@ type StartParams = {
     onMessage: (message: string) => void,
     onError?: (err?: Error) => void,
     onFinished: () => void,
-    onEvent?:(event?:any,data?:string | undefined) => void,
+    onEvent?: (event?: any, data?: string | undefined) => void,
 }
 
 const baseUrl = `${import.meta.env.VITE_APP_SERVER_ENDPOINT}/`;
@@ -27,6 +27,7 @@ export const useSseWithEvent = (url: string, headers?: any, options?: any) => {
     const token = isBrowser ? localStorage.getItem(authKey) : null;
 
     const sseHeaders = {
+        Accept: "text/event-stream",
         Authorization: token || "",
         [tokenKey]: token || "",
         ...headers
@@ -57,12 +58,12 @@ export const useSseWithEvent = (url: string, headers?: any, options?: any) => {
                     for await (const event of msgEvents) {
 
                         if (event.data && "[DONE]" !== event.data.trim()) {
-                            if (options === 'ollamaInstall'){
+                            if (options === 'ollamaInstall') {
                                 params.onMessage(event.data)
                             } else {
                                 const resp = {
-                                    event:event.event,
-                                    data:event.data,
+                                    event: event.event,
+                                    data: event.data,
                                 }
 
                                 params.onMessage(JSON.stringify(resp));

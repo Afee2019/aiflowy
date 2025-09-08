@@ -7,6 +7,8 @@ type StartParams = {
     onMessage: (message: string) => void,
     onError?: (err?: Error) => void,
     onFinished: () => void,
+    onEvent?:(event?:any) => void,
+    single?:any
 }
 
 const baseUrl = `${import.meta.env.VITE_APP_SERVER_ENDPOINT}/`;
@@ -26,6 +28,7 @@ export const useSse = (url: string, headers?: any, options?: any) => {
     const token = isBrowser ? localStorage.getItem(authKey) : null;
 
     const sseHeaders = {
+        Accept: "text/event-stream",
         Authorization: token || "",
         [tokenKey]: token || "",
         ...headers
@@ -40,9 +43,9 @@ export const useSse = (url: string, headers?: any, options?: any) => {
         start: async (params: StartParams) => {
             try {
                 setLoading(true)
-                let res = await fetch(sseUrl, {
+                const res = await fetch(sseUrl, {
                     method: "post",
-                    signal: ctrl.signal,
+                    signal: params.single? params.single : ctrl.signal,
                     headers: sseHeaders,
                     body: JSON.stringify(params.data),
                 });
@@ -52,13 +55,18 @@ export const useSse = (url: string, headers?: any, options?: any) => {
                     return;
                 }
                 try {
-                    let msgEvents = events(res, ctrl.signal);
-                    for await (let event of msgEvents) {
+                    const msgEvents = events(res, ctrl.signal);
+
+                    for await (const event of msgEvents) {
+                        if (event.event){
+                            params.onEvent?.(event)
+                            continue;
+                        }
                         if (event.data && "[DONE]" !== event.data.trim()) {
                             if (options === 'ollamaInstall'){
                                 params.onMessage(event.data)
                             } else {
-                                let temp = JSON.parse(event.data);
+                                const temp = JSON.parse(event.data);
                                 params.onMessage(temp.content)
                             }
 
