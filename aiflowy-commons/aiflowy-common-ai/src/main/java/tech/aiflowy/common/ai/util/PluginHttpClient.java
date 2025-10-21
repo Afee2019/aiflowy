@@ -4,8 +4,12 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.*;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import org.springframework.http.HttpEntity;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PluginHttpClient {
 
@@ -22,7 +26,6 @@ public class PluginHttpClient {
         HttpRequest request = HttpRequest.of(processedUrl)
                 .method(httpMethod)
                 .timeout(TIMEOUT);
-
         // 3. 处理请求头（合并默认头和参数头）
         processHeaders(request, headers, pluginParams);
 
@@ -54,38 +57,54 @@ public class PluginHttpClient {
     /**
      * 处理查询参数和请求体
      */
+    /**
+     * 处理查询参数和请求体（新增文件参数支持）
+     */
     private static void processQueryAndBodyParams(HttpRequest request,
                                                   Method httpMethod,
                                                   List<PluginParam> params) {
         Map<String, Object> queryParams = new HashMap<>();
         Map<String, Object> bodyParams = new HashMap<>();
+        // 标记是否包含文件参数
+        AtomicBoolean hasMultipartFile = new AtomicBoolean(false);
 
-        // 分类参数
+        // 分类参数（同时检测是否有文件）
         params.stream()
                 .filter(PluginParam::isEnabled)
                 .forEach(p -> {
                     String methodType = p.getMethod().toLowerCase();
+                    Object paramValue = buildNestedParamValue(p);
+
+                    // 检测是否为文件参数（MultipartFile 类型）
+                    if (paramValue instanceof org.springframework.web.multipart.MultipartFile) {
+                        hasMultipartFile.set(true);
+                    }
+
                     switch (methodType) {
                         case "query":
-                            Object queryParamsParamValue = buildNestedParamValue(p);
-                            queryParams.put(p.getName(), queryParamsParamValue);
+                            queryParams.put(p.getName(), paramValue);
                             break;
                         case "body":
-                            Object bodyParamValue = buildNestedParamValue(p);
-                            bodyParams.put(p.getName(), bodyParamValue);
+                            bodyParams.put(p.getName(), paramValue);
                             break;
                     }
                 });
 
-        // 设置查询参数
+        // 1. 设置查询参数（原有逻辑不变）
         if (!queryParams.isEmpty()) {
             request.form(queryParams);
         }
 
-        // 设置请求体（仅POST/PUT）
+        // 2. 设置请求体（分两种情况：有文件 vs 无文件）
         if (!bodyParams.isEmpty() && (httpMethod == Method.POST || httpMethod == Method.PUT)) {
-            request.body(JSONUtil.toJsonStr(bodyParams))
-                    .header(Header.CONTENT_TYPE, ContentType.JSON.getValue());
+            if (hasMultipartFile.get()) {
+                // 2.1 包含文件参数 → 用 multipart/form-data 格式
+                processMultipartBody(request, bodyParams);
+            } else {
+                // 2.2 无文件参数 → 保持原有 JSON 格式
+                request.body(JSONUtil.toJsonStr(bodyParams))
+                        .header(Header.CONTENT_TYPE, ContentType.JSON.getValue());
+            }
         }
     }
 
@@ -133,4 +152,33 @@ public class PluginHttpClient {
 
         return result;
     }
+
+    private static void processMultipartBody(HttpRequest request, Map<String, Object> bodyParams) {
+        // 手动设置 Content-Type 为 multipart/form-data
+        request.header(Header.CONTENT_TYPE, "multipart/form-data");
+        for (Map.Entry<String, Object> entry : bodyParams.entrySet()) {
+            String paramName = entry.getKey();
+            Object paramValue = entry.getValue();
+
+            if (paramValue instanceof MultipartFile) {
+                MultipartFile file = (MultipartFile) paramValue;
+                try {
+                    request.form(paramName, file.getBytes(), file.getOriginalFilename());
+                } catch (Exception e) {
+                    throw new RuntimeException(String.format("文件参数处理失败：参数名=%s，文件名=%s",
+                            paramName, file.getOriginalFilename()), e);
+                }
+            } else {
+                // 处理普通参数
+                String valueStr;
+                if (paramValue instanceof String || paramValue instanceof Number || paramValue instanceof Boolean) {
+                    valueStr = paramValue.toString();
+                } else {
+                    valueStr = JSONUtil.toJsonStr(paramValue);
+                }
+                request.form(paramName, valueStr);
+            }
+        }
+    }
+
 }

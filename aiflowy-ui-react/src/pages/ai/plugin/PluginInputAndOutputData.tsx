@@ -420,6 +420,7 @@ const PluginInputAndOutputData: React.ForwardRefRenderFunction<PluginInputDataRe
                                     {label: 'Number', value: 'Number'},
                                     {label: 'Object', value: 'Object'},
                                     {label: 'Array', value: 'Array'},
+                                    {label: 'File', value: 'File'},
                                 ]
                             }
                             size="middle"

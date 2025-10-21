@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Input, Table } from 'antd';
+import {Button, Input, message, Table, Upload, UploadProps} from 'antd';
 import type { TableColumnsType } from 'antd';
 import {usePostManual} from "../../../hooks/useApis.ts";
 import JsonViewer from "./JsonViewer.tsx";
-import {PlayCircleOutlined} from "@ant-design/icons";
+import {PlayCircleOutlined, UploadOutlined} from "@ant-design/icons";
+import {Uploader} from "../../../components/Uploader";
 
 export interface DataType {
     key: string;
@@ -29,6 +30,7 @@ const CustomTable: React.FC<CustomTableProps> = ({ data, pluginToolTitle, plugin
     const [pluginTestRequestJsonString, setPluginTestRequestJsonString] = useState<string>('');
     const [activeView, setActiveView] = useState<'request' | 'response'>('response');
     const [errors, setErrors] = useState<Record<string, string>>({});
+
     // 初始化数据
     useEffect(() => {
         setErrors({})
@@ -55,9 +57,24 @@ const CustomTable: React.FC<CustomTableProps> = ({ data, pluginToolTitle, plugin
             key: 'defaultValue',
             width: 100,
             render: (text: string, record: DataType) => {
+                console.log('record', record)
                 return record?.type === 'Object' || record?.type === 'Array' ? (
                     <span>--</span>
-                ) : (
+                )
+                : record?.type ==='File' ? (
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <Uploader maxCount={1} onChange={(file: any) => {
+                            console.log('file', file)
+                            if (file?.file?.response?.errorCode === 0){
+                                handleInputChange(record.key, file.file.response.path)
+                            }
+                        }}>
+                            <Button icon={<UploadOutlined />}>选择文件</Button>
+                        </Uploader>
+                    </div>
+                )
+                        :
+                (
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <Input
                             value={text}

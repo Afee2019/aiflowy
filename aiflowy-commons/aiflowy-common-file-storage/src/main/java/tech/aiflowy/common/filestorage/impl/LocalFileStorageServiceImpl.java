@@ -1,5 +1,6 @@
 package tech.aiflowy.common.filestorage.impl;
 
+import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.io.file.FileNameUtil;
@@ -43,10 +44,19 @@ public class LocalFileStorageServiceImpl implements FileStorageService {
     public String save(MultipartFile file) {
         try {
             String path = "";
-            if (StringUtils.hasValue(StpUtil.getLoginIdAsString())){
-                path = "/" + StpUtil.getLoginIdAsString() + PathGeneratorUtil.generatePath(file.getOriginalFilename());
-            } else {
-                path = "/" + "commons" + PathGeneratorUtil.generatePath(file.getOriginalFilename());
+            String loginIdAsString = "";
+
+            try {
+                loginIdAsString = StpUtil.getLoginIdAsString();
+                if (StringUtils.hasValue(loginIdAsString)){
+                    path = "/" + StpUtil.getLoginIdAsString() + PathGeneratorUtil.generatePath(file.getOriginalFilename());
+                }
+            } catch (Exception e) {
+                if (e instanceof NotLoginException) {
+                    path = "/" + "commons" + PathGeneratorUtil.generatePath(file.getOriginalFilename());
+                } else {
+                    e.printStackTrace();
+                }
             }
             File target = getLocalFile(path);
             if (!target.getParentFile().exists() && !target.getParentFile().mkdirs()) {

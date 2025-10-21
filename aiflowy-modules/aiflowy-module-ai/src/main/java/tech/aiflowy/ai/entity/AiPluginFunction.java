@@ -1,8 +1,8 @@
 package tech.aiflowy.ai.entity;
 
+import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
-import com.agentsflex.core.llm.functions.BaseFunction;
 import com.agentsflex.core.llm.functions.Function;
 import com.agentsflex.core.llm.functions.Parameter;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,16 +11,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mybatisflex.core.query.QueryWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tech.aiflowy.ai.controller.AiBotController;
 import tech.aiflowy.ai.mapper.AiPluginMapper;
 import tech.aiflowy.ai.service.AiPluginToolService;
 import tech.aiflowy.common.ai.util.NestedParamConverter;
 import tech.aiflowy.common.ai.util.PluginHttpClient;
 import tech.aiflowy.common.ai.util.PluginParam;
 import tech.aiflowy.common.ai.util.PluginParamConverter;
-import tech.aiflowy.common.domain.Result;
+import tech.aiflowy.common.filestorage.FileStorageManager;
+import tech.aiflowy.common.filestorage.FileStorageService;
 import tech.aiflowy.common.util.SpringContextUtil;
 
+import javax.annotation.Resource;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.math.BigInteger;
 import java.util.*;
@@ -211,7 +213,7 @@ public class AiPluginFunction  implements Function {
             requestParam.setName(originalParam.getName());
             requestParam.setDescription(originalParam.getDescription());
             requestParam.setRequired(originalParam.isRequired());
-            requestParam.setType(originalParam.getType());
+
             requestParam.setEnabled(originalParam.isEnabled());
             requestParam.setMethod(originalParam.getMethod());
             requestParam.setChildren(originalParam.getChildren());
@@ -227,10 +229,26 @@ public class AiPluginFunction  implements Function {
                 }
             } else if (hasValidDefaultValue(originalParam.getDefaultValue())) {
                 // 2. 没有传参但默认值有效时使用默认值
-                requestParam.setDefaultValue(originalParam.getDefaultValue());
+                // 如果是文件类型
+                if (originalParam.getType().equals("File")){
+                    try {
+                        FileStorageService fileStorageService = SpringContextUtil.getBean(FileStorageManager.class);
+                        InputStream inputStream = fileStorageService.readStream((String)originalParam.getDefaultValue());
+                        requestParam.setType("MultipartFile");
+                        byte[] bytes = inputStreamToBytes(inputStream);
+                        String contentType = FileTypeUtil.getType(new ByteArrayInputStream(bytes));
+                        String fileUrl = (String) originalParam.getDefaultValue();
+                        int lastSlashIndex = fileUrl.lastIndexOf("/");
+                        String fileName = fileUrl.substring(lastSlashIndex + 1);
+                        requestParam.setDefaultValue(new CustomMultipartFile(bytes, originalParam.getName(), fileName, contentType));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    requestParam.setType(originalParam.getType());
+                    requestParam.setDefaultValue(originalParam.getDefaultValue());
+                }
             }
-            // 3. 其他情况（无传参且无有效默认值）保持null
-
             // 根据method分类参数
             switch (originalParam.getMethod().toLowerCase()) {
                 case "query":
@@ -331,5 +349,18 @@ public class AiPluginFunction  implements Function {
                 processParamWithChildren(child, argsMap, params);
             }
         }
+    }
+
+    public static byte[] inputStreamToBytes(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int nRead;
+        byte[] data = new byte[1024]; // 1KB缓冲区
+
+        while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+
+        buffer.flush();
+        return buffer.toByteArray();
     }
 }
