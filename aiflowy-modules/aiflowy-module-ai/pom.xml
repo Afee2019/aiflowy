@@ -21,6 +21,10 @@
     <dependencies>
         <dependency>
             <groupId>tech.aiflowy</groupId>
+            <artifactId>aiflowy-common-audio</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>tech.aiflowy</groupId>
             <artifactId>aiflowy-module-datacenter</artifactId>
         </dependency>
         <dependency>

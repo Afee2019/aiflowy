@@ -13,7 +13,6 @@ server:
 spring:
   profiles:
     active: dev
-
   datasource:
     url: jdbc:mysql://127.0.0.1:3306/aiflowy?useInformationSchema=true&characterEncoding=utf-8
     username: root
@@ -45,6 +44,14 @@ spring:
             threadCount: 20
             threadPriority: 5
 aiflowy:
+  # 语音播放、识别服务（阿里云）
+  audio:
+    type: aliAudioService
+    ali:
+      access-key-id: xxx
+      access-key-secret: xxx
+      app-key: xxx
+      voice: siyue
   storage:
     type: local
     s3:
@@ -120,12 +127,3 @@ logging:
   level:
     root: info
     tech.aiflowy.ai: debug
-voiceInput:
-  volcengine:
-    app:
-      appId:
-      token:
-      cluster:
-
-
-

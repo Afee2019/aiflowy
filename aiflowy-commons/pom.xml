@@ -22,6 +22,7 @@
         <module>aiflowy-common-options</module>
         <module>aiflowy-common-cache</module>
         <module>aiflowy-common-satoken</module>
+        <module>aiflowy-common-audio</module>
     </modules>
 
     <properties>

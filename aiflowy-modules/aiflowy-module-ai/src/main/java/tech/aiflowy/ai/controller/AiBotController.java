@@ -10,6 +10,7 @@ import com.agentsflex.core.llm.ChatContext;
 import com.agentsflex.core.llm.ChatOptions;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.StreamResponseListener;
+import com.agentsflex.core.llm.client.OkHttpClientUtil;
 import com.agentsflex.core.llm.functions.Function;
 import com.agentsflex.core.llm.response.AiMessageResponse;
 import com.agentsflex.core.llm.response.FunctionCaller;
@@ -23,9 +24,10 @@ import com.agentsflex.core.react.ReActAgentListener;
 import com.agentsflex.core.react.ReActStep;
 import com.agentsflex.core.util.CollectionUtil;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializeConfig;
+import com.alibaba.fastjson.JSONObject;
 import com.alicp.jetcache.Cache;
 import com.mybatisflex.core.query.QueryWrapper;
+import okhttp3.OkHttpClient;
 import okhttp3.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,18 +45,19 @@ import tech.aiflowy.ai.entity.*;
 import tech.aiflowy.ai.enums.BotMessageTypeEnum;
 import tech.aiflowy.ai.mapper.AiBotConversationMessageMapper;
 import tech.aiflowy.ai.message.MultimodalMessageBuilder;
+import tech.aiflowy.ai.message.NormalMessageBuilder;
 import tech.aiflowy.ai.service.*;
-import tech.aiflowy.ai.socket.handler.ChatVoiceHandler;
 import tech.aiflowy.ai.utils.AiBotChatUtil;
 import tech.aiflowy.ai.utils.AiBotMessageIframeMemory;
 import tech.aiflowy.common.ai.ChatManager;
 import tech.aiflowy.common.ai.MySseEmitter;
+import tech.aiflowy.common.audio.core.AudioServiceManager;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.satoken.util.SaTokenUtil;
-import tech.aiflowy.common.util.HashUtil;
 import tech.aiflowy.common.util.Maps;
 import tech.aiflowy.common.util.StringUtil;
 import tech.aiflowy.common.web.controller.BaseCurdController;
+import tech.aiflowy.common.web.exceptions.BusinessException;
 import tech.aiflowy.common.web.jsonbody.JsonBody;
 import tech.aiflowy.system.mapper.SysApiKeyMapper;
 
@@ -64,17 +67,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.time.Duration;
 import java.util.*;
-
-import com.agentsflex.core.llm.client.OkHttpClientUtil;
-import okhttp3.OkHttpClient;
-import tech.aiflowy.common.web.exceptions.BusinessException;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import tech.aiflowy.ai.message.NormalMessageBuilder;
 
 /**
  * 控制层。
@@ -98,24 +90,11 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     private AiBotConversationMessageMapper aiBotConversationMessageMapper;
     @Resource
     private AiBotService aiBotService;
-
-    @Resource
-    @Qualifier("volcAsrService")
-    private AsrService asrService;
-
-    @Resource
-    @Qualifier("VolcTtsService")
-    private TtsService ttsService;
-
     @Autowired
     @Qualifier("defaultCache") // 指定 Bean 名称
     private Cache<String, Object> cache;
-
-    // 转语音相关缓存 key
-    private static final String VOICE_KEY = "aibot:voice:"; // 音频列表 key
-    private static final String FULL_TEXT_KEY = "fullText"; // 转语音的完整文本 key
-    private static final String MESSAGE_SESSION_ID_KEY = "messageSessionId"; // 转语音消息会话 id key
-    private static final String BASE64_KEY = "base64"; // 完整的base64音频 key
+    @Resource
+    private AudioServiceManager audioServiceManager;
 
     private static final Logger logger = LoggerFactory.getLogger(AiBotController.class);
 
@@ -172,93 +151,16 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
     @PostMapping("voiceInput")
     @SaIgnore
     public Result voiceInput(@RequestParam("audio")
-                             MultipartFile audioFile, @RequestParam("sampleRate")
-                             String sampleRate, @RequestParam("channels")
-                             String channels, @RequestParam("bitDepth")
-                             String bitDepth, @RequestParam("duration")
-                             String duration) {
+                             MultipartFile audioFile) {
 
         String recognize = null;
         try {
-            recognize = asrService.recognize(audioFile.getInputStream());
+            recognize = audioServiceManager.audioToText(audioFile.getInputStream());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
         return Result.success(recognize);
-    }
-
-    @PostMapping("findVoice")
-    @SaIgnore
-    public Result findVoice(
-            @JsonBody(value = "fullText", required = true)
-            String fullText,
-            @JsonBody(value = "botId", required = true)
-            BigInteger botId
-    ) {
-
-        AiBot aiBot = service.getById(botId);
-
-        if (aiBot == null || aiBot.getOptions() == null || aiBot.getOptions().get("voiceEnabled") == null
-                || !(boolean) aiBot.getOptions().get("voiceEnabled")) {
-            throw new BusinessException("此bot不支持语音播报！");
-        }
-
-        String cacheKey = VOICE_KEY + HashUtil.md5(fullText);
-        //noinspection unchecked
-        Map<String, Object> voiceMap = (Map<String, Object>) cache.get(cacheKey);
-        if (voiceMap != null && !voiceMap.isEmpty()) {
-            return Result.success(voiceMap);
-        }
-
-        // 发请求转语音
-        final String messageSessionId = UUID.randomUUID().toString().replace("-", "");
-        final String connectId = UUID.randomUUID().toString();
-
-        CompletableFuture<Map<String, Object>> future = new CompletableFuture<>();
-
-        // 添加连接状态标记
-        final AtomicBoolean connectionReady = new AtomicBoolean(false);
-        final AtomicBoolean messageSent = new AtomicBoolean(false);
-        final AtomicReference<WebSocket> websocketRef = new AtomicReference<>();
-
-        WebSocket websocket = ttsService.init(connectId, messageSessionId, base64 -> {
-                    // 处理音频片段
-                }, finalResult -> {
-                    // 保存到缓存
-                    Map<String, Object> finalVoicesMap = new HashMap<>();
-                    finalVoicesMap.put(FULL_TEXT_KEY, fullText);
-                    finalVoicesMap.put(BASE64_KEY, finalResult);
-                    finalVoicesMap.put(MESSAGE_SESSION_ID_KEY, messageSessionId);
-
-                    cache.put(cacheKey, finalVoicesMap);
-
-                    future.complete(finalVoicesMap);
-                },
-                // 连接就绪回调
-                () -> {
-                    connectionReady.set(true);
-                    // 连接就绪后发送TTS消息
-                    if (!messageSent.getAndSet(true)) {
-                        logger.info("WebSocket连接就绪，开始发送TTS消息");
-                        WebSocket ws = websocketRef.get();
-                        if (ws != null) {
-                            ttsService.sendTTSMessage(ws, messageSessionId, fullText);
-                            ttsService.sendTTSMessage(ws, messageSessionId, "_end_");
-                        }
-                    }
-                });
-
-        // 保存WebSocket引用
-        websocketRef.set(websocket);
-
-        try {
-            Map<String, Object> result = future.get(30, TimeUnit.SECONDS);
-            return Result.success(result);
-        } catch (Exception e) {
-            logger.error("TTS转换失败", e);
-            return Result.fail(-1, "播报失败，请稍后重试！");
-        }
     }
 
     /**
@@ -369,42 +271,15 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         boolean voiceEnabled = options != null && options.get("voiceEnabled") != null && (boolean) options.get(
                 "voiceEnabled");
 
-        WebSocket webSocket = null;
-        if (voiceEnabled) {
-            webSocket = ttsService.init(connectId, messageSessionId, base64 -> {
-                ChatVoiceHandler.sendJsonVoiceMessage(sessionId, messageSessionId, base64);
-            }, (result) -> {
-                logger.info("tts 转语音 session 执行完毕，connection 已关闭，进行结果缓存");
-
-                Map<String, Object> resultMap = new HashMap<>();
-                resultMap.put(MESSAGE_SESSION_ID_KEY, messageSessionId);
-                String voiceText = finalAnswerContentBuffer.toString();
-                resultMap.put(FULL_TEXT_KEY, voiceText);
-                resultMap.put(BASE64_KEY, result);
-
-                // 缓存60分钟
-                String cacheKey = VOICE_KEY + HashUtil.md5(voiceText);
-                cache.put(cacheKey, resultMap, 60, TimeUnit.MINUTES);
-
-                // 将完整音频文件保存到本地的逻辑，如果需要则打开下面的注释 👇
-                // if (StringUtils.hasLength(result)) {
-                // File file = new File(messageSessionId + "_" + System.currentTimeMillis() +
-                // ".mp3");
-                // try (FileOutputStream fos = new FileOutputStream(file)){
-                // byte[] decode = Base64.getDecoder().decode(result);
-                // fos.write(decode);
-                // }catch (IOException e) {
-                // logger.error("合并语音文件失败", e);
-                // }
-                // }
-
-            }, null);
-        }
-
-        WebSocket finalWebSocket = webSocket;
+        WebSocket finalWebSocket = null;
 
         boolean reActEnabled = options != null && options.get("reActModeEnabled") != null && (Boolean) options.get(
                 "reActModeEnabled");
+
+        JSONObject obj = new JSONObject();
+        obj.put("status", "START");
+        obj.put("messageId", messageSessionId);
+        emitter.send(obj.toJSONString());
 
         if (!reActEnabled) {
             // 普通模式
@@ -561,10 +436,6 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                                 message.setMetadataMap(Maps.of("messageSessionId", messageSessionId));
                                 finalAnswerContentBuffer.append(finalContent);
 
-                                if (voiceEnabled) {
-                                    ttsService.sendTTSMessage(finalWebSocket, messageSessionId, finalContent);
-                                }
-
                                 parsed = true;
                                 return;
                             }
@@ -608,9 +479,6 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                             message.setContent(chunk);
                             emitter.send(JSON.toJSONString(message));
                             logger.info("发送final answer:" + chunk);
-                            if (voiceEnabled) {
-                                ttsService.sendTTSMessage(finalWebSocket, messageSessionId, chunk);
-                            }
 
                             parsed = true;
                             return;
@@ -627,9 +495,6 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                             emitter.send(JSON.toJSONString(aiMessage));
                             logger.info("发送final answer:" + content);
                             finalAnswerContentBuffer.append(content);
-                            if (voiceEnabled) {
-                                ttsService.sendTTSMessage(finalWebSocket, messageSessionId, content);
-                            }
 
                         } else {
                             // Thought模式：发送thought事件
@@ -657,10 +522,6 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 logger.info("onFinalAnswer,{}", finalAnswer);
 
                 RequestContextHolder.setRequestAttributes(sra, true);
-
-                if (voiceEnabled) {
-                    ttsService.sendTTSMessage(finalWebSocket, messageSessionId, "_end_");
-                }
 
                 emitter.complete();
 
@@ -715,13 +576,6 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 message.setMetadataMap(Maps.of("messageSessionId", messageSessionId));
                 emitter.sendAndComplete(JSON.toJSONString(message));
                 finalAnswerContentBuffer.append(fullContent);
-
-                if (voiceEnabled) {
-                    ttsService.sendTTSMessage(finalWebSocket, messageSessionId, fullContent);
-
-                    ttsService.sendTTSMessage(finalWebSocket, messageSessionId, "_end_");
-                }
-
             }
 
             @Override
@@ -930,10 +784,6 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
                                 emitter.send(JSON.toJSONString(message));
 
-                                // 发送TTS消息
-                                if (voiceEnabled && finalWebSocket != null) {
-                                    ttsService.sendTTSMessage(finalWebSocket, messageSessionId, content);
-                                }
                             }
                         }
                     }
@@ -949,11 +799,6 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
             public void onStop(ChatContext context) {
                 logger.info("normal chat complete");
                 if (needClose[0]) {
-                    if (voiceEnabled && finalWebSocket != null) {
-                        ttsService.sendTTSMessage(finalWebSocket, messageSessionId, "_end_");
-                    }
-
-
                     emitter.complete();
                 }
             }
@@ -1070,41 +915,7 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
         boolean[] alreadyAdd = {false};
 
-
-        WebSocket webSocket = null;
-        if (voiceEnabled) {
-            webSocket = ttsService.init(connectId, messageSessionId, base64 -> {
-                logger.info("发送语音数据消息到前端");
-                ChatVoiceHandler.sendJsonVoiceMessage(sessionId, messageSessionId, base64);
-            }, (result) -> {
-                logger.info("tts 转语音 session 执行完毕，connection 已关闭，进行结果缓存");
-
-                Map<String, Object> resultMap = new HashMap<>();
-                resultMap.put(MESSAGE_SESSION_ID_KEY, messageSessionId);
-                String voiceText = finalAnswerContentBuffer.toString();
-                resultMap.put(FULL_TEXT_KEY, voiceText);
-                resultMap.put(BASE64_KEY, result);
-
-                // 缓存60分钟
-                String cacheKey = VOICE_KEY + HashUtil.md5(voiceText);
-                cache.put(cacheKey, resultMap, 60, TimeUnit.MINUTES);
-
-                // 将完整音频文件保存到本地的逻辑，如果需要则打开下面的注释 👇
-                // if (StringUtils.hasLength(result)) {
-                // File file = new File(messageSessionId + "_" + System.currentTimeMillis() +
-                // ".mp3");
-                // try (FileOutputStream fos = new FileOutputStream(file)){
-                // byte[] decode = Base64.getDecoder().decode(result);
-                // fos.write(decode);
-                // }catch (IOException e) {
-                // logger.error("合并语音文件失败", e);
-                // }
-                // }
-
-            }, null);
-        }
-
-        WebSocket finalWebSocket = webSocket;
+        WebSocket finalWebSocket = null;
 
         llm.chatStream(ToolPrompt.of(aiMessageResponse), new StreamResponseListener() {
             @Override
@@ -1138,13 +949,6 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 }
 
                 emitter.send(JSON.toJSONString(message));
-
-                // 发送TTS消息
-                if (voiceEnabled && finalWebSocket != null && StringUtil.hasLength(message.getContent())) {
-                    logger.info("发送语音播报消息：{}", message.getContent());
-                    finalAnswerContentBuffer.append(message.getContent());
-                    ttsService.sendTTSMessage(finalWebSocket, messageSessionId, message.getContent());
-                }
             }
 
             @Override
@@ -1153,10 +957,6 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
                 if (lastAiMessage != null) {
                     historiesPrompt.addMessage(lastAiMessage);
                 }
-                if (voiceEnabled && finalWebSocket != null) {
-                    ttsService.sendTTSMessage(finalWebSocket, messageSessionId, "_end_");
-                }
-
                 emitter.complete();
             }
 
