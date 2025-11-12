@@ -142,15 +142,19 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
     /**
      * 文本拆分
      * @param filePath 文件路径
+     * @param operation textSplit 拆分预览/  saveText 保存
      * @param splitterName 拆分器名称
      * @param chunkSize 分段大小
      * @param overlapSize 重叠大小
      * @param regex 正则表达式
      * @param rowsPerChunk excel 分割段数
      */
-    @PostMapping(value = "textSplit", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = {"textSplit", "/saveText"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @SaCheckPermission("/api/v1/aiKnowledge/save")
     public Result textSplit(
+                              @RequestParam("pageNumber") Integer pageNumber,
+                              @RequestParam("pageSize") Integer pageSize,
+                              @RequestParam("operation") String operation,
                               @RequestParam("filePath") String filePath,
                               @RequestParam("fileOriginName") String fileOriginName,
                               @RequestParam(name="knowledgeId") BigInteger knowledgeId,
@@ -160,6 +164,12 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
                               @RequestParam(name="regex", required = false) String regex,
                               @RequestParam(name="rowsPerChunk", required = false) Integer rowsPerChunk
                               ) {
+        if (pageNumber == null || pageNumber == 0){
+            pageNumber = 1;
+        }
+        if (pageSize == null || pageSize == 0){
+            pageSize = 10;
+        }
         if (chunkSize == null){
             chunkSize = 512;
         }
@@ -169,28 +179,9 @@ public class AiDocumentController extends BaseCurdController<AiDocumentService, 
         if (rowsPerChunk == null){
             rowsPerChunk = 1;
         }
-        return aiDocumentService.textSplit(knowledgeId, filePath, fileOriginName,  splitterName, chunkSize, overlapSize, regex, rowsPerChunk);
+        return aiDocumentService.textSplit(pageNumber, pageSize, operation, knowledgeId, filePath, fileOriginName,  splitterName, chunkSize, overlapSize, regex, rowsPerChunk);
 
     }
-
-    /**
-     *
-     * @param knowledgeId 知识库id
-     * @param previewList 文本分割list
-     * @param aiDocument 文档信息
-     * @return
-     * @throws IOException
-     */
-    @PostMapping(value = "saveText")
-    @SaCheckPermission("/api/v1/aiKnowledge/save")
-    public Result saveTextResult(
-                         @RequestParam("knowledgeId") BigInteger knowledgeId,
-                         @RequestParam(name="previewData") String previewList,
-                         @RequestParam(name="aiDocumentData") String aiDocument
-    )  {
-        return aiDocumentService.saveTextResult(knowledgeId, previewList, aiDocument);
-    }
-
 
     /**
      * 更新 entity

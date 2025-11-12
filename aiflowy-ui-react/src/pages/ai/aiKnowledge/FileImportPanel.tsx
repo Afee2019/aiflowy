@@ -1,11 +1,11 @@
-import React, { useState} from "react";
+import React, {useState} from "react";
 import {
     Button,
     Col,
     Input,
     InputNumber,
     InputNumberProps,
-    message, Progress,
+    message, Pagination, Progress,
     Row,
     Select,
     Slider,
@@ -60,22 +60,11 @@ interface AiDocumentType {
     rowsPerChunk: number,
     splitterName: string
 }
-interface AiDocumentData {
-    chunkSize: number, // 分段大小
-    content: string, // 分段重叠大小
-    created: string,
-    documentPath: string,
-    documentType: string
-    modified: string
-    modifiedBy: string
-    overlapSize: number
-    title: string
-}
+
 // 文件导入页面组件
 const FileImportPanel: React.FC<FileImportPanelProps> = ({ data, action, onBack, style }) => {
     const [disabledConfirm, setDisabledConfirm] = useState<boolean>(false);
     const [dataPreView, setDataPreView] = useState<PreviewItem[]>([]);
-    const [aiDocumentData, setAiDocumentData] = useState<AiDocumentData>();
     const [confirmImport, setConfirmImport] = useState<boolean>(false);
     const [selectedSplitter, setSelectedSplitter] = useState<string>('SimpleDocumentSplitter');
     const [regex, setRegex] = useState<string>('');
@@ -112,7 +101,6 @@ const FileImportPanel: React.FC<FileImportPanelProps> = ({ data, action, onBack,
     };
     interface CustomUploadProps extends UploadProps {
         [key: string]: any; // 添加字符串索引签名
-        userWillSave?: string;
         overlapSize?: number;
         chunkSize?: number;
         knowledgeId?: string;
@@ -121,11 +109,35 @@ const FileImportPanel: React.FC<FileImportPanelProps> = ({ data, action, onBack,
         ...data,
         chunkSize: aiDocument.chunkSize,
         overlapSize: aiDocument.overlapSize,
-        userWillSave: 'false',
         regex: regex,
         rowsPerChunk: aiDocument.rowsPerChunk,
         splitterName: selectedSplitter
     };
+
+    interface paginationProps {
+        total: number;
+        pageSize: number;
+        pageNumber: number;
+        onChange: (page: number, pageSize: number) => void;
+    }
+    // const paginationParams: paginationProps = {
+    //     total: 0,
+    //     pageSize: 50,
+    //     pageNumber: 1,
+    //     onChange: (page: number, pageSize: number) => {
+    //         console.log(page, pageSize);
+    //     },
+    // }
+    const [paginationParams, setPaginationParams] = useState<paginationProps>(
+        {
+            total: 0,
+            pageSize: 10,
+            pageNumber: 1,
+            onChange: (page: number, pageSize: number) => {
+                console.log(page, pageSize);
+            }
+        }
+    )
 
     const uploadColumns: TableProps<DataType>['columns'] = [
         {
@@ -246,16 +258,28 @@ const FileImportPanel: React.FC<FileImportPanelProps> = ({ data, action, onBack,
     // 状态管理：当前选中的选项
     const [selectedOption] = useState("document");
 
+    // 提取公共方法用于构造 FormData
+    const buildCommonFormData = (): FormData => {
+        const formData = new FormData();
+        formData.append("knowledgeId", uploadProps.knowledgeId as string);
+        formData.append("filePath", filePath);
+        formData.append("fileOriginName", fileUploadPercentData[0]?.fileName?.split('.')[0] ?? '');
+        formData.append("splitterName", selectedSplitter);
+        formData.append("chunkSize", aiDocument.chunkSize?.toString() ?? "512");
+        formData.append("overlapSize", aiDocument.overlapSize?.toString() ?? "128");
+        formData.append("regex", regex ?? "");
+        formData.append("rowsPerChunk", aiDocument.rowsPerChunk?.toString() ?? "50");
+        return formData;
+    };
+
+
     // 保存文件
     const saveDocument = () => {
         // 构造 FormData 对象
-        const formData = new FormData();
-        formData.append("knowledgeId", uploadProps.knowledgeId as string); // 添加 knowledgeId
-        formData.append("aiDocumentData", JSON.stringify(aiDocumentData));
-        formData.append("previewData", JSON.stringify(dataPreView));
-        uploadProps.userWillSave = 'true';
-        formData.append("userWillSave", uploadProps.userWillSave);
-        // 发起 POST 请求
+        const formData = buildCommonFormData();
+        formData.append("operation", "saveText");
+        formData.append("pageNumber", "0");
+        formData.append("pageSize", "0");
         // 发起 POST 请求
         axios.post("/api/v1/aiDocument/saveText", formData, {
             headers: {
@@ -284,6 +308,7 @@ const FileImportPanel: React.FC<FileImportPanelProps> = ({ data, action, onBack,
             }
         });
     };
+
 
     const  handleUploadChange = (info: UploadChangeParam<UploadFile<any>>) => {
         if (info.file.status === 'done'){
@@ -511,6 +536,7 @@ const FileImportPanel: React.FC<FileImportPanelProps> = ({ data, action, onBack,
                     <>
                         <PreviewContainer
                             data={dataPreView}
+                            total={paginationParams.total}
                             loading={previewListLoading.spinning}
                             confirmImport={confirmImport}
                             disabledConfirm={disabledConfirm}
@@ -535,6 +561,38 @@ const FileImportPanel: React.FC<FileImportPanelProps> = ({ data, action, onBack,
         )
     };
 
+
+    const splitDocument = (pageNumber: number, pageSize: number)=>{
+        setPreviewListLoading({
+            spinning: true,
+            tip: '正在加载数据，请稍候...'
+        })
+        // 处理数据，返回预览数据
+        // 构造 FormData 对象
+        const formData = buildCommonFormData();
+        formData.append("pageNumber", (pageNumber > 0 ? pageNumber.toString() : paginationParams.pageNumber.toString()));
+        formData.append("pageSize", (pageSize > 0 ? pageSize.toString() : paginationParams.pageSize.toString()));
+        formData.append("operation", "textSplit");
+
+        // 发起 POST 请求
+        axios.post("/api/v1/aiDocument/textSplit", formData, {
+            headers: {
+                ...headers,
+                "Content-Type": "multipart/form-data",
+            },
+        }).then((res) => {
+            setDataPreView(res.data.data.previewData)
+            setPaginationParams(  {
+                ...paginationParams,
+                pageSize: pageSize > 0 ? pageSize : paginationParams.pageSize,
+                total: res.data.data.total
+            })
+            setPreviewListLoading({
+                spinning: false,
+                tip: ''
+            })
+        })
+    }
     return (
         <div className="file-import">
             <div style={{paddingBottom: "22px"}}>
@@ -568,6 +626,17 @@ const FileImportPanel: React.FC<FileImportPanelProps> = ({ data, action, onBack,
                 {
                     currentStep !== 0 ? (
                         <>
+                            {
+                                currentStep === 2 && (
+                                    <Pagination defaultCurrent={1} total={paginationParams.total} pageSize={paginationParams.pageSize}
+                                                pageSizeOptions={[10, 20]}
+                                                showSizeChanger={true}
+                                                onChange={(pageNumber, pageSize) => {
+                                                    setPaginationParams(prev => ({ ...prev, pageNumber, pageSize }));
+                                                    splitDocument(pageNumber, pageSize);
+                                                }}/>
+                                )
+                            }
                             <Button
                                 style={{
                                     minWidth: '100px',
@@ -630,32 +699,7 @@ const FileImportPanel: React.FC<FileImportPanelProps> = ({ data, action, onBack,
                                 }
 
                                 if (currentStep === 1){
-                                    // 处理数据，返回预览数据
-                                    // 构造 FormData 对象
-                                    const formData = new FormData();
-                                    formData.append("filePath", filePath);
-                                    formData.append("fileOriginName", fileUploadPercentData[0].fileName.toString().split('.')[0]);
-                                    formData.append("knowledgeId", uploadProps.knowledgeId as string); // 添加 knowledgeId
-                                    formData.append("splitterName", uploadProps.splitterName);
-                                    formData.append("chunkSize", uploadProps.chunkSize?.toString() ?? "512");
-                                    formData.append("overlapSize", uploadProps.overlapSize?.toString() ?? "128");
-                                    formData.append("regex", uploadProps.regex);
-                                    formData.append("rowsPerChunk", uploadProps.rowsPerChunk);
-
-                                    // 发起 POST 请求
-                                    axios.post("/api/v1/aiDocument/textSplit", formData, {
-                                        headers: {
-                                            ...headers,
-                                            "Content-Type": "multipart/form-data",
-                                        },
-                                    }).then((res) => {
-                                        setDataPreView(res.data.data.previewData)
-                                        setAiDocumentData(res.data.data.aiDocumentData)
-                                        setPreviewListLoading({
-                                            spinning: false,
-                                            tip: ''
-                                        })
-                                    })
+                                    splitDocument(0, 0)
                                 }
 
                                 if (currentStep === 2){

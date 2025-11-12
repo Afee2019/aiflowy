@@ -12,6 +12,7 @@ interface PreviewItem {
 
 interface PreviewContainerProps {
     data?: PreviewItem[];
+    total?: number;
     loading?: boolean;
     confirmImport?: boolean;
     disabledConfirm?: boolean;
@@ -21,6 +22,7 @@ interface PreviewContainerProps {
 }
 
 const PreviewContainer: React.FC<PreviewContainerProps> = ({
+                                                               total = 0,
                                                                data = [],
                                                                loading = false,
                                                                confirmImport = false,
@@ -38,7 +40,7 @@ const PreviewContainer: React.FC<PreviewContainerProps> = ({
                 </h3>
                 {data.length > 0 && (
                     <span className="preview-stats">
-            共 {data.length} 个分段
+            共 {total} 个分段
           </span>
                 )}
             </div>
@@ -52,7 +54,7 @@ const PreviewContainer: React.FC<PreviewContainerProps> = ({
                         renderItem={(item: PreviewItem, index) => (
                             <List.Item>
                                 <List.Item.Meta
-                                    avatar={<div className="segment-badge">{index + 1}</div>}
+                                    avatar={<div className="segment-badge">{item.sorting ?? index + 1}</div>}
                                     title={
                                         isSearching ? (
                                             <a>{`相似度 ${item?.score ?? 'N/A'}`}</a>

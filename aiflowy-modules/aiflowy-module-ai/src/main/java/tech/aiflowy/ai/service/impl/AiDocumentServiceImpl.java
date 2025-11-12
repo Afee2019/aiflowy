@@ -161,7 +161,8 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
 
 
     @Override
-    public Result textSplit(BigInteger knowledgeId, String filePath, String originalFilename, String splitterName, Integer chunkSize, Integer overlapSize, String regex, Integer rowsPerChunk) {
+    @Transactional
+    public Result textSplit(Integer pageNumber, Integer pageSize, String operation, BigInteger knowledgeId, String filePath, String originalFilename, String splitterName, Integer chunkSize, Integer overlapSize, String regex, Integer rowsPerChunk) {
         try {
             InputStream inputStream = storageService.readStream(filePath);
             String fileExtension = null;
@@ -204,7 +205,27 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
             aiDocument.setOverlapSize(overlapSize);
             aiDocument.setTitle(originalFilename);
             Map<String, Object> res = new HashMap<>();
-            res.put("previewData", previewList);
+
+            List<AiDocumentChunk> aiDocumentChunks = null;
+            // 如果是预览拆分，则返回指定页的数据
+            if ("textSplit".equals(operation)){
+                if (pageNumber == 1){
+                    if (previewList.size() < pageSize){
+                        aiDocumentChunks = previewList;
+                    } else {
+                        aiDocumentChunks = previewList.subList(0, pageSize);
+                    }
+                } else {
+                    aiDocumentChunks = previewList.subList(pageNumber * pageSize, pageNumber * pageSize + pageSize);
+                }
+                res.put("total", previewList.size());
+                // 保存文件到知识库
+            } else if ("saveText".equals(operation)){
+                aiDocumentChunks = previewList;
+                return this.saveTextResult(aiDocumentChunks, aiDocument);
+            }
+
+            res.put("previewData", aiDocumentChunks);
             res.put("aiDocumentData", aiDocument);
             // 返回分割效果给用户
             return Result.success(res);
@@ -216,10 +237,7 @@ public class AiDocumentServiceImpl extends ServiceImpl<AiDocumentMapper, AiDocum
     }
 
     @Override
-    @Transactional
-    public Result saveTextResult(BigInteger knowledgeId, String previewListStr, String aiDocumentStr) {
-        AiDocument aiDocument = JSON.parseObject(aiDocumentStr, AiDocument.class);
-        List<AiDocumentChunk> aiDocumentChunks = JSON.parseArray(previewListStr, AiDocumentChunk.class);
+    public Result saveTextResult(List<AiDocumentChunk> aiDocumentChunks, AiDocument aiDocument) {
         Result result = storeDocument(aiDocument, aiDocumentChunks);
         if (result.isSuccess()) {
             this.getMapper().insert(aiDocument);

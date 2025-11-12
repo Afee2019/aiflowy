@@ -1,6 +1,7 @@
 package tech.aiflowy.common.controller;
 
 import cn.dev33.satoken.annotation.SaIgnore;
+import org.springframework.web.bind.annotation.RequestParam;
 import tech.aiflowy.common.domain.Result;
 
 import tech.aiflowy.common.filestorage.FileStorageService;
