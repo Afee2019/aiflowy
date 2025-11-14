@@ -44,7 +44,7 @@ function defineApplicationConfig(userConfigPromise?: DefineApplicationOptions) {
       nitroMockOptions: {},
       print: !isBuild,
       printInfoMap: {
-        'AIFlowy Admin Docs': 'https://doc.aiflowy.tech',
+        'AIFlowy Docs': 'https://aiflowy.tech',
       },
       pwa: true,
       pwaOptions: getDefaultPwaOptions(appTitle),
