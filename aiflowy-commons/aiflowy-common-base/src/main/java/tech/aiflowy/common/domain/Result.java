@@ -1,103 +1,104 @@
 package tech.aiflowy.common.domain;
 
-import java.util.HashMap;
+import tech.aiflowy.common.constant.enums.EnumRes;
+
+import java.io.Serializable;
 
 /**
  * @author michael
  */
-public class Result extends HashMap<String, Object> {
+public class Result<T> implements Serializable {
+    private static final long serialVersionUID = -8744614420977483630L;
 
-    private static final String ATTR_ERROR_CODE = "errorCode";
-    private static final String ATTR_MESSAGE = "message";
-    private static final String ATTR_DATA = "data";
+    /**
+     * 返回状态码
+     * @see EnumRes
+     * @mock 0
+     */
+    private Integer errorCode;
 
+    /**
+     * 提示消息
+     *
+     * @mock 成功
+     */
+    private String message;
 
-    private Result(int errorCode) {
-        put(ATTR_ERROR_CODE,errorCode);
+    /**
+     * 返回的数据
+     */
+    private T data;
+
+    public static Result<Void> ok() {
+        Result<Void> Result = new Result<>();
+        Result.setErrorCode(EnumRes.SUCCESS.getCode());
+        Result.setMessage(EnumRes.SUCCESS.getMsg());
+        return Result;
     }
 
 
-    public static Result success() {
-        return new Result(0);
+    public static Result<Void> ok(String msg) {
+        Result<Void> Result = new Result<>();
+        Result.setErrorCode(EnumRes.SUCCESS.getCode());
+        Result.setMessage(msg);
+        return Result;
     }
 
-    public static Result create(boolean success) {
-        if (success){
-            return success();
-        }else {
-            return fail(1);
+    public static <T> Result<T> ok(String msg, T data) {
+        Result<T> Result = new Result<>();
+        Result.setErrorCode(EnumRes.SUCCESS.getCode());
+        if (msg == null || msg.isEmpty()) {
+            Result.setMessage(EnumRes.SUCCESS.getMsg());
+        } else {
+            Result.setMessage(msg);
         }
+        Result.setData(data);
+        return Result;
     }
 
-    public static Result success(Object data) {
-        Result ret = new Result(0);
-        ret.put(ATTR_DATA, data);
-        return ret;
+    public static Result<Void> fail(String msg) {
+        Result<Void> Result = new Result<>();
+        Result.setErrorCode(EnumRes.FAIL.getCode());
+        Result.setMessage(msg);
+        return Result;
     }
 
-    public static Result success(String key, Object value) {
-        Result ret = new Result(0);
-        ret.put(key, value);
-        return ret;
+    public static Result<Void> fail(int code, String msg) {
+        Result<Void> Result = new Result<>();
+        Result.setErrorCode(code);
+        Result.setMessage(msg);
+        return Result;
     }
 
-    public static Result fail() {
-        return fail(1);
+    public static <T> Result<T> fail(String msg, T data) {
+        Result<T> Result = new Result<>();
+        Result.setErrorCode(EnumRes.FAIL.getCode());
+        Result.setMessage(msg);
+        Result.setData(data);
+        return Result;
     }
 
-    public static Result fail(int errorCode) {
-        return new Result(errorCode);
+    public int getErrorCode() {
+        return errorCode;
     }
 
-    public static Result fail(int errorCode, String failMessage) {
-        Result result = fail(errorCode);
-        result.put(ATTR_MESSAGE, failMessage);
-        return result;
+    public void setErrorCode(int errorCode) {
+        this.errorCode = errorCode;
     }
 
-
-    public int failCode() {
-        return get(ATTR_ERROR_CODE);
+    public String getMessage() {
+        return message;
     }
 
-    public void failCode(int errorCode) {
-        this.put(ATTR_ERROR_CODE, errorCode);
+    public void setMessage(String message) {
+        this.message = message;
     }
 
-    public String failMessage() {
-        return this.get(ATTR_MESSAGE);
+    public T getData() {
+        return data;
     }
 
-    public void failMessage(String errorMessage) {
-        put(ATTR_MESSAGE, errorMessage);
+    public void setData(T data) {
+        this.data = data;
     }
-
-    public Object data() {
-        return get(ATTR_DATA);
-    }
-
-    public void data(Object data) {
-        put(ATTR_DATA, data);
-    }
-
-    public <T> T get(String key) {
-        return (T) super.get(key);
-    }
-
-    public Result set(String key, Object value) {
-        put(key, value);
-        return this;
-    }
-
-    public Result setIfNotNull(String key, Object value) {
-        if (value != null && key != null) {
-            put(key, value);
-        }
-        return this;
-    }
-
-    public boolean isSuccess() {
-        return failCode() == 0;
-    }
-
 }
