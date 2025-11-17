@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import { ElButton } from 'element-plus';
 
 import PageData from '#/components/page/PageData.vue';
+import { $t } from '#/locales';
 
 const pageDataRef = ref();
 const search = () => {
@@ -15,7 +16,7 @@ const reset = () => {
 </script>
 
 <template>
-  <div>
+  <div class="page-container">
     <PageData
       ref="pageDataRef"
       page-url="/api/v1/sysAccount/page"
@@ -29,8 +30,10 @@ const reset = () => {
       </template>
     </PageData>
 
-    <ElButton @click="search" type="primary">搜索</ElButton>
-    <ElButton @click="reset">重置</ElButton>
+    <ElButton @click="search" type="primary">
+      {{ $t('button.search.submit') }}
+    </ElButton>
+    <ElButton @click="reset">{{ $t('button.search.reset') }}</ElButton>
   </div>
 </template>
 
