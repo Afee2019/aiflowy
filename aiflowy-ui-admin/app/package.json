@@ -34,6 +34,7 @@
     "@aiflowy/styles": "workspace:*",
     "@aiflowy/types": "workspace:*",
     "@aiflowy/utils": "workspace:*",
+    "@element-plus/icons-vue": "^2.3.2",
     "@vueuse/core": "catalog:",
     "dayjs": "catalog:",
     "element-plus": "catalog:",
