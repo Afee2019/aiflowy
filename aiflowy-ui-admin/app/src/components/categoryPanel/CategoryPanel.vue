@@ -26,10 +26,34 @@
           class="category-item-content"
           @click="handleCategoryClick(category)"
         >
-          <!-- 图标（如果有） -->
-          <ElIcon v-if="category[iconKey]" class="category-icon">
-            <component :is="category[iconKey]" />
-          </ElIcon>
+          <!-- 图标 -->
+          <div v-if="category[iconKey]" class="category-icon">
+            <!-- 1. 组件类型图标（Element Plus / 自定义 SVG 组件） -->
+            <ElIcon v-if="isComponent(category[iconKey])">
+              <component :is="category[iconKey]" />
+            </ElIcon>
+            <!-- 2. SVG 字符串：支持 v-html 或 img 两种渲染方式 -->
+            <template v-else-if="isSvgString(category[iconKey])">
+              <div
+                v-if="!useImgForSvg"
+                v-html="category[iconKey]"
+                class="custom-svg"
+              />
+              <img
+                v-else
+                :src="svgToDataUrl(category[iconKey])"
+                :alt="category[titleKey]"
+                class="svg-image"
+              />
+            </template>
+            <!-- 3. 图片 URL（本地/网络 SVG/PNG） -->
+            <img
+              v-else-if="isImageUrl(category[iconKey])"
+              :src="category[iconKey]"
+              :alt="category[titleKey]"
+              class="svg-image"
+            />
+          </div>
 
           <!-- 分类名称（收缩状态且有图标时隐藏文字） -->
           <span
@@ -45,7 +69,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits, computed } from 'vue'
+import {ref, defineProps, defineEmits, computed, isVNode} from 'vue'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 import { ElIcon } from 'element-plus'
 
@@ -74,8 +98,52 @@ const props = defineProps({
   collapseWidth: {
     type: Number,
     default: 48
-  }
+  },
+  iconSize: { type: [Number, String], default: 18 },
+  iconColor: { type: String, default: 'var(--el-text-color-primary)' },
+  // 新增：是否用 img 标签渲染 SVG 字符串（默认 false）
+  useImgForSvg: { type: Boolean, default: false }
 })
+
+// -------------------------- 核心工具函数 --------------------------
+/**
+ * SVG 字符串转 Data URL（供 img 标签使用）
+ * @param {string} svgString - 清理后的 SVG 字符串
+ * @returns {string} Data URL
+ */
+const svgToDataUrl = (svgString) => {
+  // 1. 去除 SVG 中的换行和多余空格（优化编码后体积）
+  const cleanedSvg = svgString
+    .replace(/\n/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  // 2. URL 编码 + 拼接 Data URL 格式
+  return `data:image/svg+xml;utf8,${encodeURIComponent(cleanedSvg)}`;
+}
+
+/**
+ * 判断是否为组件（Element Plus 图标 / 自定义 SVG 组件）
+ */
+const isComponent = (icon) => {
+  return typeof icon === 'object' && (typeof icon === 'object' || isVNode(icon))
+}
+
+/**
+ * 判断是否为 SVG 字符串
+ */
+const isSvgString = (icon) => {
+  return typeof icon === 'string' && icon.trim().startsWith('<svg')
+}
+
+/**
+ * 判断是否为图片 URL
+ */
+const isImageUrl = (icon) => {
+  return typeof icon === 'string' && (
+    icon.endsWith('.svg') || icon.endsWith('.png') || icon.endsWith('.jpg') ||
+    icon.startsWith('http://') || icon.startsWith('https://')
+  )
+}
 
 // 定义事件
 const emit = defineEmits([
@@ -162,7 +230,7 @@ const handleCategoryClick = (category) => {
 /* 分类列表容器 */
 .category-list {
   overflow: hidden;
-  padding-top: 48px; /* 给右上角按钮留出空间 */
+  padding-top: 48px;
   height: 100%;
   box-sizing: border-box;
 }
@@ -192,9 +260,33 @@ const handleCategoryClick = (category) => {
 }
 
 .category-icon {
-  width: 18px;
-  height: 18px;
-  color: var(--el-text-color-primary);
+  width: v-bind(iconSize);
+  height: v-bind(iconSize);
+  color: v-bind(iconColor);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+.category-icon .el-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.category-item-content {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  gap: 12px;
 }
 
 .category-name {
