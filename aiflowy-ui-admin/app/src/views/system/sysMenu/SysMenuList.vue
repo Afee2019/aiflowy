@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import type { FormInstance } from 'element-plus';
+import { onMounted, ref } from 'vue';
 
-import { ref } from 'vue';
+import { createIconifyIcon } from '@aiflowy/icons';
 
 import {
   ElButton,
-  ElForm,
-  ElFormItem,
-  ElInput,
   ElMessage,
   ElMessageBox,
   ElTable,
@@ -15,27 +12,19 @@ import {
 } from 'element-plus';
 
 import { api } from '#/api/request';
-import PageData from '#/components/page/PageData.vue';
 import { $t } from '#/locales';
 
 import SysMenuModal from './SysMenuModal.vue';
 
-const formRef = ref<FormInstance>();
-const pageDataRef = ref();
-const saveDialog = ref();
-const formInline = ref({
-  id: '',
+onMounted(() => {
+  getTree();
 });
-function search(formEl: FormInstance | undefined) {
-  formEl?.validate((valid) => {
-    if (valid) {
-      pageDataRef.value.setQuery(formInline.value);
-    }
-  });
-}
-function reset(formEl: FormInstance | undefined) {
-  formEl?.resetFields();
-  pageDataRef.value.setQuery({});
+
+const saveDialog = ref();
+const treeData = ref([]);
+
+function reset() {
+  getTree();
 }
 function showDialog(row: any) {
   saveDialog.value.openDialog({ ...row });
@@ -54,7 +43,7 @@ function remove(row: any) {
             instance.confirmButtonLoading = false;
             if (res.errorCode === 0) {
               ElMessage.success(res.message);
-              reset(formRef.value);
+              reset();
               done();
             }
           })
@@ -67,105 +56,85 @@ function remove(row: any) {
     },
   }).catch(() => {});
 }
+function getTree() {
+  api
+    .get('/api/v1/sysMenu/list', {
+      params: {
+        asTree: true,
+      },
+    })
+    .then((res) => {
+      treeData.value = res.data;
+    });
+}
 </script>
 
 <template>
   <div class="page-container">
     <SysMenuModal ref="saveDialog" @reload="reset" />
-    <ElForm ref="formRef" :inline="true" :model="formInline">
-      <ElFormItem label="查询字段" prop="id">
-        <ElInput v-model="formInline.id" placeholder="请输入查询字段" />
-      </ElFormItem>
-      <ElFormItem>
-        <ElButton @click="search(formRef)" type="primary">
-          {{ $t('button.query') }}
-        </ElButton>
-        <ElButton @click="reset(formRef)">
-          {{ $t('button.reset') }}
-        </ElButton>
-      </ElFormItem>
-    </ElForm>
     <div class="handle-div">
       <ElButton @click="showDialog({})" type="primary">
         {{ $t('button.add') }}
       </ElButton>
     </div>
-    <PageData ref="pageDataRef" page-url="/api/v1/sysMenu/page" :page-size="10">
-      <template #default="{ pageList }">
-        <ElTable :data="pageList" border>
-          <ElTableColumn prop="parentId" label="父菜单id">
-            <template #default="{ row }">
-              {{ row.parentId }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="menuType" label="菜单类型">
-            <template #default="{ row }">
-              {{ row.menuType }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="menuTitle" label="菜单标题">
-            <template #default="{ row }">
-              {{ row.menuTitle }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="menuUrl" label="菜单url">
-            <template #default="{ row }">
-              {{ row.menuUrl }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="component" label="组件路径">
-            <template #default="{ row }">
-              {{ row.component }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="menuIcon" label="图标/图片地址">
-            <template #default="{ row }">
-              {{ row.menuIcon }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="isShow" label="是否显示">
-            <template #default="{ row }">
-              {{ row.isShow }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="permissionTag" label="权限标识">
-            <template #default="{ row }">
-              {{ row.permissionTag }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="sortNo" label="排序">
-            <template #default="{ row }">
-              {{ row.sortNo }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="status" label="数据状态">
-            <template #default="{ row }">
-              {{ row.status }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="created" label="创建时间">
-            <template #default="{ row }">
-              {{ row.created }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="remark" label="备注">
-            <template #default="{ row }">
-              {{ row.remark }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn>
-            <template #default="{ row }">
-              <ElButton @click="showDialog(row)" type="primary">
-                {{ $t('button.edit') }}
-              </ElButton>
-              <ElButton @click="remove(row)" type="danger">
-                {{ $t('button.delete') }}
-              </ElButton>
-            </template>
-          </ElTableColumn>
-        </ElTable>
-      </template>
-    </PageData>
+    <ElTable :data="treeData" border row-key="id">
+      <ElTableColumn width="50" />
+      <ElTableColumn prop="menuType" label="菜单类型">
+        <template #default="{ row }">
+          {{ row.menuType }}
+        </template>
+      </ElTableColumn>
+      <ElTableColumn prop="menuTitle" label="菜单标题">
+        <template #default="{ row }">
+          {{ $t(row.menuTitle) }}
+        </template>
+      </ElTableColumn>
+      <ElTableColumn prop="menuUrl" label="菜单url">
+        <template #default="{ row }">
+          {{ row.menuUrl }}
+        </template>
+      </ElTableColumn>
+      <ElTableColumn prop="component" label="组件路径">
+        <template #default="{ row }">
+          {{ row.component }}
+        </template>
+      </ElTableColumn>
+      <ElTableColumn prop="menuIcon" label="图标">
+        <template #default="{ row }">
+          <component class="size-5" :is="createIconifyIcon(row.menuIcon)" />
+        </template>
+      </ElTableColumn>
+      <ElTableColumn prop="isShow" label="是否显示">
+        <template #default="{ row }">
+          {{ row.isShow }}
+        </template>
+      </ElTableColumn>
+      <ElTableColumn prop="permissionTag" label="权限标识">
+        <template #default="{ row }">
+          {{ row.permissionTag }}
+        </template>
+      </ElTableColumn>
+      <ElTableColumn prop="sortNo" label="排序">
+        <template #default="{ row }">
+          {{ row.sortNo }}
+        </template>
+      </ElTableColumn>
+      <ElTableColumn prop="created" label="创建时间">
+        <template #default="{ row }">
+          {{ row.created }}
+        </template>
+      </ElTableColumn>
+      <ElTableColumn>
+        <template #default="{ row }">
+          <ElButton @click="showDialog(row)" type="primary">
+            {{ $t('button.edit') }}
+          </ElButton>
+          <ElButton @click="remove(row)" type="danger">
+            {{ $t('button.delete') }}
+          </ElButton>
+        </template>
+      </ElTableColumn>
+    </ElTable>
   </div>
 </template>
 

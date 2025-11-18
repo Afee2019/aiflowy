@@ -8,6 +8,9 @@ import { EmptyIcon, Grip, listIcons } from '@aiflowy/icons';
 import { $t } from '@aiflowy/locales';
 
 import {
+  AIFlowyIcon,
+  AIFlowyIconButton,
+  AIFlowyPopover,
   Button,
   Input,
   Pagination,
@@ -18,9 +21,6 @@ import {
   PaginationListItem,
   PaginationNext,
   PaginationPrev,
-  AIFlowyIcon,
-  AIFlowyIconButton,
-  AIFlowyPopover,
 } from '@aiflowy-core/shadcn-ui';
 import { isFunction } from '@aiflowy-core/shared/utils';
 

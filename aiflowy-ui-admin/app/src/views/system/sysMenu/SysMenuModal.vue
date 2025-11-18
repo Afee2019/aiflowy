@@ -3,6 +3,8 @@ import type { FormInstance } from 'element-plus';
 
 import { onMounted, ref } from 'vue';
 
+import { IconPicker } from '@aiflowy/common-ui';
+
 import {
   ElButton,
   ElDialog,
@@ -92,6 +94,7 @@ function closeDialog() {
     :title="isAdd ? $t('button.add') : $t('button.edit')"
     :before-close="closeDialog"
     :close-on-click-modal="false"
+    :z-index="1999"
   >
     <ElForm
       label-width="120px"
@@ -116,7 +119,8 @@ function closeDialog() {
         <ElInput v-model.trim="entity.component" />
       </ElFormItem>
       <ElFormItem prop="menuIcon" label="图标/图片地址">
-        <ElInput v-model.trim="entity.menuIcon" />
+<!--        <ElInput v-model.trim="entity.menuIcon" />-->
+        <IconPicker style="z-index: 9999" v-model="entity.menuIcon" />
       </ElFormItem>
       <ElFormItem prop="isShow" label="是否显示">
         <ElInput v-model.trim="entity.isShow" />
@@ -150,4 +154,5 @@ function closeDialog() {
   </ElDialog>
 </template>
 
-<style scoped></style>
+<style scoped>
+</style>
