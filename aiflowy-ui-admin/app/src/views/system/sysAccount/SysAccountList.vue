@@ -27,7 +27,6 @@ const saveDialog = ref();
 const formInline = ref({
   id: '',
 });
-
 function search(formEl: FormInstance | undefined) {
   formEl?.validate((valid) => {
     if (valid) {
@@ -35,20 +34,17 @@ function search(formEl: FormInstance | undefined) {
     }
   });
 }
-
 function reset(formEl: FormInstance | undefined) {
   formEl?.resetFields();
   pageDataRef.value.setQuery({});
 }
-
 function showDialog(row: any) {
   saveDialog.value.openDialog({ ...row });
 }
-
 function remove(row: any) {
-  ElMessageBox.confirm('确定删除吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm($t('message.deleteAlert'), $t('message.noticeTitle'), {
+    confirmButtonText: $t('message.ok'),
+    cancelButtonText: $t('message.cancel'),
     type: 'warning',
     beforeClose: (action, instance, done) => {
       if (action === 'confirm') {
@@ -78,8 +74,11 @@ function remove(row: any) {
   <div class="page-container">
     <SysAccountModal ref="saveDialog" @reload="reset" />
     <ElForm ref="formRef" :inline="true" :model="formInline">
-      <ElFormItem label="查询字段" prop="id">
-        <ElInput v-model="formInline.id" placeholder="请输入查询字段" />
+      <ElFormItem :label="$t('sysAccount.id')" prop="id">
+        <ElInput
+          v-model="formInline.id"
+          :placeholder="`${$t('sysAccount.id')}`"
+        />
       </ElFormItem>
       <ElFormItem>
         <ElButton @click="search(formRef)" type="primary">
@@ -105,72 +104,75 @@ function remove(row: any) {
     >
       <template #default="{ pageList }">
         <ElTable :data="pageList" border>
-          <ElTableColumn prop="deptId" label="部门ID">
+          <ElTableColumn prop="deptId" :label="$t('sysAccount.deptId')">
             <template #default="{ row }">
               {{ row.deptId }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="loginName" label="登录账号">
+          <ElTableColumn prop="loginName" :label="$t('sysAccount.loginName')">
             <template #default="{ row }">
               {{ row.loginName }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="password" label="密码">
+          <ElTableColumn prop="password" :label="$t('sysAccount.password')">
             <template #default="{ row }">
               {{ row.password }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="accountType" label="账户类型">
+          <ElTableColumn
+            prop="accountType"
+            :label="$t('sysAccount.accountType')"
+          >
             <template #default="{ row }">
               {{ row.accountType }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="nickname" label="昵称">
+          <ElTableColumn prop="nickname" :label="$t('sysAccount.nickname')">
             <template #default="{ row }">
               {{ row.nickname }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="mobile" label="手机电话">
+          <ElTableColumn prop="mobile" :label="$t('sysAccount.mobile')">
             <template #default="{ row }">
               {{ row.mobile }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="email" label="邮件">
+          <ElTableColumn prop="email" :label="$t('sysAccount.email')">
             <template #default="{ row }">
               {{ row.email }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="avatar" label="账户头像">
+          <ElTableColumn prop="avatar" :label="$t('sysAccount.avatar')">
             <template #default="{ row }">
               {{ row.avatar }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="dataScope" label="数据权限类型">
+          <ElTableColumn prop="dataScope" :label="$t('sysAccount.dataScope')">
             <template #default="{ row }">
               {{ row.dataScope }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="deptIdList" label="自定义部门权限">
+          <ElTableColumn prop="deptIdList" :label="$t('sysAccount.deptIdList')">
             <template #default="{ row }">
               {{ row.deptIdList }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="status" label="数据状态">
+          <ElTableColumn prop="status" :label="$t('sysAccount.status')">
             <template #default="{ row }">
               {{ row.status }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="created" label="创建时间">
+          <ElTableColumn prop="created" :label="$t('sysAccount.created')">
             <template #default="{ row }">
               {{ row.created }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="remark" label="备注">
+          <ElTableColumn prop="remark" :label="$t('sysAccount.remark')">
             <template #default="{ row }">
               {{ row.remark }}
             </template>
           </ElTableColumn>
-          <ElTableColumn label="操作" width="150">
+          <ElTableColumn :label="$t('common.handle')" width="150">
             <template #default="{ row }">
               <ElButton @click="showDialog(row)" link type="primary">
                 <ElIcon class="mr-1">

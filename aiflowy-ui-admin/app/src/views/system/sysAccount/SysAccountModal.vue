@@ -41,11 +41,21 @@ const entity = ref<any>({
 });
 const btnLoading = ref(false);
 const rules = ref({
-  deptId: [{ required: true, message: '请输入部门ID', trigger: 'blur' }],
-  loginName: [{ required: true, message: '请输入登录账号', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
-  accountType: [{ required: true, message: '请输入账户类型', trigger: 'blur' }],
-  status: [{ required: true, message: '请输入数据状态', trigger: 'blur' }],
+  deptId: [
+    { required: true, message: $t('message.required'), trigger: 'blur' },
+  ],
+  loginName: [
+    { required: true, message: $t('message.required'), trigger: 'blur' },
+  ],
+  password: [
+    { required: true, message: $t('message.required'), trigger: 'blur' },
+  ],
+  accountType: [
+    { required: true, message: $t('message.required'), trigger: 'blur' },
+  ],
+  status: [
+    { required: true, message: $t('message.required'), trigger: 'blur' },
+  ],
 });
 // functions
 function openDialog(row: any) {
@@ -101,40 +111,40 @@ function closeDialog() {
       status-icon
       :rules="rules"
     >
-      <ElFormItem prop="deptId" label="部门ID">
+      <ElFormItem prop="deptId" :label="$t('sysAccount.deptId')">
         <ElInput v-model.trim="entity.deptId" />
       </ElFormItem>
-      <ElFormItem prop="loginName" label="登录账号">
+      <ElFormItem prop="loginName" :label="$t('sysAccount.loginName')">
         <ElInput v-model.trim="entity.loginName" />
       </ElFormItem>
-      <ElFormItem prop="password" label="密码">
+      <ElFormItem prop="password" :label="$t('sysAccount.password')">
         <ElInput v-model.trim="entity.password" />
       </ElFormItem>
-      <ElFormItem prop="accountType" label="账户类型">
+      <ElFormItem prop="accountType" :label="$t('sysAccount.accountType')">
         <ElInput v-model.trim="entity.accountType" />
       </ElFormItem>
-      <ElFormItem prop="nickname" label="昵称">
+      <ElFormItem prop="nickname" :label="$t('sysAccount.nickname')">
         <ElInput v-model.trim="entity.nickname" />
       </ElFormItem>
-      <ElFormItem prop="mobile" label="手机电话">
+      <ElFormItem prop="mobile" :label="$t('sysAccount.mobile')">
         <ElInput v-model.trim="entity.mobile" />
       </ElFormItem>
-      <ElFormItem prop="email" label="邮件">
+      <ElFormItem prop="email" :label="$t('sysAccount.email')">
         <ElInput v-model.trim="entity.email" />
       </ElFormItem>
-      <ElFormItem prop="avatar" label="账户头像">
+      <ElFormItem prop="avatar" :label="$t('sysAccount.avatar')">
         <ElInput v-model.trim="entity.avatar" />
       </ElFormItem>
-      <ElFormItem prop="dataScope" label="数据权限类型">
+      <ElFormItem prop="dataScope" :label="$t('sysAccount.dataScope')">
         <ElInput v-model.trim="entity.dataScope" />
       </ElFormItem>
-      <ElFormItem prop="deptIdList" label="自定义部门权限">
+      <ElFormItem prop="deptIdList" :label="$t('sysAccount.deptIdList')">
         <ElInput v-model.trim="entity.deptIdList" />
       </ElFormItem>
-      <ElFormItem prop="status" label="数据状态">
+      <ElFormItem prop="status" :label="$t('sysAccount.status')">
         <ElInput v-model.trim="entity.status" />
       </ElFormItem>
-      <ElFormItem prop="remark" label="备注">
+      <ElFormItem prop="remark" :label="$t('sysAccount.remark')">
         <ElInput v-model.trim="entity.remark" />
       </ElFormItem>
     </ElForm>
