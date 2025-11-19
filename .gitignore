@@ -42,3 +42,6 @@ build/
 .jlsp/
 .arts/
 luceneKnowledge
+
+# v1
+/aiflowy-ui-react
