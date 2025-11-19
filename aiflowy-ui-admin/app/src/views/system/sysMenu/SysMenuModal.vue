@@ -12,12 +12,17 @@ import {
   ElFormItem,
   ElInput,
   ElMessage,
+  ElOption,
+  ElSelect,
 } from 'element-plus';
 
 import { api } from '#/api/request';
+import DictSelect from '#/components/dict/DictSelect.vue';
 import { $t } from '#/locales';
+import { componentKeys } from '#/router/routes';
 
 const emit = defineEmits(['reload']);
+
 // vue
 onMounted(() => {});
 defineExpose({
@@ -103,11 +108,15 @@ function closeDialog() {
       status-icon
       :rules="rules"
     >
-      <ElFormItem prop="parentId" label="父菜单id">
-        <ElInput v-model.trim="entity.parentId" />
+      <ElFormItem prop="parentId" label="父级">
+        <DictSelect
+          :extra-options="[{ label: '顶级', value: 0 }]"
+          v-model="entity.parentId"
+          dict-code="sysMenu"
+        />
       </ElFormItem>
       <ElFormItem prop="menuType" label="菜单类型">
-        <ElInput v-model.trim="entity.menuType" />
+        <DictSelect v-model="entity.menuType" dict-code="menuType" />
       </ElFormItem>
       <ElFormItem prop="menuTitle" label="菜单标题">
         <ElInput v-model.trim="entity.menuTitle" />
@@ -116,23 +125,34 @@ function closeDialog() {
         <ElInput v-model.trim="entity.menuUrl" />
       </ElFormItem>
       <ElFormItem prop="component" label="组件路径">
-        <ElInput v-model.trim="entity.component" />
+        <ElInput v-model.trim="entity.component">
+          <template #append>
+            <ElSelect
+              v-model="entity.component"
+              filterable
+              style="width: 100px"
+            >
+              <ElOption
+                v-for="item in componentKeys"
+                :key="item"
+                :label="item"
+                :value="item"
+              />
+            </ElSelect>
+          </template>
+        </ElInput>
       </ElFormItem>
-      <ElFormItem prop="menuIcon" label="图标/图片地址">
-<!--        <ElInput v-model.trim="entity.menuIcon" />-->
-        <IconPicker style="z-index: 9999" v-model="entity.menuIcon" />
+      <ElFormItem prop="menuIcon" label="图标">
+        <IconPicker v-model="entity.menuIcon" />
       </ElFormItem>
       <ElFormItem prop="isShow" label="是否显示">
-        <ElInput v-model.trim="entity.isShow" />
+        <DictSelect v-model="entity.isShow" dict-code="yesOrNo" />
       </ElFormItem>
       <ElFormItem prop="permissionTag" label="权限标识">
         <ElInput v-model.trim="entity.permissionTag" />
       </ElFormItem>
       <ElFormItem prop="sortNo" label="排序">
         <ElInput v-model.trim="entity.sortNo" />
-      </ElFormItem>
-      <ElFormItem prop="status" label="数据状态">
-        <ElInput v-model.trim="entity.status" />
       </ElFormItem>
       <ElFormItem prop="remark" label="备注">
         <ElInput v-model.trim="entity.remark" />
@@ -154,5 +174,4 @@ function closeDialog() {
   </ElDialog>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

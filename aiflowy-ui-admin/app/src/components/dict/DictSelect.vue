@@ -24,6 +24,7 @@ interface Props {
   collapseTagsTooltip?: boolean;
   showCode?: boolean; // 是否显示字典编码前缀
   immediate?: boolean; // 是否立即加载
+  extraOptions?: DictItem[];
 }
 
 interface Emits {
@@ -50,6 +51,7 @@ const props = withDefaults(defineProps<Props>(), {
   collapseTagsTooltip: false,
   showCode: false,
   immediate: true,
+  extraOptions: () => [],
 });
 
 const emit = defineEmits<Emits>();
@@ -92,7 +94,8 @@ const fetchDictData = async (code: string) => {
   try {
     // 这里调用你的后端API
     const data = await getDictListByCode(code);
-    dictOptions.value = data;
+    // extraOptions 放最前面
+    dictOptions.value = [...props.extraOptions, ...data];
     loadedCodes.value.add(code);
     emit('dictLoaded', data);
   } catch (error) {
