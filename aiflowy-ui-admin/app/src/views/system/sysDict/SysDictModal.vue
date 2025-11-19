@@ -26,22 +26,17 @@ const saveForm = ref<FormInstance>();
 const dialogVisible = ref(false);
 const isAdd = ref(true);
 const entity = ref<any>({
-  roleName: '',
-  roleKey: '',
+  name: '',
+  code: '',
+  description: '',
+  dictType: '',
+  sortNo: '',
   status: '',
-  remark: '',
+  options: '',
 });
 const btnLoading = ref(false);
 const rules = ref({
-  roleName: [
-    { required: true, message: $t('message.required'), trigger: 'blur' },
-  ],
-  roleKey: [
-    { required: true, message: $t('message.required'), trigger: 'blur' },
-  ],
-  status: [
-    { required: true, message: $t('message.required'), trigger: 'blur' },
-  ],
+  code: [{ required: true, message: $t('message.required'), trigger: 'blur' }],
 });
 // functions
 function openDialog(row: any) {
@@ -57,7 +52,7 @@ function save() {
       btnLoading.value = true;
       api
         .post(
-          isAdd.value ? 'api/v1/sysRole/save' : 'api/v1/sysRole/update',
+          isAdd.value ? 'api/v1/sysDict/save' : 'api/v1/sysDict/update',
           entity.value,
         )
         .then((res) => {
@@ -97,17 +92,26 @@ function closeDialog() {
       status-icon
       :rules="rules"
     >
-      <ElFormItem prop="roleName" :label="$t('sysRole.roleName')">
-        <ElInput v-model.trim="entity.roleName" />
+      <ElFormItem prop="name" :label="$t('sysDict.name')">
+        <ElInput v-model.trim="entity.name" />
       </ElFormItem>
-      <ElFormItem prop="roleKey" :label="$t('sysRole.roleKey')">
-        <ElInput v-model.trim="entity.roleKey" />
+      <ElFormItem prop="code" :label="$t('sysDict.code')">
+        <ElInput v-model.trim="entity.code" />
       </ElFormItem>
-      <ElFormItem prop="status" :label="$t('sysRole.status')">
+      <ElFormItem prop="description" :label="$t('sysDict.description')">
+        <ElInput v-model.trim="entity.description" />
+      </ElFormItem>
+      <ElFormItem prop="dictType" :label="$t('sysDict.dictType')">
+        <ElInput v-model.trim="entity.dictType" />
+      </ElFormItem>
+      <ElFormItem prop="sortNo" :label="$t('sysDict.sortNo')">
+        <ElInput v-model.trim="entity.sortNo" />
+      </ElFormItem>
+      <ElFormItem prop="status" :label="$t('sysDict.status')">
         <ElInput v-model.trim="entity.status" />
       </ElFormItem>
-      <ElFormItem prop="remark" :label="$t('sysRole.remark')">
-        <ElInput v-model.trim="entity.remark" />
+      <ElFormItem prop="options" :label="$t('sysDict.options')">
+        <ElInput v-model.trim="entity.options" />
       </ElFormItem>
     </ElForm>
     <template #footer>

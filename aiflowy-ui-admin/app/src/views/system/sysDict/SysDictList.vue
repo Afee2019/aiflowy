@@ -19,7 +19,7 @@ import { api } from '#/api/request';
 import PageData from '#/components/page/PageData.vue';
 import { $t } from '#/locales';
 
-import SysPositionModal from './SysPositionModal.vue';
+import SysDictModal from './SysDictModal.vue';
 
 const formRef = ref<FormInstance>();
 const pageDataRef = ref();
@@ -50,7 +50,7 @@ function remove(row: any) {
       if (action === 'confirm') {
         instance.confirmButtonLoading = true;
         api
-          .post('/api/v1/sysPosition/remove', { id: row.id })
+          .post('/api/v1/sysDict/remove', { id: row.id })
           .then((res) => {
             instance.confirmButtonLoading = false;
             if (res.errorCode === 0) {
@@ -72,10 +72,10 @@ function remove(row: any) {
 
 <template>
   <div class="page-container">
-    <SysPositionModal ref="saveDialog" @reload="reset" />
+    <SysDictModal ref="saveDialog" @reload="reset" />
     <ElForm ref="formRef" :inline="true" :model="formInline">
-      <ElFormItem :label="$t('sysPosition.id')" prop="id">
-        <ElInput v-model="formInline.id" :placeholder="$t('sysPosition.id')" />
+      <ElFormItem :label="$t('sysDict.id')" prop="id">
+        <ElInput v-model="formInline.id" :placeholder="$t('sysDict.id')" />
       </ElFormItem>
       <ElFormItem>
         <ElButton @click="search(formRef)" type="primary">
@@ -94,52 +94,47 @@ function remove(row: any) {
         {{ $t('button.add') }}
       </ElButton>
     </div>
-    <PageData
-      ref="pageDataRef"
-      page-url="/api/v1/sysPosition/page"
-      :page-size="10"
-    >
+    <PageData ref="pageDataRef" page-url="/api/v1/sysDict/page" :page-size="10">
       <template #default="{ pageList }">
         <ElTable :data="pageList" border>
-          <ElTableColumn prop="deptId" :label="$t('sysPosition.deptId')">
+          <ElTableColumn prop="name" :label="$t('sysDict.name')">
             <template #default="{ row }">
-              {{ row.deptId }}
+              {{ row.name }}
             </template>
           </ElTableColumn>
-          <ElTableColumn
-            prop="positionName"
-            :label="$t('sysPosition.positionName')"
-          >
+          <ElTableColumn prop="code" :label="$t('sysDict.code')">
             <template #default="{ row }">
-              {{ row.positionName }}
+              {{ row.code }}
             </template>
           </ElTableColumn>
-          <ElTableColumn
-            prop="positionCode"
-            :label="$t('sysPosition.positionCode')"
-          >
+          <ElTableColumn prop="description" :label="$t('sysDict.description')">
             <template #default="{ row }">
-              {{ row.positionCode }}
+              {{ row.description }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="sortNo" :label="$t('sysPosition.sortNo')">
+          <ElTableColumn prop="dictType" :label="$t('sysDict.dictType')">
+            <template #default="{ row }">
+              {{ row.dictType }}
+            </template>
+          </ElTableColumn>
+          <ElTableColumn prop="sortNo" :label="$t('sysDict.sortNo')">
             <template #default="{ row }">
               {{ row.sortNo }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="status" :label="$t('sysPosition.status')">
+          <ElTableColumn prop="status" :label="$t('sysDict.status')">
             <template #default="{ row }">
               {{ row.status }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="created" :label="$t('sysPosition.created')">
+          <ElTableColumn prop="options" :label="$t('sysDict.options')">
             <template #default="{ row }">
-              {{ row.created }}
+              {{ row.options }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="remark" :label="$t('sysPosition.remark')">
+          <ElTableColumn prop="created" :label="$t('sysDict.created')">
             <template #default="{ row }">
-              {{ row.remark }}
+              {{ row.created }}
             </template>
           </ElTableColumn>
           <ElTableColumn :label="$t('common.handle')" width="150">

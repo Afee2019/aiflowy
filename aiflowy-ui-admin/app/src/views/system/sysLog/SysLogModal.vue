@@ -26,23 +26,19 @@ const saveForm = ref<FormInstance>();
 const dialogVisible = ref(false);
 const isAdd = ref(true);
 const entity = ref<any>({
-  roleName: '',
-  roleKey: '',
+  accountId: '',
+  actionName: '',
+  actionType: '',
+  actionClass: '',
+  actionMethod: '',
+  actionUrl: '',
+  actionIp: '',
+  actionParams: '',
+  actionBody: '',
   status: '',
-  remark: '',
 });
 const btnLoading = ref(false);
-const rules = ref({
-  roleName: [
-    { required: true, message: $t('message.required'), trigger: 'blur' },
-  ],
-  roleKey: [
-    { required: true, message: $t('message.required'), trigger: 'blur' },
-  ],
-  status: [
-    { required: true, message: $t('message.required'), trigger: 'blur' },
-  ],
-});
+const rules = ref({});
 // functions
 function openDialog(row: any) {
   if (row.id) {
@@ -57,7 +53,7 @@ function save() {
       btnLoading.value = true;
       api
         .post(
-          isAdd.value ? 'api/v1/sysRole/save' : 'api/v1/sysRole/update',
+          isAdd.value ? 'api/v1/sysLog/save' : 'api/v1/sysLog/update',
           entity.value,
         )
         .then((res) => {
@@ -97,17 +93,35 @@ function closeDialog() {
       status-icon
       :rules="rules"
     >
-      <ElFormItem prop="roleName" :label="$t('sysRole.roleName')">
-        <ElInput v-model.trim="entity.roleName" />
+      <ElFormItem prop="accountId" :label="$t('sysLog.accountId')">
+        <ElInput v-model.trim="entity.accountId" />
       </ElFormItem>
-      <ElFormItem prop="roleKey" :label="$t('sysRole.roleKey')">
-        <ElInput v-model.trim="entity.roleKey" />
+      <ElFormItem prop="actionName" :label="$t('sysLog.actionName')">
+        <ElInput v-model.trim="entity.actionName" />
       </ElFormItem>
-      <ElFormItem prop="status" :label="$t('sysRole.status')">
+      <ElFormItem prop="actionType" :label="$t('sysLog.actionType')">
+        <ElInput v-model.trim="entity.actionType" />
+      </ElFormItem>
+      <ElFormItem prop="actionClass" :label="$t('sysLog.actionClass')">
+        <ElInput v-model.trim="entity.actionClass" />
+      </ElFormItem>
+      <ElFormItem prop="actionMethod" :label="$t('sysLog.actionMethod')">
+        <ElInput v-model.trim="entity.actionMethod" />
+      </ElFormItem>
+      <ElFormItem prop="actionUrl" :label="$t('sysLog.actionUrl')">
+        <ElInput v-model.trim="entity.actionUrl" />
+      </ElFormItem>
+      <ElFormItem prop="actionIp" :label="$t('sysLog.actionIp')">
+        <ElInput v-model.trim="entity.actionIp" />
+      </ElFormItem>
+      <ElFormItem prop="actionParams" :label="$t('sysLog.actionParams')">
+        <ElInput v-model.trim="entity.actionParams" />
+      </ElFormItem>
+      <ElFormItem prop="actionBody" :label="$t('sysLog.actionBody')">
+        <ElInput v-model.trim="entity.actionBody" />
+      </ElFormItem>
+      <ElFormItem prop="status" :label="$t('sysLog.status')">
         <ElInput v-model.trim="entity.status" />
-      </ElFormItem>
-      <ElFormItem prop="remark" :label="$t('sysRole.remark')">
-        <ElInput v-model.trim="entity.remark" />
       </ElFormItem>
     </ElForm>
     <template #footer>

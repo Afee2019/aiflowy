@@ -36,9 +36,15 @@ const entity = ref<any>({
 });
 const btnLoading = ref(false);
 const rules = ref({
-  parentId: [{ required: true, message: '请输入父级ID', trigger: 'blur' }],
-  deptName: [{ required: true, message: '请输入部门名称', trigger: 'blur' }],
-  status: [{ required: true, message: '请输入数据状态', trigger: 'blur' }],
+  parentId: [
+    { required: true, message: $t('message.required'), trigger: 'blur' },
+  ],
+  deptName: [
+    { required: true, message: $t('message.required'), trigger: 'blur' },
+  ],
+  status: [
+    { required: true, message: $t('message.required'), trigger: 'blur' },
+  ],
 });
 // functions
 function openDialog(row: any) {
@@ -94,25 +100,25 @@ function closeDialog() {
       status-icon
       :rules="rules"
     >
-      <ElFormItem prop="parentId" label="父级ID">
+      <ElFormItem prop="parentId" :label="$t('sysDept.parentId')">
         <ElInput v-model.trim="entity.parentId" />
       </ElFormItem>
-      <ElFormItem prop="ancestors" label="父级部门ID集合">
+      <ElFormItem prop="ancestors" :label="$t('sysDept.ancestors')">
         <ElInput v-model.trim="entity.ancestors" />
       </ElFormItem>
-      <ElFormItem prop="deptName" label="部门名称">
+      <ElFormItem prop="deptName" :label="$t('sysDept.deptName')">
         <ElInput v-model.trim="entity.deptName" />
       </ElFormItem>
-      <ElFormItem prop="deptCode" label="部门编码">
+      <ElFormItem prop="deptCode" :label="$t('sysDept.deptCode')">
         <ElInput v-model.trim="entity.deptCode" />
       </ElFormItem>
-      <ElFormItem prop="sortNo" label="排序">
+      <ElFormItem prop="sortNo" :label="$t('sysDept.sortNo')">
         <ElInput v-model.trim="entity.sortNo" />
       </ElFormItem>
-      <ElFormItem prop="status" label="数据状态">
+      <ElFormItem prop="status" :label="$t('sysDept.status')">
         <ElInput v-model.trim="entity.status" />
       </ElFormItem>
-      <ElFormItem prop="remark" label="备注">
+      <ElFormItem prop="remark" :label="$t('sysDept.remark')">
         <ElInput v-model.trim="entity.remark" />
       </ElFormItem>
     </ElForm>

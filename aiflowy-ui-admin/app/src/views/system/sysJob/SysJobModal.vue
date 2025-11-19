@@ -26,17 +26,35 @@ const saveForm = ref<FormInstance>();
 const dialogVisible = ref(false);
 const isAdd = ref(true);
 const entity = ref<any>({
-  roleName: '',
-  roleKey: '',
+  deptId: '',
+  jobName: '',
+  jobType: '',
+  jobParams: '',
+  cronExpression: '',
+  allowConcurrent: '',
+  misfirePolicy: '',
+  options: '',
   status: '',
   remark: '',
 });
 const btnLoading = ref(false);
 const rules = ref({
-  roleName: [
+  deptId: [
     { required: true, message: $t('message.required'), trigger: 'blur' },
   ],
-  roleKey: [
+  jobName: [
+    { required: true, message: $t('message.required'), trigger: 'blur' },
+  ],
+  jobType: [
+    { required: true, message: $t('message.required'), trigger: 'blur' },
+  ],
+  cronExpression: [
+    { required: true, message: $t('message.required'), trigger: 'blur' },
+  ],
+  allowConcurrent: [
+    { required: true, message: $t('message.required'), trigger: 'blur' },
+  ],
+  misfirePolicy: [
     { required: true, message: $t('message.required'), trigger: 'blur' },
   ],
   status: [
@@ -57,7 +75,7 @@ function save() {
       btnLoading.value = true;
       api
         .post(
-          isAdd.value ? 'api/v1/sysRole/save' : 'api/v1/sysRole/update',
+          isAdd.value ? 'api/v1/sysJob/save' : 'api/v1/sysJob/update',
           entity.value,
         )
         .then((res) => {
@@ -97,16 +115,34 @@ function closeDialog() {
       status-icon
       :rules="rules"
     >
-      <ElFormItem prop="roleName" :label="$t('sysRole.roleName')">
-        <ElInput v-model.trim="entity.roleName" />
+      <ElFormItem prop="deptId" :label="$t('sysJob.deptId')">
+        <ElInput v-model.trim="entity.deptId" />
       </ElFormItem>
-      <ElFormItem prop="roleKey" :label="$t('sysRole.roleKey')">
-        <ElInput v-model.trim="entity.roleKey" />
+      <ElFormItem prop="jobName" :label="$t('sysJob.jobName')">
+        <ElInput v-model.trim="entity.jobName" />
       </ElFormItem>
-      <ElFormItem prop="status" :label="$t('sysRole.status')">
+      <ElFormItem prop="jobType" :label="$t('sysJob.jobType')">
+        <ElInput v-model.trim="entity.jobType" />
+      </ElFormItem>
+      <ElFormItem prop="jobParams" :label="$t('sysJob.jobParams')">
+        <ElInput v-model.trim="entity.jobParams" />
+      </ElFormItem>
+      <ElFormItem prop="cronExpression" :label="$t('sysJob.cronExpression')">
+        <ElInput v-model.trim="entity.cronExpression" />
+      </ElFormItem>
+      <ElFormItem prop="allowConcurrent" :label="$t('sysJob.allowConcurrent')">
+        <ElInput v-model.trim="entity.allowConcurrent" />
+      </ElFormItem>
+      <ElFormItem prop="misfirePolicy" :label="$t('sysJob.misfirePolicy')">
+        <ElInput v-model.trim="entity.misfirePolicy" />
+      </ElFormItem>
+      <ElFormItem prop="options" :label="$t('sysJob.options')">
+        <ElInput v-model.trim="entity.options" />
+      </ElFormItem>
+      <ElFormItem prop="status" :label="$t('sysJob.status')">
         <ElInput v-model.trim="entity.status" />
       </ElFormItem>
-      <ElFormItem prop="remark" :label="$t('sysRole.remark')">
+      <ElFormItem prop="remark" :label="$t('sysJob.remark')">
         <ElInput v-model.trim="entity.remark" />
       </ElFormItem>
     </ElForm>

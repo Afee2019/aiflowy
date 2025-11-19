@@ -42,9 +42,9 @@ function showDialog(row: any) {
   saveDialog.value.openDialog({ ...row });
 }
 function remove(row: any) {
-  ElMessageBox.confirm('确定删除吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
+  ElMessageBox.confirm($t('message.deleteAlert'), $t('message.noticeTitle'), {
+    confirmButtonText: $t('message.ok'),
+    cancelButtonText: $t('message.cancel'),
     type: 'warning',
     beforeClose: (action, instance, done) => {
       if (action === 'confirm') {
@@ -74,8 +74,8 @@ function remove(row: any) {
   <div class="page-container">
     <SysRoleModal ref="saveDialog" @reload="reset" />
     <ElForm ref="formRef" :inline="true" :model="formInline">
-      <ElFormItem label="查询字段" prop="id">
-        <ElInput v-model="formInline.id" placeholder="请输入查询字段" />
+      <ElFormItem :label="$t('sysRole.id')" prop="id">
+        <ElInput v-model="formInline.id" :placeholder="$t('sysRole.id')" />
       </ElFormItem>
       <ElFormItem>
         <ElButton @click="search(formRef)" type="primary">
@@ -97,32 +97,32 @@ function remove(row: any) {
     <PageData ref="pageDataRef" page-url="/api/v1/sysRole/page" :page-size="10">
       <template #default="{ pageList }">
         <ElTable :data="pageList" border>
-          <ElTableColumn prop="roleName" label="角色名称">
+          <ElTableColumn prop="roleName" :label="$t('sysRole.roleName')">
             <template #default="{ row }">
               {{ row.roleName }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="roleKey" label="角色标识">
+          <ElTableColumn prop="roleKey" :label="$t('sysRole.roleKey')">
             <template #default="{ row }">
               {{ row.roleKey }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="status" label="数据状态">
+          <ElTableColumn prop="status" :label="$t('sysRole.status')">
             <template #default="{ row }">
               {{ row.status }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="created" label="创建时间">
+          <ElTableColumn prop="created" :label="$t('sysRole.created')">
             <template #default="{ row }">
               {{ row.created }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="remark" label="备注">
+          <ElTableColumn prop="remark" :label="$t('sysRole.remark')">
             <template #default="{ row }">
               {{ row.remark }}
             </template>
           </ElTableColumn>
-          <ElTableColumn label="操作" width="150">
+          <ElTableColumn :label="$t('common.handle')" width="150">
             <template #default="{ row }">
               <ElButton @click="showDialog(row)" link type="primary">
                 <ElIcon class="mr-1">

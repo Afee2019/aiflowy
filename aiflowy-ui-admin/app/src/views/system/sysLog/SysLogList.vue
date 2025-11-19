@@ -19,7 +19,7 @@ import { api } from '#/api/request';
 import PageData from '#/components/page/PageData.vue';
 import { $t } from '#/locales';
 
-import SysPositionModal from './SysPositionModal.vue';
+import SysLogModal from './SysLogModal.vue';
 
 const formRef = ref<FormInstance>();
 const pageDataRef = ref();
@@ -50,7 +50,7 @@ function remove(row: any) {
       if (action === 'confirm') {
         instance.confirmButtonLoading = true;
         api
-          .post('/api/v1/sysPosition/remove', { id: row.id })
+          .post('/api/v1/sysLog/remove', { id: row.id })
           .then((res) => {
             instance.confirmButtonLoading = false;
             if (res.errorCode === 0) {
@@ -72,10 +72,10 @@ function remove(row: any) {
 
 <template>
   <div class="page-container">
-    <SysPositionModal ref="saveDialog" @reload="reset" />
+    <SysLogModal ref="saveDialog" @reload="reset" />
     <ElForm ref="formRef" :inline="true" :model="formInline">
-      <ElFormItem :label="$t('sysPosition.id')" prop="id">
-        <ElInput v-model="formInline.id" :placeholder="$t('sysPosition.id')" />
+      <ElFormItem :label="$t('sysLog.id')" prop="id">
+        <ElInput v-model="formInline.id" :placeholder="$t('sysLog.id')" />
       </ElFormItem>
       <ElFormItem>
         <ElButton @click="search(formRef)" type="primary">
@@ -94,52 +94,62 @@ function remove(row: any) {
         {{ $t('button.add') }}
       </ElButton>
     </div>
-    <PageData
-      ref="pageDataRef"
-      page-url="/api/v1/sysPosition/page"
-      :page-size="10"
-    >
+    <PageData ref="pageDataRef" page-url="/api/v1/sysLog/page" :page-size="10">
       <template #default="{ pageList }">
         <ElTable :data="pageList" border>
-          <ElTableColumn prop="deptId" :label="$t('sysPosition.deptId')">
+          <ElTableColumn prop="accountId" :label="$t('sysLog.accountId')">
             <template #default="{ row }">
-              {{ row.deptId }}
+              {{ row.accountId }}
             </template>
           </ElTableColumn>
-          <ElTableColumn
-            prop="positionName"
-            :label="$t('sysPosition.positionName')"
-          >
+          <ElTableColumn prop="actionName" :label="$t('sysLog.actionName')">
             <template #default="{ row }">
-              {{ row.positionName }}
+              {{ row.actionName }}
             </template>
           </ElTableColumn>
-          <ElTableColumn
-            prop="positionCode"
-            :label="$t('sysPosition.positionCode')"
-          >
+          <ElTableColumn prop="actionType" :label="$t('sysLog.actionType')">
             <template #default="{ row }">
-              {{ row.positionCode }}
+              {{ row.actionType }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="sortNo" :label="$t('sysPosition.sortNo')">
+          <ElTableColumn prop="actionClass" :label="$t('sysLog.actionClass')">
             <template #default="{ row }">
-              {{ row.sortNo }}
+              {{ row.actionClass }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="status" :label="$t('sysPosition.status')">
+          <ElTableColumn prop="actionMethod" :label="$t('sysLog.actionMethod')">
+            <template #default="{ row }">
+              {{ row.actionMethod }}
+            </template>
+          </ElTableColumn>
+          <ElTableColumn prop="actionUrl" :label="$t('sysLog.actionUrl')">
+            <template #default="{ row }">
+              {{ row.actionUrl }}
+            </template>
+          </ElTableColumn>
+          <ElTableColumn prop="actionIp" :label="$t('sysLog.actionIp')">
+            <template #default="{ row }">
+              {{ row.actionIp }}
+            </template>
+          </ElTableColumn>
+          <ElTableColumn prop="actionParams" :label="$t('sysLog.actionParams')">
+            <template #default="{ row }">
+              {{ row.actionParams }}
+            </template>
+          </ElTableColumn>
+          <ElTableColumn prop="actionBody" :label="$t('sysLog.actionBody')">
+            <template #default="{ row }">
+              {{ row.actionBody }}
+            </template>
+          </ElTableColumn>
+          <ElTableColumn prop="status" :label="$t('sysLog.status')">
             <template #default="{ row }">
               {{ row.status }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="created" :label="$t('sysPosition.created')">
+          <ElTableColumn prop="created" :label="$t('sysLog.created')">
             <template #default="{ row }">
               {{ row.created }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="remark" :label="$t('sysPosition.remark')">
-            <template #default="{ row }">
-              {{ row.remark }}
             </template>
           </ElTableColumn>
           <ElTableColumn :label="$t('common.handle')" width="150">

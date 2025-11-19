@@ -35,11 +35,15 @@ const entity = ref<any>({
 });
 const btnLoading = ref(false);
 const rules = ref({
-  deptId: [{ required: true, message: '请输入部门ID', trigger: 'blur' }],
-  positionName: [
-    { required: true, message: '请输入岗位名称', trigger: 'blur' },
+  deptId: [
+    { required: true, message: $t('message.required'), trigger: 'blur' },
   ],
-  status: [{ required: true, message: '请输入数据状态', trigger: 'blur' }],
+  positionName: [
+    { required: true, message: $t('message.required'), trigger: 'blur' },
+  ],
+  status: [
+    { required: true, message: $t('message.required'), trigger: 'blur' },
+  ],
 });
 // functions
 function openDialog(row: any) {
@@ -95,22 +99,22 @@ function closeDialog() {
       status-icon
       :rules="rules"
     >
-      <ElFormItem prop="deptId" label="部门ID">
+      <ElFormItem prop="deptId" :label="$t('sysPosition.deptId')">
         <ElInput v-model.trim="entity.deptId" />
       </ElFormItem>
-      <ElFormItem prop="positionName" label="岗位名称">
+      <ElFormItem prop="positionName" :label="$t('sysPosition.positionName')">
         <ElInput v-model.trim="entity.positionName" />
       </ElFormItem>
-      <ElFormItem prop="positionCode" label="岗位编码">
+      <ElFormItem prop="positionCode" :label="$t('sysPosition.positionCode')">
         <ElInput v-model.trim="entity.positionCode" />
       </ElFormItem>
-      <ElFormItem prop="sortNo" label="排序">
+      <ElFormItem prop="sortNo" :label="$t('sysPosition.sortNo')">
         <ElInput v-model.trim="entity.sortNo" />
       </ElFormItem>
-      <ElFormItem prop="status" label="数据状态">
+      <ElFormItem prop="status" :label="$t('sysPosition.status')">
         <ElInput v-model.trim="entity.status" />
       </ElFormItem>
-      <ElFormItem prop="remark" label="备注">
+      <ElFormItem prop="remark" :label="$t('sysPosition.remark')">
         <ElInput v-model.trim="entity.remark" />
       </ElFormItem>
     </ElForm>

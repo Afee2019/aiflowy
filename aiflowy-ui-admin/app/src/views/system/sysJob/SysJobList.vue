@@ -19,7 +19,7 @@ import { api } from '#/api/request';
 import PageData from '#/components/page/PageData.vue';
 import { $t } from '#/locales';
 
-import SysPositionModal from './SysPositionModal.vue';
+import SysJobModal from './SysJobModal.vue';
 
 const formRef = ref<FormInstance>();
 const pageDataRef = ref();
@@ -50,7 +50,7 @@ function remove(row: any) {
       if (action === 'confirm') {
         instance.confirmButtonLoading = true;
         api
-          .post('/api/v1/sysPosition/remove', { id: row.id })
+          .post('/api/v1/sysJob/remove', { id: row.id })
           .then((res) => {
             instance.confirmButtonLoading = false;
             if (res.errorCode === 0) {
@@ -72,10 +72,10 @@ function remove(row: any) {
 
 <template>
   <div class="page-container">
-    <SysPositionModal ref="saveDialog" @reload="reset" />
+    <SysJobModal ref="saveDialog" @reload="reset" />
     <ElForm ref="formRef" :inline="true" :model="formInline">
-      <ElFormItem :label="$t('sysPosition.id')" prop="id">
-        <ElInput v-model="formInline.id" :placeholder="$t('sysPosition.id')" />
+      <ElFormItem :label="$t('sysJob.id')" prop="id">
+        <ElInput v-model="formInline.id" :placeholder="$t('sysJob.id')" />
       </ElFormItem>
       <ElFormItem>
         <ElButton @click="search(formRef)" type="primary">
@@ -94,50 +94,69 @@ function remove(row: any) {
         {{ $t('button.add') }}
       </ElButton>
     </div>
-    <PageData
-      ref="pageDataRef"
-      page-url="/api/v1/sysPosition/page"
-      :page-size="10"
-    >
+    <PageData ref="pageDataRef" page-url="/api/v1/sysJob/page" :page-size="10">
       <template #default="{ pageList }">
         <ElTable :data="pageList" border>
-          <ElTableColumn prop="deptId" :label="$t('sysPosition.deptId')">
+          <ElTableColumn prop="deptId" :label="$t('sysJob.deptId')">
             <template #default="{ row }">
               {{ row.deptId }}
             </template>
           </ElTableColumn>
-          <ElTableColumn
-            prop="positionName"
-            :label="$t('sysPosition.positionName')"
-          >
+          <ElTableColumn prop="jobName" :label="$t('sysJob.jobName')">
             <template #default="{ row }">
-              {{ row.positionName }}
+              {{ row.jobName }}
+            </template>
+          </ElTableColumn>
+          <ElTableColumn prop="jobType" :label="$t('sysJob.jobType')">
+            <template #default="{ row }">
+              {{ row.jobType }}
+            </template>
+          </ElTableColumn>
+          <ElTableColumn prop="jobParams" :label="$t('sysJob.jobParams')">
+            <template #default="{ row }">
+              {{ row.jobParams }}
             </template>
           </ElTableColumn>
           <ElTableColumn
-            prop="positionCode"
-            :label="$t('sysPosition.positionCode')"
+            prop="cronExpression"
+            :label="$t('sysJob.cronExpression')"
           >
             <template #default="{ row }">
-              {{ row.positionCode }}
+              {{ row.cronExpression }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="sortNo" :label="$t('sysPosition.sortNo')">
+          <ElTableColumn
+            prop="allowConcurrent"
+            :label="$t('sysJob.allowConcurrent')"
+          >
             <template #default="{ row }">
-              {{ row.sortNo }}
+              {{ row.allowConcurrent }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="status" :label="$t('sysPosition.status')">
+          <ElTableColumn
+            prop="misfirePolicy"
+            :label="$t('sysJob.misfirePolicy')"
+          >
+            <template #default="{ row }">
+              {{ row.misfirePolicy }}
+            </template>
+          </ElTableColumn>
+          <ElTableColumn prop="options" :label="$t('sysJob.options')">
+            <template #default="{ row }">
+              {{ row.options }}
+            </template>
+          </ElTableColumn>
+          <ElTableColumn prop="status" :label="$t('sysJob.status')">
             <template #default="{ row }">
               {{ row.status }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="created" :label="$t('sysPosition.created')">
+          <ElTableColumn prop="created" :label="$t('sysJob.created')">
             <template #default="{ row }">
               {{ row.created }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="remark" :label="$t('sysPosition.remark')">
+          <ElTableColumn prop="remark" :label="$t('sysJob.remark')">
             <template #default="{ row }">
               {{ row.remark }}
             </template>
