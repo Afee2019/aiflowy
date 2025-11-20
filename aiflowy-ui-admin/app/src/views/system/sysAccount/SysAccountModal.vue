@@ -13,6 +13,7 @@ import {
 } from 'element-plus';
 
 import { api } from '#/api/request';
+import Cropper from '#/components/upload/Cropper.vue';
 import { $t } from '#/locales';
 
 const emit = defineEmits(['reload']);
@@ -134,6 +135,7 @@ function closeDialog() {
       </ElFormItem>
       <ElFormItem prop="avatar" :label="$t('sysAccount.avatar')">
         <ElInput v-model.trim="entity.avatar" />
+        <Cropper v-model="entity.avatar" crop />
       </ElFormItem>
       <ElFormItem prop="dataScope" :label="$t('sysAccount.dataScope')">
         <ElInput v-model.trim="entity.dataScope" />
