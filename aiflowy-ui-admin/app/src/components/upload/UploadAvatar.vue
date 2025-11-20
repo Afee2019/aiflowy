@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { UploadProps } from 'element-plus';
 
-import { defineEmits, ref } from 'vue';
+import { defineEmits, ref, watch } from 'vue';
 
 import { useAppConfig } from '@aiflowy/hooks';
 import { useAccessStore } from '@aiflowy/stores';
@@ -22,27 +22,33 @@ const props = defineProps({
     type: Array<string>,
     default: () => ['image/gif', 'image/jpeg', 'image/png', 'image/webp'],
   },
-  imageUrl: {
-    type: String,
-    default: '',
-  },
+  modelValue: { type: String, default: '' },
 });
 
-const emit = defineEmits(['success']);
+const emit = defineEmits(['success', 'update:modelValue']);
 const accessStore = useAccessStore();
 const headers = ref({
   'aiflowy-token': accessStore.accessToken,
 });
 
 const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD);
-const localImageUrl = ref(props.imageUrl);
+const localImageUrl = ref(props.modelValue);
 const handleAvatarSuccess: UploadProps['onSuccess'] = (
   _response,
   uploadFile,
 ) => {
   localImageUrl.value = URL.createObjectURL(uploadFile.raw!);
   emit('success', _response.data.path);
+  emit('update:modelValue', _response.data.path);
 };
+
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    localImageUrl.value = newVal;
+  },
+  { immediate: true },
+);
 
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
   if (!props.allowedImageTypes.includes(rawFile.type)) {
@@ -71,7 +77,12 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
     :on-success="handleAvatarSuccess"
     :before-upload="beforeAvatarUpload"
   >
-    <ElImage v-if="imageUrl" :src="imageUrl" class="avatar" />
+    <ElImage
+      v-if="localImageUrl"
+      :src="localImageUrl"
+      class="avatar"
+      fit="cover"
+    />
     <ElIcon v-else class="avatar-uploader-icon"><Plus /></ElIcon>
   </ElUpload>
 </template>
