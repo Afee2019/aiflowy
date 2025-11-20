@@ -14,6 +14,7 @@ import {
   ElIcon,
   ElImage,
   ElMessage,
+  ElTag,
   ElUpload,
 } from 'element-plus';
 
@@ -21,13 +22,14 @@ import { api } from '#/api/request';
 
 // 定义组件props
 interface Props {
-  modelValue?: string; // 双向绑定的图片URL
+  modelValue?: string[]; // 双向绑定的图片URL数组
   crop?: boolean; // 是否启用裁剪
   action?: string; // 上传地址
   headers?: Record<string, string>; // 上传请求头
   data?: Record<string, any>; // 上传额外数据
   cropConfig?: Partial<CropConfig>; // 裁剪配置
   limit?: number; // 文件大小限制(MB)
+  maxCount?: number; // 最大文件数量
 }
 
 interface CropConfig {
@@ -49,20 +51,29 @@ interface CropConfig {
   high: boolean;
 }
 
+interface FileItem {
+  id: string; // 唯一标识
+  url: string; // 图片URL
+  name?: string; // 文件名
+  uploading?: boolean; // 上传状态
+}
+
 const props = withDefaults(defineProps<Props>(), {
-  modelValue: '',
+  modelValue: () => [],
   action: '/api/v1/commons/upload',
   crop: false,
   headers: () => ({}),
   data: () => ({}),
   cropConfig: () => ({}),
   limit: 5,
+  maxCount: 5,
 });
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string];
+  remove: [url: string, fileList: string[]];
+  'update:modelValue': [value: string[]];
   uploadError: [error: Error];
-  uploadSuccess: [url: string];
+  uploadSuccess: [url: string, fileList: string[]];
 }>();
 
 const accessStore = useAccessStore();
@@ -99,6 +110,10 @@ const showCropDialog = ref(false);
 const cropImageUrl = ref('');
 const uploading = ref(false);
 const currentFile = ref<File | null>(null);
+const currentCropIndex = ref<number>(-1); // 当前裁剪的文件索引，-1表示新增文件
+
+// 文件列表
+const fileList = ref<FileItem[]>([]);
 
 // 合并裁剪配置
 const mergedCropConfig = computed(() => ({
@@ -106,9 +121,38 @@ const mergedCropConfig = computed(() => ({
   ...props.cropConfig,
 }));
 
-// 触发上传 - 修复：直接触发上传组件的点击事件
-const triggerUpload = () => {
-  // 创建隐藏的input元素来触发文件选择
+// 从URL中提取文件名
+const getFileNameFromUrl = (url: string): string => {
+  try {
+    return url.split('/').pop() || 'image';
+  } catch {
+    return 'image';
+  }
+};
+// 生成唯一ID
+const generateId = () => {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+};
+// 从modelValue初始化文件列表
+watch(
+  () => props.modelValue,
+  (urls) => {
+    if (
+      JSON.stringify(urls) !==
+      JSON.stringify(fileList.value.map((item) => item.url))
+    ) {
+      fileList.value = urls.map((url) => ({
+        id: generateId(),
+        url,
+        name: getFileNameFromUrl(url),
+      }));
+    }
+  },
+  { immediate: true, deep: true },
+);
+
+// 处理单个文件重新上传
+const triggerReupload = (index: number) => {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
@@ -117,7 +161,8 @@ const triggerUpload = () => {
   input.addEventListener('change', (e) => {
     const file = (e.target as HTMLInputElement).files?.[0];
     if (file) {
-      handleFileSelect(file);
+      currentCropIndex.value = index; // 标记为重新上传
+      handleFileSelect(file, index);
     }
     input.remove();
   });
@@ -126,8 +171,8 @@ const triggerUpload = () => {
   input.click();
 };
 
-// 处理文件选择
-const handleFileSelect = (file: File) => {
+// 处理单个文件选择
+const handleFileSelect = (file: File, index: number) => {
   // 验证文件
   const isImage = file.type.startsWith('image/');
   if (!isImage) {
@@ -142,6 +187,7 @@ const handleFileSelect = (file: File) => {
   }
 
   currentFile.value = file;
+  currentCropIndex.value = index;
 
   // 如果需要裁剪，显示裁剪对话框
   if (props.crop) {
@@ -149,7 +195,7 @@ const handleFileSelect = (file: File) => {
     showCropDialog.value = true;
   } else {
     // 直接上传
-    uploadFile(file);
+    uploadFile(file, index);
   }
 };
 
@@ -167,9 +213,15 @@ const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
     return false;
   }
 
+  if (fileList.value.length >= props.maxCount) {
+    ElMessage.error(`最多只能上传 ${props.maxCount} 个文件`);
+    return false;
+  }
+
   // 如果需要裁剪，显示裁剪对话框
   if (props.crop) {
     currentFile.value = rawFile;
+    currentCropIndex.value = -1; // 新增文件
     cropImageUrl.value = URL.createObjectURL(rawFile);
     showCropDialog.value = true;
     return false; // 阻止自动上传
@@ -179,9 +231,14 @@ const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
 };
 
 // 统一上传方法
-const uploadFile = async (file: File) => {
+const uploadFile = async (file: File, index: number) => {
   try {
-    uploading.value = true;
+    // 如果是重新上传，标记为上传中状态
+    if (index >= 0 && index < fileList.value.length && fileList.value[index]) {
+      fileList.value[index].uploading = true;
+    } else {
+      uploading.value = true;
+    }
 
     const formData = new FormData();
     formData.append('file', file);
@@ -204,28 +261,53 @@ const uploadFile = async (file: File) => {
       throw new Error('上传成功但未返回图片URL');
     }
 
-    emit('update:modelValue', imageUrl);
-    emit('uploadSuccess', imageUrl);
+    // 更新文件列表
+    if (index >= 0 && index < fileList.value.length && fileList.value[index]) {
+      // 重新上传，替换原有文件
+      fileList.value[index].url = imageUrl;
+      fileList.value[index].name = file.name;
+      fileList.value[index].uploading = false;
+    } else {
+      // 新增文件
+      fileList.value.push({
+        id: generateId(),
+        url: imageUrl,
+        name: file.name,
+        uploading: false,
+      });
+    }
 
-    ElMessage.success('上传成功!');
+    // 更新modelValue
+    const urls = fileList.value.map((item) => item.url);
+    emit('update:modelValue', urls);
+    emit('uploadSuccess', imageUrl, urls);
+
+    ElMessage.success(index >= 0 ? '重新上传成功!' : '上传成功!');
   } catch (error) {
     const err = error instanceof Error ? error : new Error('上传失败');
+
+    // 重置上传状态
+    if (index >= 0 && index < fileList.value.length && fileList.value[index]) {
+      fileList.value[index].uploading = false;
+    }
+
     emit('uploadError', err);
     ElMessage.error(err.message);
   } finally {
     uploading.value = false;
     currentFile.value = null;
+    currentCropIndex.value = -1;
   }
 };
 
 // 处理上传
 const handleUpload: UploadRequestHandler = async (options) => {
   const { file, onSuccess } = options;
-  await uploadFile(file);
-  onSuccess({}); // 调用成功回调
+  await uploadFile(file, -1);
+  onSuccess({});
 };
 
-// 处理裁剪 - 修复：使用正确的裁剪逻辑
+// 处理裁剪
 const handleCrop = () => {
   if (!cropperRef.value) {
     ElMessage.error('裁剪器未初始化');
@@ -241,14 +323,14 @@ const handleCrop = () => {
     try {
       uploading.value = true;
 
-      // 创建文件对象，保留原始文件名但使用裁剪后的内容
+      // 创建文件对象
       const originalName = currentFile.value?.name || 'cropped-image';
       const fileExtension = originalName.split('.').pop() || 'png';
       const fileName = `cropped-${Date.now()}.${fileExtension}`;
 
       const file = new File([blob], fileName, { type: blob.type });
 
-      await uploadFile(file);
+      await uploadFile(file, currentCropIndex.value);
       showCropDialog.value = false;
     } catch (error) {
       const err = error instanceof Error ? error : new Error('上传失败');
@@ -261,8 +343,14 @@ const handleCrop = () => {
 };
 
 // 删除图片
-const handleRemove = () => {
-  emit('update:modelValue', '');
+const handleRemove = (index: number) => {
+  const removedUrl = fileList.value[index]?.url;
+  fileList.value.splice(index, 1);
+
+  const urls = fileList.value.map((item) => item.url);
+  emit('update:modelValue', urls);
+  emit('remove', removedUrl || '', urls);
+
   ElMessage.success('删除成功!');
 };
 
@@ -276,45 +364,58 @@ watch(showCropDialog, (newVal) => {
 </script>
 
 <template>
-  <div class="image-upload-container">
-    <!-- 上传按钮 -->
-    <div v-if="!modelValue" class="upload-area">
-      <ElUpload
-        ref="uploadRef"
-        class="avatar-uploader"
-        action="#"
-        :show-file-list="false"
-        :before-upload="beforeUpload"
-        :http-request="handleUpload"
-        accept="image/*"
-      >
-        <ElIcon class="avatar-uploader-icon"><Plus /></ElIcon>
-      </ElUpload>
-    </div>
-
-    <!-- 图片预览 -->
-    <div v-else class="preview-area">
-      <div class="preview-container">
-        <ElImage
-          :src="modelValue"
-          :preview-src-list="[modelValue]"
-          fit="cover"
-          class="preview-image"
-          :zoom-rate="1.2"
-          :max-scale="7"
-          :min-scale="0.2"
-          hide-on-click-modal
-        />
-        <div class="preview-actions">
-          <ElButton type="primary" text @click="triggerUpload">
-            <ElIcon><Edit /></ElIcon>
-            重新上传
-          </ElButton>
-          <ElButton type="danger" text @click="handleRemove">
-            <ElIcon><Delete /></ElIcon>
-            删除
-          </ElButton>
+  <div class="multi-image-upload-container">
+    <!-- 文件列表展示 -->
+    <div class="file-list">
+      <div v-for="(file, index) in fileList" :key="file.id" class="file-item">
+        <div class="preview-container">
+          <ElImage
+            :src="file.url"
+            :preview-src-list="fileList.map((f) => f.url)"
+            fit="cover"
+            class="preview-image"
+            :zoom-rate="1.2"
+            :max-scale="7"
+            :min-scale="0.2"
+            hide-on-click-modal
+          />
+          <div class="preview-actions">
+            <ElButton
+              type="primary"
+              text
+              :loading="file.uploading"
+              @click="triggerReupload(index)"
+            >
+              <ElIcon><Edit /></ElIcon>
+              {{ file.uploading ? '上传中...' : '重新上传' }}
+            </ElButton>
+            <ElButton type="danger" text @click="handleRemove(index)">
+              <ElIcon><Delete /></ElIcon>
+              删除
+            </ElButton>
+          </div>
+          <ElTag v-if="file.name" class="file-name" size="small">
+            {{ file.name }}
+          </ElTag>
         </div>
+      </div>
+
+      <!-- 上传按钮 -->
+      <div v-if="fileList.length < maxCount" class="upload-area file-item">
+        <ElUpload
+          ref="uploadRef"
+          class="avatar-uploader"
+          action="#"
+          :show-file-list="false"
+          :before-upload="beforeUpload"
+          :http-request="handleUpload"
+          accept="image/*"
+          :multiple="true"
+        >
+          <ElIcon class="avatar-uploader-icon"><Plus /></ElIcon>
+          <div class="upload-text">点击上传</div>
+          <div class="upload-hint">最多 {{ maxCount }} 个文件</div>
+        </ElUpload>
       </div>
     </div>
 
@@ -364,43 +465,18 @@ watch(showCropDialog, (newVal) => {
 </template>
 
 <style scoped>
-/* 样式保持不变 */
-.image-upload-container {
-  display: inline-block;
-}
-
-.upload-area {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.avatar-uploader {
-  width: 100px;
-  height: 100px;
-  border: 1px dashed #d9d9d9;
-  border-radius: 6px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.3s;
-}
-
-.avatar-uploader:hover {
-  border-color: #409eff;
-}
-
-.avatar-uploader-icon {
-  font-size: 28px;
-  color: #8c939d;
+.multi-image-upload-container {
   width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.preview-area {
+.file-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.file-item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -410,7 +486,17 @@ watch(showCropDialog, (newVal) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
+  transition: all 0.3s;
+}
+
+.preview-container:hover {
+  border-color: #409eff;
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.1);
 }
 
 .preview-image {
@@ -424,6 +510,60 @@ watch(showCropDialog, (newVal) => {
 .preview-actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.file-name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.avatar-uploader {
+  width: 100px;
+  height: 140px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+}
+
+.avatar-uploader:hover {
+  border-color: #409eff;
+}
+
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  margin-bottom: 8px;
+}
+
+.upload-text {
+  font-size: 12px;
+  color: #606266;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.upload-hint {
+  font-size: 10px;
+  color: #909399;
+  text-align: center;
 }
 
 .cropper-container {
@@ -434,14 +574,9 @@ watch(showCropDialog, (newVal) => {
   align-items: center;
 }
 
-.edit-actions {
+.dialog-footer {
   display: flex;
-  flex-direction: column;
+  justify-content: flex-end;
   gap: 12px;
-  padding: 20px 0;
-}
-
-.edit-actions .el-button {
-  justify-content: flex-start;
 }
 </style>
