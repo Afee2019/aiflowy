@@ -13,6 +13,7 @@ import {
 } from 'element-plus';
 
 import { api } from '#/api/request';
+import DictSelect from '#/components/dict/DictSelect.vue';
 import Cropper from '#/components/upload/Cropper.vue';
 import { $t } from '#/locales';
 
@@ -48,10 +49,10 @@ const rules = ref({
   loginName: [
     { required: true, message: $t('message.required'), trigger: 'blur' },
   ],
-  password: [
+  nickname: [
     { required: true, message: $t('message.required'), trigger: 'blur' },
   ],
-  accountType: [
+  password: [
     { required: true, message: $t('message.required'), trigger: 'blur' },
   ],
   status: [
@@ -64,11 +65,6 @@ function openDialog(row: any) {
     isAdd.value = false;
   }
   entity.value = row;
-  entity.value.avatars = [
-    'https://static.agentscenter.cn/public//1/2025/11/20/8e11e271-d863-47ad-8817-0dc3f157becc/0ec0626f1c2b425888f928efc0997eb8.png',
-    'https://static.agentscenter.cn/public//1/2025/11/20/07d63759-01d8-4b03-8b15-c2d03cd9e0ab/6C29D7C8F836BEFABCEA3FA87F351BA9.jpg',
-    'https://static.agentscenter.cn/public//1/2025/11/20/60194bc4-097a-49b3-bef7-b5a071cdb4e1/99bfe6c53d4855e0 (1).jpg',
-  ];
   dialogVisible.value = true;
 }
 function save() {
@@ -117,17 +113,21 @@ function closeDialog() {
       status-icon
       :rules="rules"
     >
+      <ElFormItem prop="avatar" :label="$t('sysAccount.avatar')">
+        <Cropper v-model="entity.avatar" crop />
+      </ElFormItem>
       <ElFormItem prop="deptId" :label="$t('sysAccount.deptId')">
-        <ElInput v-model.trim="entity.deptId" />
+        <DictSelect v-model="entity.deptId" dict-code="sysDept" />
       </ElFormItem>
       <ElFormItem prop="loginName" :label="$t('sysAccount.loginName')">
         <ElInput v-model.trim="entity.loginName" />
       </ElFormItem>
-      <ElFormItem prop="password" :label="$t('sysAccount.password')">
+      <ElFormItem
+        v-if="isAdd"
+        prop="password"
+        :label="$t('sysAccount.password')"
+      >
         <ElInput v-model.trim="entity.password" />
-      </ElFormItem>
-      <ElFormItem prop="accountType" :label="$t('sysAccount.accountType')">
-        <ElInput v-model.trim="entity.accountType" />
       </ElFormItem>
       <ElFormItem prop="nickname" :label="$t('sysAccount.nickname')">
         <ElInput v-model.trim="entity.nickname" />
@@ -138,20 +138,14 @@ function closeDialog() {
       <ElFormItem prop="email" :label="$t('sysAccount.email')">
         <ElInput v-model.trim="entity.email" />
       </ElFormItem>
-      <ElFormItem prop="avatar" :label="$t('sysAccount.avatar')">
-        <Cropper v-model="entity.avatar" crop />
-      </ElFormItem>
-      <ElFormItem prop="dataScope" :label="$t('sysAccount.dataScope')">
-        <ElInput v-model.trim="entity.dataScope" />
-      </ElFormItem>
-      <ElFormItem prop="deptIdList" :label="$t('sysAccount.deptIdList')">
-        <ElInput v-model.trim="entity.deptIdList" />
-      </ElFormItem>
       <ElFormItem prop="status" :label="$t('sysAccount.status')">
-        <ElInput v-model.trim="entity.status" />
+        <DictSelect v-model="entity.status" dict-code="dataStatus" />
       </ElFormItem>
       <ElFormItem prop="remark" :label="$t('sysAccount.remark')">
         <ElInput v-model.trim="entity.remark" />
+      </ElFormItem>
+      <ElFormItem prop="roleIds" :label="$t('sysAccount.roleIds')">
+        <DictSelect multiple v-model="entity.roleIds" dict-code="sysRole" />
       </ElFormItem>
     </ElForm>
     <template #footer>

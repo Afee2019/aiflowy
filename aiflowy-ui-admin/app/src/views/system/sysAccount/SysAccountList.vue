@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type { FormInstance } from 'element-plus';
 
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import { Delete, Edit, Plus } from '@element-plus/icons-vue';
 import {
+  ElAvatar,
   ElButton,
   ElForm,
   ElFormItem,
@@ -17,17 +18,26 @@ import {
 } from 'element-plus';
 
 import { api } from '#/api/request';
+import defaultAvatar from '#/assets/defaultUserAvatar.png';
 import PageData from '#/components/page/PageData.vue';
 import { $t } from '#/locales';
+import { useDictStore } from '#/store';
 
 import SysAccountModal from './SysAccountModal.vue';
 
+onMounted(() => {
+  initDict();
+});
 const formRef = ref<FormInstance>();
 const pageDataRef = ref();
 const saveDialog = ref();
 const formInline = ref({
-  id: '',
+  loginName: '',
 });
+const dictStore = useDictStore();
+function initDict() {
+  dictStore.fetchDictionary('dataStatus');
+}
 function search(formEl: FormInstance | undefined) {
   formEl?.validate((valid) => {
     if (valid) {
@@ -69,16 +79,19 @@ function remove(row: any) {
     },
   }).catch(() => {});
 }
+function isAdmin(data: any) {
+  return data?.accountType === 1 || data?.accountType === 99;
+}
 </script>
 
 <template>
   <div class="page-container">
     <SysAccountModal ref="saveDialog" @reload="reset" />
     <ElForm ref="formRef" :inline="true" :model="formInline">
-      <ElFormItem :label="$t('sysAccount.id')" prop="id">
+      <ElFormItem :label="$t('sysAccount.loginName')" prop="loginName">
         <ElInput
-          v-model="formInline.id"
-          :placeholder="`${$t('sysAccount.id')}`"
+          v-model="formInline.loginName"
+          :placeholder="`${$t('sysAccount.loginName')}`"
         />
       </ElFormItem>
       <ElFormItem>
@@ -109,27 +122,14 @@ function remove(row: any) {
     >
       <template #default="{ pageList }">
         <ElTable :data="pageList" border>
-          <ElTableColumn prop="deptId" :label="$t('sysAccount.deptId')">
+          <ElTableColumn prop="avatar" :label="$t('sysAccount.avatar')">
             <template #default="{ row }">
-              {{ row.deptId }}
+              <ElAvatar :src="row.avatar || defaultAvatar" />
             </template>
           </ElTableColumn>
           <ElTableColumn prop="loginName" :label="$t('sysAccount.loginName')">
             <template #default="{ row }">
               {{ row.loginName }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="password" :label="$t('sysAccount.password')">
-            <template #default="{ row }">
-              {{ row.password }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn
-            prop="accountType"
-            :label="$t('sysAccount.accountType')"
-          >
-            <template #default="{ row }">
-              {{ row.accountType }}
             </template>
           </ElTableColumn>
           <ElTableColumn prop="nickname" :label="$t('sysAccount.nickname')">
@@ -147,24 +147,9 @@ function remove(row: any) {
               {{ row.email }}
             </template>
           </ElTableColumn>
-          <ElTableColumn prop="avatar" :label="$t('sysAccount.avatar')">
-            <template #default="{ row }">
-              {{ row.avatar }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="dataScope" :label="$t('sysAccount.dataScope')">
-            <template #default="{ row }">
-              {{ row.dataScope }}
-            </template>
-          </ElTableColumn>
-          <ElTableColumn prop="deptIdList" :label="$t('sysAccount.deptIdList')">
-            <template #default="{ row }">
-              {{ row.deptIdList }}
-            </template>
-          </ElTableColumn>
           <ElTableColumn prop="status" :label="$t('sysAccount.status')">
             <template #default="{ row }">
-              {{ row.status }}
+              {{ dictStore.getDictLabel('dataStatus', row.status) }}
             </template>
           </ElTableColumn>
           <ElTableColumn prop="created" :label="$t('sysAccount.created')">
@@ -179,7 +164,7 @@ function remove(row: any) {
           </ElTableColumn>
           <ElTableColumn :label="$t('common.handle')" width="150">
             <template #default="{ row }">
-              <div>
+              <div v-if="!isAdmin(row)">
                 <ElButton
                   v-access:code="'/api/v1/sysAccount/save'"
                   @click="showDialog(row)"
