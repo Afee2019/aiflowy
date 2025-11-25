@@ -59,6 +59,8 @@
     "regexDocumentSplitter": "RegexDocumentSplitter",
     "uploadStatus": "UploadStatus",
     "pendingUpload": "PendingUpload",
-    "completed": "Completed"
+    "completed": "Completed",
+    "uploading": "Parsing in progress",
+    "importSuccess": "ImportSuccess"
   }
 }

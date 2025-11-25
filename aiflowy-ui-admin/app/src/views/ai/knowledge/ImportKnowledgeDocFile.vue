@@ -4,7 +4,13 @@ import { ref } from 'vue';
 import { $t } from '@aiflowy/locales';
 
 import { Back } from '@element-plus/icons-vue';
-import { ElButton, ElPagination, ElStep, ElSteps } from 'element-plus';
+import {
+  ElButton,
+  ElMessage,
+  ElPagination,
+  ElStep,
+  ElSteps,
+} from 'element-plus';
 
 import ComfirmImportDocument from '#/views/ai/knowledge/ComfirmImportDocument.vue';
 import ImportKnowledgeFileContainer from '#/views/ai/knowledge/ImportKnowledgeFileContainer.vue';
@@ -50,21 +56,28 @@ const handleCurrentChange = (val: number) => {
 const handleTotalUpdate = (newTotal: number) => {
   pagination.value.total = newTotal; // 同步到父组件的 pagination.total
 };
+const loadingSave = ref(false);
 const confirmImport = () => {
+  loadingSave.value = true;
   // 确认导入
   confirmImportRef.value.handleSave();
+};
+const finishImport = () => {
+  loadingSave.value = false;
+  ElMessage.success($t('aiKnowledge.splitterDoc.importSuccess'));
+  emits('importBack');
 };
 </script>
 
 <template>
-  <div class="imp-doc-container">
+  <div class="imp-doc-kno-container">
     <div class="imp-doc-header">
       <ElButton @click="back" :icon="Back">
         {{ $t('button.back') }}
       </ElButton>
     </div>
-    <div class="imp-doc-content">
-      <ElSteps :active="activeStep">
+    <div class="imp-doc-kno-content">
+      <ElSteps :active="activeStep" finish-status="success">
         <ElStep :title="$t('aiKnowledge.importDoc.fileUpload')" />
         <ElStep :title="$t('aiKnowledge.importDoc.parameterSettings')" />
         <ElStep :title="$t('aiKnowledge.importDoc.segmentedPreview')" />
@@ -96,11 +109,12 @@ const confirmImport = () => {
             :splitter-params="splitterParams"
             :files-list="files"
             ref="confirmImportRef"
+            @loading-finish="finishImport"
           />
         </div>
       </div>
     </div>
-
+    <div style="height: 40px"></div>
     <div class="imp-doc-footer">
       <div v-if="activeStep === 3" class="imp-doc-page-container">
         <ElPagination
@@ -117,7 +131,13 @@ const confirmImport = () => {
       <ElButton @click="goToNextStep" type="primary" v-if="activeStep < 4">
         {{ $t('button.nextStep') }}
       </ElButton>
-      <ElButton @click="confirmImport" type="primary" v-if="activeStep === 4">
+      <ElButton
+        @click="confirmImport"
+        type="primary"
+        v-if="activeStep === 4"
+        :loading="loadingSave"
+        :disabled="loadingSave"
+      >
         {{ $t('button.startImport') }}
       </ElButton>
     </div>
@@ -125,8 +145,9 @@ const confirmImport = () => {
 </template>
 
 <style scoped>
-.imp-doc-container {
-  height: 100%;
+.imp-doc-kno-container {
+  position: relative;
+  height: calc(100vh - 161px);
   background-color: var(--el-color-white);
   border-radius: 12px;
   padding: 20px;
@@ -134,12 +155,19 @@ const confirmImport = () => {
   flex-direction: column;
 }
 
-.imp-doc-content {
-  height: 100%;
+.imp-doc-kno-content {
+  flex: 1;
   padding-top: 20px;
+  overflow: scroll;
 }
 .imp-doc-footer {
+  position: absolute;
+  bottom: 0;
+  right: 20px;
   display: flex;
+  height: 40px;
+  background-color: var(--el-color-white);
+  align-items: center;
   justify-content: flex-end;
 }
 .knw-file-preview {
@@ -151,5 +179,11 @@ const confirmImport = () => {
 }
 .knw-file-confirm {
   width: 100%;
+}
+:deep(.el-step__head.is-success) {
+  color: var(--el-color-primary) !important;
+}
+:deep(.el-step__title.is-success) {
+  color: var(--el-color-primary) !important;
 }
 </style>

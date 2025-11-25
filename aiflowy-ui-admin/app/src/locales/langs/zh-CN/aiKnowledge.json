@@ -59,6 +59,8 @@
     "regexDocumentSplitter": "正则文档分割器",
     "uploadStatus": "上传状态",
     "pendingUpload": "待上传",
-    "completed": "已完成"
+    "completed": "已完成",
+    "uploading": "解析中",
+    "importSuccess": "导入成功"
   }
 }

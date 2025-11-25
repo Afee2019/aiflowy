@@ -19,6 +19,8 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(['loadingFinish']);
+
 const route = useRoute();
 
 const knowledgeIdRef = ref<string>((route.query.id as string) || '');
@@ -33,6 +35,7 @@ watch(
 defineExpose({
   handleSave() {
     localFilesList.value.forEach((file, index) => {
+      localFilesList.value[index].progressUpload = 'loading';
       saveDoc(file.filePath, 'saveText', file.fileName, index);
     });
   },
@@ -66,6 +69,9 @@ function saveDoc(
     .then((res) => {
       if (res.errorCode === 0) {
         localFilesList.value[index].progressUpload = 'success';
+      }
+      if (index === localFilesList.value.length - 1) {
+        emit('loadingFinish');
       }
       console.log('保存结果');
       console.log(res);

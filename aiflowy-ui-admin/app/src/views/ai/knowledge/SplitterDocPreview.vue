@@ -144,21 +144,31 @@ const changeCategory = (category: any) => {
 
 <template>
   <div class="splitter-doc-container">
-    <CategoryPanel
-      :categories="fliesList"
-      title-key="fileName"
-      :need-hide-collapse="true"
-      :expand-width="200"
-      value-key="filePath"
-      :default-selected-category="fliesList[0]!.filePath"
-      @click="changeCategory"
-    />
-    <PreviewSearchKnowledge :data="documentList" :hide-score="true" />
+    <div>
+      <CategoryPanel
+        :categories="fliesList"
+        title-key="fileName"
+        :need-hide-collapse="true"
+        :expand-width="200"
+        value-key="filePath"
+        :default-selected-category="fliesList[0]!.filePath"
+        @click="changeCategory"
+      />
+    </div>
+
+    <div class="preview-container">
+      <PreviewSearchKnowledge :data="documentList" :hide-score="true" />
+    </div>
   </div>
 </template>
 
 <style scoped>
 .splitter-doc-container {
+  height: 100%;
   display: flex;
+}
+.preview-container {
+  flex: 1;
+  overflow: scroll;
 }
 </style>
