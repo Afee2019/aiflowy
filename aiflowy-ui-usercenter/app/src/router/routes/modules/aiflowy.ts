@@ -39,16 +39,6 @@ const routes: RouteRecordRaw[] = [
     ],
   },
   {
-    name: 'AIFlowyAbout',
-    path: '/aiflowy-usercenter/about',
-    component: () => import('#/views/_core/about/index.vue'),
-    meta: {
-      icon: 'lucide:copyright',
-      title: $t('demos.aiflowy.about'),
-      order: 9999,
-    },
-  },
-  {
     name: 'Profile',
     path: '/profile',
     component: () => import('#/views/_core/profile/index.vue'),
@@ -57,19 +47,6 @@ const routes: RouteRecordRaw[] = [
       hideInMenu: true,
       title: $t('page.auth.profile'),
     },
-  },
-  {
-    meta: {
-      title: '知识库文档管理',
-      hideInMenu: true,
-      hideInTab: true,
-      hideInBreadcrumb: true,
-      fullPathKey: true,
-      activePath: '/ai/knowledge',
-    },
-    name: 'Document',
-    path: '/ai/knowledge/document',
-    component: () => import('#/views/ai/knowledge/Document.vue'),
   },
 ];
 
