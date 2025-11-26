@@ -1,0 +1,15 @@
+{
+    "id": "ID 主键",
+    "alias": "别名",
+    "deptId": "部门ID",
+    "tenantId": "租户ID",
+    "title": "名称",
+    "description": "描述",
+    "icon": "图标",
+    "content": "工作流设计的 JSON 内容",
+    "created": "创建时间",
+    "createdBy": "创建人",
+    "modified": "最后修改时间",
+    "modifiedBy": "最后修改的人",
+    "englishName": "英文名称"
+}

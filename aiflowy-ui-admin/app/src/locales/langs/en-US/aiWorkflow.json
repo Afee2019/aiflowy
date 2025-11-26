@@ -1,0 +1,15 @@
+{
+    "id": "Id",
+    "alias": "Alias",
+    "deptId": "DeptId",
+    "tenantId": "TenantId",
+    "title": "Title",
+    "description": "Description",
+    "icon": "Icon",
+    "content": "Content",
+    "created": "Created",
+    "createdBy": "CreatedBy",
+    "modified": "Modified",
+    "modifiedBy": "ModifiedBy",
+    "englishName": "EnglishName"
+}

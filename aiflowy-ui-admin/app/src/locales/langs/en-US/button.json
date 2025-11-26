@@ -25,5 +25,7 @@
   "previousStep": "PreviousStep",
   "addLine": "AddRecord",
   "batchImport": "BatchImport",
-  "startImport": "StartImport"
+  "startImport": "StartImport",
+  "design": "Design",
+  "run": "Run"
 }

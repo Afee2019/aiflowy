@@ -13,6 +13,7 @@
   "ai": {
     "title": "AI",
     "resources": "Resources",
-    "datacenter": "Datacenter"
+    "datacenter": "Datacenter",
+    "workflow": "Workflow"
   }
 }

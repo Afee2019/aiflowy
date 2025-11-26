@@ -25,5 +25,7 @@
   "previousStep": "上一步",
   "addLine": "增加行",
   "batchImport": "批量导入",
-  "startImport": "开始导入"
+  "startImport": "开始导入",
+  "design": "设计",
+  "run": "运行"
 }

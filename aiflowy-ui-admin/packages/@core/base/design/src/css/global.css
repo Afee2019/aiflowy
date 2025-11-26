@@ -162,7 +162,7 @@ html.grayscale-mode {
 .page-container {
   margin: 20px;
   background-color: var(--el-bg-color);
-  border-radius: 10px;
+  border-radius: var(--el-border-radius-base);
   padding: 20px;
 }
 .handle-div {
