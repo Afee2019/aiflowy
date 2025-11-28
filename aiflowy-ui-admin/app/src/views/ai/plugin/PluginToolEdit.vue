@@ -16,6 +16,7 @@ import {
 } from 'element-plus';
 
 import { api } from '#/api/request';
+import PluginInputAndOutParams from '#/views/ai/plugin/PluginInputAndOutParams.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -36,6 +37,7 @@ const pluginToolInfo = ref<any>({
   requestMethod: '',
 });
 const pluginInfo = ref<any>({});
+const pluginInputData = ref<any[]>([]);
 
 function getPluginToolInfo() {
   api
@@ -46,9 +48,11 @@ function getPluginToolInfo() {
       if (res.errorCode === 0) {
         pluginToolInfo.value = res.data.data;
         pluginInfo.value = res.data.aiPlugin;
+        pluginInputData.value = JSON.parse(res.data.data.inputData);
       }
     });
 }
+const pluginInputParamsEditable = ref(false);
 
 const pluginBasicCollapse = ref({
   title: $t('aiPluginTool.pluginToolEdit.basicInfo'),
@@ -65,6 +69,7 @@ const configureOutputParameters = ref({
   isOpen: true,
   isEdit: false,
 });
+
 const handleClickHeader = (index: number) => {
   switch (index) {
     case 1: {
@@ -115,7 +120,6 @@ const rules = reactive({
   ],
 });
 const saveForm = ref();
-
 const updatePluginTool = (index: number) => {
   if (!saveForm.value) return;
   saveForm.value.validate((valid: boolean) => {
@@ -128,12 +132,15 @@ const updatePluginTool = (index: number) => {
           description: pluginToolInfo.value.description,
           basePath: pluginToolInfo.value.basePath,
           requestMethod: pluginToolInfo.value.requestMethod,
+          inputData: JSON.stringify(pluginInputData.value),
         })
         .then((res) => {
           if (res.errorCode === 0) {
             ElMessage.success($t('message.updateOkMessage'));
             if (index === 1) {
               pluginBasicCollapse.value.isEdit = false;
+            } else if (index === 2) {
+              pluginBasicCollapseInputParams.value.isEdit = false;
             }
           }
         });
@@ -148,6 +155,7 @@ const handleEdit = (index: number) => {
     }
     case 2: {
       pluginBasicCollapseInputParams.value.isEdit = true;
+      pluginInputParamsEditable.value = true;
       break;
     }
     case 3: {
@@ -158,6 +166,7 @@ const handleEdit = (index: number) => {
   }
 };
 const handleSave = (index: number) => {
+  pluginInputParamsEditable.value = false;
   updatePluginTool(index);
 };
 const handleCancel = (index: number) => {
@@ -170,7 +179,7 @@ const handleCancel = (index: number) => {
     }
     case 2: {
       pluginBasicCollapseInputParams.value.isEdit = false;
-
+      pluginInputParamsEditable.value = false;
       break;
     }
     case 3: {
@@ -407,7 +416,7 @@ const requestMethodOptions = [
           </div>
         </div>
 
-        <!-- 面板内容 -->
+        <!--编辑基本信息-->
         <div
           class="accordion-content"
           :class="{
@@ -415,10 +424,11 @@ const requestMethodOptions = [
           }"
         >
           <div class="accordion-content-inner">
-            <!--编辑基本信息-->
-            <div v-show="pluginBasicCollapseInputParams.isEdit">
-              <div class="plugin-tool-info-edit-container">222</div>
-            </div>
+            <PluginInputAndOutParams
+              v-model="pluginInputData"
+              :editable="pluginInputParamsEditable"
+              :is-edit-output="false"
+            />
           </div>
         </div>
       </div>
