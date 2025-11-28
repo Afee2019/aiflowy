@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { $t } from '@aiflowy/locales';
 
-import { Back } from '@element-plus/icons-vue';
+import { Back, VideoPlay } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElForm,
@@ -17,6 +17,7 @@ import {
 
 import { api } from '#/api/request';
 import PluginInputAndOutParams from '#/views/ai/plugin/PluginInputAndOutParams.vue';
+import PluginRunTestModal from '#/views/ai/plugin/PluginRunTestModal.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -232,6 +233,10 @@ const requestMethodOptions = [
     value: 'PATCH',
   },
 ];
+const runTestRef = ref();
+const handleOpenRunModal = () => {
+  runTestRef.value.openDialog();
+};
 </script>
 
 <template>
@@ -240,8 +245,8 @@ const requestMethodOptions = [
       <ElButton @click="back" :icon="Back">
         {{ $t('button.back') }}
       </ElButton>
-      <ElButton>
-        {{ $t('aiPluginTool.pluginToolEdit.basicInfo') }}
+      <ElButton type="primary" :icon="VideoPlay" @click="handleOpenRunModal">
+        {{ $t('aiPluginTool.pluginToolEdit.trialRun') }}
       </ElButton>
     </div>
     <!-- 折叠面板列表 -->
@@ -516,6 +521,8 @@ const requestMethodOptions = [
         </div>
       </div>
     </div>
+    <!--    试运行模态框-->
+    <PluginRunTestModal ref="runTestRef" :plugin-tool-id="toolId" />
   </div>
 </template>
 
@@ -526,7 +533,11 @@ const requestMethodOptions = [
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
+.controls-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 .title {
   text-align: center;
   color: var(--el-text-color-secondary);
