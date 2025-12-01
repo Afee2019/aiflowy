@@ -34,6 +34,9 @@ const props = withDefaults(defineProps<WorkflowFormProps>(), {
     console.warn('no submit method');
   },
 });
+defineExpose({
+  resume,
+});
 const runForm = ref<FormInstance>();
 const runParams = ref<any>({});
 const submitLoading = ref(false);
@@ -89,6 +92,24 @@ function submit() {
 }
 function choose(data: any, propName: string) {
   runParams.value[propName] = data.resourceUrl;
+}
+function resume(data: any) {
+  submitLoading.value = true;
+  postSse('/api/v1/aiWorkflow/resumeChain', data, {
+    onMessage: (message) => {
+      if (message.data) {
+        const msg = JSON.parse(message.data).content;
+        if (msg.status === 'execOnce') {
+          ElMessage.warning('流程已执行完毕，请重新发起。');
+        } else {
+          props.onExecuting?.(message);
+        }
+      }
+    },
+    onFinished: () => {
+      submitLoading.value = false;
+    },
+  });
 }
 </script>
 
