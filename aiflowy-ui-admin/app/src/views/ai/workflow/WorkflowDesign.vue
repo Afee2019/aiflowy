@@ -70,6 +70,7 @@ const executeMessage = ref<any>(null);
 const initState = ref(false);
 const singleNode = ref<any>();
 const singleRunVisible = ref(false);
+const workflowForm = ref();
 // functions
 async function loadCustomNode() {
   customNode.value = await getCustomNode({
@@ -143,6 +144,9 @@ async function runIndependently(node: any) {
   singleNode.value = node;
   singleRunVisible.value = true;
 }
+function resumeChain(data: any) {
+  workflowForm.value?.resume(data);
+}
 </script>
 
 <template>
@@ -158,6 +162,7 @@ async function runIndependently(node: any) {
     <ElDrawer v-model="drawerVisible" :title="$t('button.run')" size="600px">
       <div class="mb-2.5 font-semibold">{{ $t('aiWorkflow.params') }}：</div>
       <WorkflowForm
+        ref="workflowForm"
         :workflow-id="workflowId"
         :workflow-params="runParams"
         :on-executing="onExecuting"
@@ -169,6 +174,7 @@ async function runIndependently(node: any) {
         :execute-message="executeMessage"
         :node-json="sortNodes(tinyFlowData)"
         :init-signal="initState"
+        @resume="resumeChain"
       />
       <div class="mb-2.5 mt-2.5 font-semibold">
         {{ $t('aiWorkflow.result') }}：
