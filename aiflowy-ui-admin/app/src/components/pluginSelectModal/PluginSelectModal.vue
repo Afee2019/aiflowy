@@ -20,7 +20,7 @@ const props = defineProps({
   title: { type: String, default: '' },
   width: { type: String, default: '80%' },
   extraQueryParams: { type: Object, default: () => ({}) },
-  pageUrl: { type: String, default: '' },
+  pageUrl: { type: String, default: '/api/v1/aiPlugin/page' },
 });
 
 const emit = defineEmits(['getData']);
