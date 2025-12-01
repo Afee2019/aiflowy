@@ -29,5 +29,7 @@
   "design": "Design",
   "run": "Run",
   "runTest": "RunTest",
-  "copy": "Copy"
+  "copy": "Copy",
+  "selectAll": "Select All",
+  "choose": "Select"
 }

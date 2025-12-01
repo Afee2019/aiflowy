@@ -29,5 +29,7 @@
   "design": "设计",
   "run": "运行",
   "runTest": "试运行",
-  "copy": "复制"
+  "copy": "复制",
+  "selectAll": "全选",
+  "choose": "选择"
 }
