@@ -86,7 +86,7 @@ function resumeChain(data: any) {
         </ElCard>
       </ElCol>
       <ElCol :span="14">
-        <ElCard shadow="never" body-style="height: 622px;overflow-y: auto">
+        <ElCard shadow="never" body-style="height: 612px;overflow-y: auto">
           <div class="mb-2.5 mt-2.5 font-semibold">
             {{ $t('aiWorkflow.result') }}：
           </div>

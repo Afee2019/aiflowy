@@ -20,6 +20,7 @@ const routes: RouteRecordRaw[] = [
       title: '运行',
       openInNewWindow: true,
       noBasicLayout: true,
+      hideInMenu: true,
     },
     name: 'RunPage',
     path: '/workflow/run',
