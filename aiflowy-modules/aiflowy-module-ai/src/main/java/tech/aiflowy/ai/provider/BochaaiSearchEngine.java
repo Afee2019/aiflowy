@@ -1,14 +1,13 @@
 package tech.aiflowy.ai.provider;
 
-import com.agentsflex.core.chain.Chain;
 import com.agentsflex.core.document.Document;
 import com.agentsflex.core.util.Maps;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import dev.tinyflow.core.chain.Chain;
 import dev.tinyflow.core.node.SearchEngineNode;
 import dev.tinyflow.core.searchengine.BaseSearchEngine;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -21,22 +20,22 @@ public class BochaaiSearchEngine extends BaseSearchEngine {
     }
 
     @Override
-    public List<Document> search(String keyword, int limit, SearchEngineNode searchEngineNode, Chain chain) {
+    public List<Map<String, Object>> search(String keyword, int limit, SearchEngineNode searchEngineNode, Chain chain) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Bearer " + this.apiKey);
         headers.put("Content-Type", "application/json");
         String jsonString = Maps.of("query", keyword).set("summary", true).set("freshness", "noLimit").set("count", limit).set("stream", false).toJSON();
-        String res = this.httpClient.post(this.apiUrl, headers, jsonString);
-        JSONObject object = JSON.parseObject(res);
-        if (200 == object.getInteger("code")) {
-            JSONArray messages = object.getJSONArray("messages");
-            List<Document> list = new ArrayList<>();
-            for (Object message : messages) {
-                Document document = getDocument((JSONObject) message);
-                list.add(document);
-            }
-            return list;
-        }
+//        String res = this.httpClient.post(this.apiUrl, headers, jsonString);
+//        JSONObject object = JSON.parseObject(res);
+//        if (200 == object.getInteger("code")) {
+//            JSONArray messages = object.getJSONArray("messages");
+//            List<Map<String, Object>> list = new ArrayList<>();
+//            for (Object message : messages) {
+//                Document document = getDocument((JSONObject) message);
+//                list.add((Map<String, Object>) document);
+//            }
+//            return list;
+//        }
         return Collections.emptyList();
     }
 

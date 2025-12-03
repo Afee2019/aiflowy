@@ -1,7 +1,7 @@
 package tech.aiflowy.ai.service;
 
-import com.agentsflex.core.llm.Llm;
 import com.mybatisflex.core.service.IService;
+import dev.tinyflow.core.llm.Llm;
 import tech.aiflowy.ai.entity.AiBotConversationMessage;
 import tech.aiflowy.common.domain.Result;
 

@@ -1,30 +1,11 @@
 
 package tech.aiflowy.ai.entity;
 
-import com.agentsflex.llm.deepseek.DeepseekConfig;
-import com.agentsflex.llm.deepseek.DeepseekLlm;
-import tech.aiflowy.ai.entity.base.AiLlmBase;
-import tech.aiflowy.common.util.StringUtil;
-import com.agentsflex.core.llm.Llm;
-import com.agentsflex.llm.gitee.GiteeAiLlm;
-import com.agentsflex.llm.gitee.GiteeAiLlmConfig;
-import com.agentsflex.llm.ollama.OllamaLlm;
-import com.agentsflex.llm.ollama.OllamaLlmConfig;
-import com.agentsflex.llm.openai.OpenAILlm;
-import com.agentsflex.llm.openai.OpenAILlmConfig;
-import com.agentsflex.llm.qwen.QwenLlm;
-import com.agentsflex.llm.qwen.QwenLlmConfig;
-import com.agentsflex.llm.spark.SparkLlm;
-import com.agentsflex.llm.spark.SparkLlmConfig;
 import com.mybatisflex.annotation.Table;
+import tech.aiflowy.ai.entity.base.AiLlmBase;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
-import org.springframework.util.StringUtils;
-import java.util.Map;
-import tech.aiflowy.common.util.PropertiesUtil;
-import com.alibaba.fastjson2.JSON;
 
 /**
  * 实体类。
@@ -88,71 +69,68 @@ public class AiLlm extends AiLlmBase {
         return features;
     }
 
-    public Llm toLlm() {
-        String brand = getBrand();
-        if (StringUtil.noText(brand)) {
-            return null;
-        }
-        switch (brand.toLowerCase()) {
-
-            case "ollama":
-                return ollamaLlm();
-            default:
-                return openaiLLm();
-        }
-    }
-
-    private Llm ollamaLlm() {
-        OllamaLlmConfig ollamaLlmConfig = new OllamaLlmConfig();
-        ollamaLlmConfig.setEndpoint(getLlmEndpoint());
-        ollamaLlmConfig.setApiKey(getLlmApiKey());
-        ollamaLlmConfig.setModel(getLlmModel());
-        ollamaLlmConfig.setDebug(true);
-        return new OllamaLlm(ollamaLlmConfig);
-    }
-
-    private Llm openaiLLm() {
-        OpenAILlmConfig openAiLlmConfig = new OpenAILlmConfig();
-        openAiLlmConfig.setEndpoint(getLlmEndpoint());
-        openAiLlmConfig.setApiKey(getLlmApiKey());
-        openAiLlmConfig.setModel(getLlmModel());
-        openAiLlmConfig.setDefaultEmbeddingModel(getLlmModel());
-        openAiLlmConfig.setDebug(true);
-        Properties properties = PropertiesUtil.textToProperties(getLlmExtraConfig() == null ? "" : getLlmExtraConfig());
-        String chatPath = properties.getProperty("chatPath");
-        String embedPath = properties.getProperty("embedPath");
-
-        Map<String, Object> options = getOptions();
-
-        if (StringUtils.hasLength(chatPath)) {
-            openAiLlmConfig.setChatPath(chatPath);
-        } else {
-            if (options != null) {
-                String chatPathFromOptions = (String) options.get("chatPath");
-                if (StringUtils.hasLength(chatPathFromOptions)) {
-                    chatPath = chatPathFromOptions;
-                    openAiLlmConfig.setChatPath(chatPath);
-                }
-                ;
-            }
-
-        }
-
-        if (StringUtils.hasLength(embedPath)) {
-            openAiLlmConfig.setEmbedPath(embedPath);
-        } else {
-            if (options != null) {
-                String embedPathFromOptions = (String) options.get("embedPath");
-                if (StringUtils.hasLength(embedPathFromOptions)) {
-                    embedPath = embedPathFromOptions;
-                    openAiLlmConfig.setEmbedPath(embedPath);
-                }
-            }
-
-        }
-        return new OpenAILlm(openAiLlmConfig);
-    }
-
-    
-
+//    public Llm toLlm() {
+//        String brand = getBrand();
+//        if (StringUtil.noText(brand)) {
+//            return null;
+//        }
+//        switch (brand.toLowerCase()) {
+//
+//            case "ollama":
+//                return ollamaLlm();
+//            default:
+//                return openaiLLm();
+//        }
+//    }
+//
+//    private Llm ollamaLlm() {
+//        OllamaLlmConfig ollamaLlmConfig = new OllamaLlmConfig();
+//        ollamaLlmConfig.setEndpoint(getLlmEndpoint());
+//        ollamaLlmConfig.setApiKey(getLlmApiKey());
+//        ollamaLlmConfig.setModel(getLlmModel());
+//        ollamaLlmConfig.setDebug(true);
+//        return new OllamaLlm(ollamaLlmConfig);
+//    }
+//
+//    private Llm openaiLLm() {
+//        OpenAILlmConfig openAiLlmConfig = new OpenAILlmConfig();
+//        openAiLlmConfig.setEndpoint(getLlmEndpoint());
+//        openAiLlmConfig.setApiKey(getLlmApiKey());
+//        openAiLlmConfig.setModel(getLlmModel());
+//        openAiLlmConfig.setDefaultEmbeddingModel(getLlmModel());
+//        openAiLlmConfig.setDebug(true);
+//        Properties properties = PropertiesUtil.textToProperties(getLlmExtraConfig() == null ? "" : getLlmExtraConfig());
+//        String chatPath = properties.getProperty("chatPath");
+//        String embedPath = properties.getProperty("embedPath");
+//
+//        Map<String, Object> options = getOptions();
+//
+//        if (StringUtils.hasLength(chatPath)) {
+//            openAiLlmConfig.setChatPath(chatPath);
+//        } else {
+//            if (options != null) {
+//                String chatPathFromOptions = (String) options.get("chatPath");
+//                if (StringUtils.hasLength(chatPathFromOptions)) {
+//                    chatPath = chatPathFromOptions;
+//                    openAiLlmConfig.setChatPath(chatPath);
+//                }
+//                ;
+//            }
+//
+//        }
+//
+//        if (StringUtils.hasLength(embedPath)) {
+//            openAiLlmConfig.setEmbedPath(embedPath);
+//        } else {
+//            if (options != null) {
+//                String embedPathFromOptions = (String) options.get("embedPath");
+//                if (StringUtils.hasLength(embedPathFromOptions)) {
+//                    embedPath = embedPathFromOptions;
+//                    openAiLlmConfig.setEmbedPath(embedPath);
+//                }
+//            }
+//
+//        }
+//        return new OpenAILlm(openAiLlmConfig);
+//    }
 }
