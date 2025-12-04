@@ -215,19 +215,22 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
         memoryPrompt.addMessage(userMessage);
         ChatOptions chatOptions = getChatOptions(llmOptions);
         ChatStreamListener chatStreamListener = new ChatStreamListener(chatOptions, chatModel, memoryPrompt);
-        AiMessageResponse aiMessageResponse = chatModel.chat(memoryPrompt, chatOptions);
-        // 检查是否有工具调用请求
-        if (aiMessageResponse.hasToolCalls()) {
-            GlobalToolInterceptors.addInterceptor(new ToolLoggingInterceptor());
-            // 执行并生成结果消息
-            List<ToolMessage> results = aiMessageResponse.executeToolCallsAndGetToolMessages();
-            //重新发起 chat
-            String newPrompt = "请根据以下内容回答用户，内容是:\n" + results + "\n 用户的问题是：" + prompt;
-            memoryPrompt.addMessage(new UserMessage(newPrompt));
-            chatModel.chatStream(newPrompt, chatStreamListener, chatOptions);
-        } else {
-            chatModel.chatStream(memoryPrompt, chatStreamListener, chatOptions);
-        }
+        GlobalToolInterceptors.addInterceptor(new ToolLoggingInterceptor());
+        chatModel.chatStream(memoryPrompt, chatStreamListener, chatOptions);
+
+//        AiMessageResponse aiMessageResponse = chatModel.chat(memoryPrompt, chatOptions);
+//        // 检查是否有工具调用请求
+//        if (aiMessageResponse.hasToolCalls()) {
+//            GlobalToolInterceptors.addInterceptor(new ToolLoggingInterceptor());
+//            // 执行并生成结果消息
+//            List<ToolMessage> results = aiMessageResponse.executeToolCallsAndGetToolMessages();
+//            //重新发起 chat
+//            String newPrompt = "请根据以下内容回答用户，内容是:\n" + results + "\n 用户的问题是：" + prompt;
+//            memoryPrompt.addMessage(new UserMessage(newPrompt));
+//            chatModel.chatStream(newPrompt, chatStreamListener, chatOptions);
+//        } else {
+//            chatModel.chatStream(memoryPrompt, chatStreamListener, chatOptions);
+//        }
         return chatStreamListener.getEmitter();
     }
 

@@ -21,4 +21,6 @@ public interface AiBotPluginsService extends IService<AiBotPlugins> {
     boolean doRemove(String botId, String pluginId);
 
     List<BigInteger> getBotPluginToolIds(String botId);
+
+    void saveBotAndPluginTool(BigInteger botId, BigInteger[] pluginToolIds);
 }

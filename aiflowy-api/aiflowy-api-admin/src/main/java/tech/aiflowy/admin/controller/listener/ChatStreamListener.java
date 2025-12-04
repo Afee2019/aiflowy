@@ -9,6 +9,7 @@ import com.agentsflex.core.model.chat.ChatModel;
 import com.agentsflex.core.model.chat.ChatOptions;
 import com.agentsflex.core.model.chat.StreamResponseListener;
 import com.agentsflex.core.model.chat.response.AiMessageResponse;
+import com.agentsflex.core.model.chat.tool.ToolContext;
 import com.agentsflex.core.model.client.StreamContext;
 import com.agentsflex.core.prompt.MemoryPrompt;
 import com.agentsflex.core.util.CollectionUtil;
@@ -73,17 +74,20 @@ public class ChatStreamListener implements StreamResponseListener {
 
     @Override
     public void onStop(StreamContext context) {
-//        try {
-//            if (!hasFinish) {
-//                AiMessage aiMessage = context.getAiMessage();
-//                hasFinish = true;
-//                emitter.send(SseEmitter.event().name("finishEvent").data(JSON.toJSONString(Maps.of("consumeTokenInfo", aiMessage))));
-//                emitter.complete();
-//                logger.info("[流式正常结束]");
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
+        System.out.println("结束");
+        try {
+            AiMessage aiMessage = context.getAiMessage();
+            List<ToolCall> toolCalls = aiMessage.getToolCalls();
+            if (CollectionUtil.hasItems(aiMessage.getToolCalls())){
+                chatModel.chatStream(memoryPrompt, this, chatOptions);
+            } else {
+                emitter.send(SseEmitter.event().name("finishEvent").data(JSON.toJSONString(Maps.of("consumeTokenInfo", aiMessage))));
+                emitter.complete();
+                logger.info("[流式正常结束]");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

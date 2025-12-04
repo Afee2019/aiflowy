@@ -15,4 +15,6 @@ import java.util.List;
 public interface AiBotKnowledgeService extends IService<AiBotKnowledge> {
 
     List<AiBotKnowledge> listByBotId(BigInteger botId);
+
+    void saveBotAndKnowledge(BigInteger botId, BigInteger[] knowledgeIds);
 }

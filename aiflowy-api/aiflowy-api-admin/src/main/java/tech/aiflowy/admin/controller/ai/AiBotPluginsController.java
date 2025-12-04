@@ -65,4 +65,10 @@ public class AiBotPluginsController extends BaseCurdController<AiBotPluginsServi
         return Result.ok(aiBotPluginsService.doRemove(botId, pluginToolId));
     }
 
+    @PostMapping("updateBotPluginToolIds")
+    public Result<?> save(@JsonBody("botId") BigInteger botId, @JsonBody("pluginToolIds") BigInteger [] pluginToolIds) {
+        service.saveBotAndPluginTool(botId, pluginToolIds);
+        return Result.ok();
+    }
+
 }
