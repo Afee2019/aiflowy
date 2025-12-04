@@ -1,5 +1,6 @@
 package tech.aiflowy.admin.controller.ai;
 
+import org.springframework.web.bind.annotation.PostMapping;
 import tech.aiflowy.ai.entity.AiBotWorkflow;
 import tech.aiflowy.ai.service.AiBotWorkflowService;
 import tech.aiflowy.common.annotation.UsePermission;
@@ -10,7 +11,9 @@ import com.mybatisflex.core.query.QueryWrapper;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import tech.aiflowy.common.web.jsonbody.JsonBody;
 
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -35,5 +38,11 @@ public class AiBotWorkflowController extends BaseCurdController<AiBotWorkflowSer
         List<AiBotWorkflow> aiBotWorkflows = service.getMapper().selectListWithRelationsByQuery(queryWrapper);
         List<AiBotWorkflow> list = Tree.tryToTree(aiBotWorkflows, asTree);
         return Result.ok(list);
+    }
+
+    @PostMapping("updateBotWorkflowIds")
+    public Result<?> save(@JsonBody("botId") BigInteger botId, @JsonBody("workflowIds") BigInteger [] workflowIds) {
+        service.saveBotAndWorkflowTool(botId, workflowIds);
+        return Result.ok();
     }
 }

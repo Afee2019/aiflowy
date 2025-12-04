@@ -1,5 +1,7 @@
 package tech.aiflowy.ai.service.impl;
 
+import tech.aiflowy.ai.entity.AiBotKnowledge;
+import tech.aiflowy.ai.entity.AiBotPlugins;
 import tech.aiflowy.ai.entity.AiBotWorkflow;
 import tech.aiflowy.ai.mapper.AiBotWorkflowMapper;
 import tech.aiflowy.ai.service.AiBotWorkflowService;
@@ -7,6 +9,7 @@ import com.mybatisflex.spring.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import com.mybatisflex.core.query.QueryWrapper;
 
@@ -26,5 +29,18 @@ public class AiBotWorkflowServiceImpl extends ServiceImpl<AiBotWorkflowMapper, A
         queryWrapper.eq("bot_id",botId);
 
         return list(queryWrapper);
+    }
+
+    @Override
+    public void saveBotAndWorkflowTool(BigInteger botId, BigInteger[] workflowIds) {
+        this.remove(QueryWrapper.create().eq(AiBotKnowledge::getBotId, botId));
+        List<AiBotWorkflow> list = new ArrayList<>(workflowIds.length);
+        for (BigInteger workflowId : workflowIds) {
+            AiBotWorkflow aiBotWorkflow = new AiBotWorkflow();
+            aiBotWorkflow.setBotId(botId);
+            aiBotWorkflow.setWorkflowId(workflowId);
+            list.add(aiBotWorkflow);
+        }
+        this.saveBatch(list);
     }
 }
