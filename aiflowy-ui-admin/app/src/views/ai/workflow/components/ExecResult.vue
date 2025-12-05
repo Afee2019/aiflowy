@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { ServerSentEventMessage } from 'fetch-event-stream';
-
 import { computed, ref, watch } from 'vue';
 
 import { ElEmpty, ElMessage, ElRow } from 'element-plus';
@@ -11,7 +9,6 @@ import ExecResultItem from '#/views/ai/workflow/components/ExecResultItem.vue';
 
 export interface ExecResultProps {
   workflowId: any;
-  executeMessage: null | ServerSentEventMessage;
   nodeJson: any;
   initSignal?: boolean;
   pollingData?: any;
@@ -40,20 +37,17 @@ watch(
   },
 );
 watch(
-  () => props.executeMessage,
-  (newMsg) => {
-    if (newMsg && newMsg.data) {
-      const msg = JSON.parse(newMsg.data).content;
-      if (msg.execResult) {
-        ElMessage.success($t('message.success'));
-        result.value = msg.execResult;
-        success.value = true;
-      }
-      if (msg.status === 'error') {
-        ElMessage.error($t('message.fail'));
-        result.value = msg;
-        success.value = false;
-      }
+  () => props.pollingData,
+  (newVal) => {
+    if (newVal.status === 20) {
+      ElMessage.success($t('message.success'));
+      result.value = newVal.result;
+      success.value = true;
+    }
+    if (newVal.status === 21) {
+      ElMessage.error($t('message.fail'));
+      result.value = newVal.message;
+      success.value = false;
     }
   },
   { deep: true },

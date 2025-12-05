@@ -68,7 +68,6 @@ const handleKeydown = (event: KeyboardEvent) => {
   }
 };
 const drawerVisible = ref(false);
-const executeMessage = ref<any>(null);
 const initState = ref(false);
 const singleNode = ref<any>();
 const singleRunVisible = ref(false);
@@ -244,9 +243,9 @@ function onAsyncExecute(info: any) {
       </div>
       <ExecResult
         :workflow-id="workflowId"
-        :execute-message="executeMessage"
         :node-json="sortNodes(tinyFlowData)"
         :init-signal="initState"
+        :polling-data="chainInfo"
       />
     </ElDrawer>
     <div class="flex items-center justify-between border-b p-2.5">
