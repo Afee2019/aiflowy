@@ -16,7 +16,7 @@ import {
   Setting,
   VideoPlay,
 } from '@element-plus/icons-vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 
 import { removeBotFromId } from '#/api';
 import defaultAvatar from '#/assets/ai/bot/defaultBotAvatar.png';
@@ -83,11 +83,21 @@ const actions: ActionButton[] = [
 ];
 
 const removeBot = async (bot: BotInfo) => {
-  const [err, res] = await tryit(removeBotFromId(bot.id));
+  const [action] = await tryit(
+    ElMessageBox.confirm($t('message.deleteAlert'), $t('message.noticeTitle'), {
+      confirmButtonText: $t('message.ok'),
+      cancelButtonText: $t('message.cancel'),
+      type: 'warning',
+    }),
+  );
 
-  if (!err && res.errorCode === 0) {
-    ElMessage.success(res.message);
-    pageDataRef.value.setQuery({});
+  if (!action) {
+    const [err, res] = await tryit(removeBotFromId(bot.id));
+
+    if (!err && res.errorCode === 0) {
+      ElMessage.success($t('message.deleteOkMessage'));
+      pageDataRef.value.setQuery({});
+    }
   }
 };
 
