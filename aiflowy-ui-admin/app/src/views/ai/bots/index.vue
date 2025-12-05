@@ -7,6 +7,7 @@ import { markRaw, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { $t } from '@aiflowy/locales';
+import { tryit } from '@aiflowy/utils';
 
 import {
   Delete,
@@ -15,7 +16,9 @@ import {
   Setting,
   VideoPlay,
 } from '@element-plus/icons-vue';
+import { ElMessage } from 'element-plus';
 
+import { removeBotFromId } from '#/api';
 import defaultAvatar from '#/assets/ai/bot/defaultBotAvatar.png';
 import HeaderSearch from '#/components/headerSearch/HeaderSearch.vue';
 import CardList from '#/components/page/CardList.vue';
@@ -74,10 +77,19 @@ const actions: ActionButton[] = [
     className: '',
     permission: '/api/v1/aiBot/remove',
     onClick(row: BotInfo) {
-      console.log(row);
+      removeBot(row);
     },
   },
 ];
+
+const removeBot = async (bot: BotInfo) => {
+  const [err, res] = await tryit(removeBotFromId(bot.id));
+
+  if (!err && res.errorCode === 0) {
+    ElMessage.success(res.message);
+    pageDataRef.value.setQuery({});
+  }
+};
 
 const handleSearch = (params: string) => {
   pageDataRef.value.setQuery({ title: params, isQueryOr: true });
@@ -108,6 +120,7 @@ const handleButtonClick = () => {
       </template>
     </PageData>
 
+    <!-- 创建&编辑Bot弹窗 -->
     <Modal ref="modalRef" @success="pageDataRef.setQuery({})" />
   </div>
 </template>

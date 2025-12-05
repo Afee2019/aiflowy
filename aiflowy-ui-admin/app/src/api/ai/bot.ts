@@ -40,6 +40,11 @@ export const updateBotApi = (params: UpdateBotParams) => {
   return api.post<RequestResult>('/api/v1/aiBot/update', { ...params });
 };
 
+/** 删除Bot */
+export const removeBotFromId = (id: string) => {
+  return api.post<RequestResult>('/api/v1/aiBot/update', { id });
+};
+
 export interface GetMessageListParams {
   sessionId: string;
   botId: string;
