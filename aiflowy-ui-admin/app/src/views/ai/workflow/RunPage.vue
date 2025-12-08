@@ -65,12 +65,13 @@ function onAsyncExecute(info: any) {
             {{ $t('aiWorkflow.params') }}：
           </div>
           <WorkflowForm
-            v-if="runParams"
+            v-if="runParams && tinyFlowData"
             ref="workflowForm"
             :workflow-id="workflowId"
             :workflow-params="runParams"
             :on-submit="onSubmit"
             :on-async-execute="onAsyncExecute"
+            :tiny-flow-data="tinyFlowData"
           />
         </ElCard>
         <ElCard shadow="never" body-style="height: 300px;overflow-y: auto">

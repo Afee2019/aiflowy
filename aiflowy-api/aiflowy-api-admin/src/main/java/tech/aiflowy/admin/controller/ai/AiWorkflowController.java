@@ -7,25 +7,23 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
-
-import com.alicp.jetcache.Cache;
 import com.mybatisflex.core.query.QueryWrapper;
 import dev.tinyflow.core.chain.*;
+import dev.tinyflow.core.chain.repository.ChainStateRepository;
+import dev.tinyflow.core.chain.repository.NodeStateRepository;
 import dev.tinyflow.core.chain.runtime.ChainExecutor;
 import dev.tinyflow.core.parser.ChainParser;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import tech.aiflowy.ai.entity.AiWorkflow;
 import tech.aiflowy.ai.service.AiBotWorkflowService;
 import tech.aiflowy.ai.service.AiLlmService;
 import tech.aiflowy.ai.service.AiWorkflowService;
 import tech.aiflowy.ai.tinyflow.entity.ChainInfo;
-import tech.aiflowy.common.ai.MySseEmitter;
+import tech.aiflowy.ai.tinyflow.entity.NodeInfo;
 import tech.aiflowy.common.annotation.NeedApiKeyAccess;
-import tech.aiflowy.common.constant.CacheKey;
 import tech.aiflowy.common.constant.Constants;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.entity.LoginAccount;
@@ -37,12 +35,14 @@ import tech.aiflowy.system.service.SysApiKeyService;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 控制层。
@@ -57,11 +57,8 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
 
     @Resource
     private SysApiKeyService apiKeyService;
-
     @Resource
     private AiBotWorkflowService aiBotWorkflowService;
-    @Resource(name = "defaultCache")
-    private Cache<String, Object> defaultCache;
     @Resource
     private ChainExecutor chainExecutor;
     @Resource
@@ -72,26 +69,16 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
         this.aiLlmService = aiLlmService;
     }
 
-    @GetMapping("/test")
-    @SaIgnore
-    public Result<String> test() {
-        String id = "351890611582607360";
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("single", "a");
-        variables.put("resource", "b");
-        variables.put("vvv", "c");
-//        Map<String, Object> execute = chainExecutor.execute(id, variables);
-        String executeId = chainExecutor.executeAsync(id, variables);
-        return Result.ok(executeId);
-    }
-
     /**
      * 运行工作流 - v2
      */
     @PostMapping("/runAsync")
     @SaCheckPermission("/api/v1/aiWorkflow/save")
-    public Result<String> runAsync( @JsonBody(value = "id", required = true) BigInteger id,
-                                    @JsonBody("variables") Map<String, Object> variables) {
+    public Result<String> runAsync(@JsonBody(value = "id", required = true) BigInteger id,
+                                   @JsonBody("variables") Map<String, Object> variables) {
+        if (variables == null) {
+            variables = new HashMap<>();
+        }
         AiWorkflow workflow = service.getById(id);
         if (workflow == null) {
             throw new RuntimeException("工作流不存在");
@@ -106,10 +93,44 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
     /**
      * 获取工作流运行状态 - v2
      */
-    @GetMapping("/getChainStatus")
-    public Result<ChainInfo> getChainStatus(String executeId) {
-        ChainInfo res = (ChainInfo) defaultCache.get(CacheKey.CHAIN_STATUS_CACHE_KEY + executeId);
+    @PostMapping("/getChainStatus")
+    public Result<ChainInfo> getChainStatus(@JsonBody(value = "executeId") String executeId,
+                                            @JsonBody("nodes") List<NodeInfo> nodes) {
+        ChainStateRepository chainStateRepository = chainExecutor.getChainStateRepository();
+        NodeStateRepository nodeStateRepository = chainExecutor.getNodeStateRepository();
+
+        ChainState chainState = chainStateRepository.load(executeId);
+
+        ChainInfo res = new ChainInfo();
+        res.setExecuteId(executeId);
+        res.setStatus(chainState.getStatus().getValue());
+        res.setMessage(chainState.getError() == null ? "" : chainState.getError().getMessage());
+        res.setResult(chainState.getExecuteResult());
+
+        for (NodeInfo node : nodes) {
+            String nodeId = node.getNodeId();
+            NodeState nodeState = nodeStateRepository.load(executeId, nodeId);
+            NodeInfo nodeInfo = new NodeInfo();
+            nodeInfo.setNodeId(nodeId);
+            nodeInfo.setNodeName(node.getNodeName());
+            nodeInfo.setStatus(nodeState.getStatus().getValue());
+            nodeInfo.setMessage(nodeState.getError() == null ? "" : nodeState.getError().getMessage());
+            nodeInfo.setResult(chainState.getNodeExecuteResult(nodeId));
+            nodeInfo.setSuspendForParameters(chainState.getSuspendForParameters());
+            res.getNodes().put(nodeId, nodeInfo);
+        }
         return Result.ok(res);
+    }
+
+    /**
+     * 恢复工作流运行 - v2
+     */
+    @PostMapping("/resume")
+    @SaCheckPermission("/api/v1/aiWorkflow/save")
+    public Result<Void> resume(@JsonBody(value = "executeId", required = true) String executeId,
+                               @JsonBody("confirmParams") Map<String, Object> confirmParams) {
+        chainExecutor.resumeAsync(executeId, confirmParams);
+        return Result.ok();
     }
 
     @PostMapping("/importWorkFlow")
@@ -118,9 +139,6 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
         InputStream is = jsonFile.getInputStream();
         String content = IoUtil.read(is, StandardCharsets.UTF_8);
         workflow.setContent(content);
-        // if (!StringUtils.hasLength(workflow.getAlias())){
-        //     workflow.setAlias(UUID.randomUUID().toString().replaceAll("-",""));
-        // }
         save(workflow);
         return Result.ok();
     }
@@ -168,179 +186,17 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
             variables.put(Constants.LOGIN_USER_KEY, SaTokenUtil.getLoginAccount());
         }
 
-        Map<String, Object> result = chainExecutor.execute(definition.getId() ,variables);
+        Map<String, Object> result = chainExecutor.execute(definition.getId(), variables);
         HashMap<String, Object> res = new HashMap<>();
         res.put("result", result);
         return Result.ok(res);
     }
-
-    @PostMapping("tryRunningStream")
-    @SaCheckPermission("/api/v1/aiWorkflow/save")
-    public SseEmitter tryRunningStream(
-            @JsonBody(value = "id", required = true) BigInteger id,
-            @JsonBody("variables") Map<String, Object> variables,
-            HttpServletResponse response) {
-
-        response.setContentType("text/event-stream");
-
-        MySseEmitter emitter = new MySseEmitter((long) (1000 * 60 * 10));
-
-        AiWorkflow workflow = service.getById(id);
-        if (workflow == null) {
-            throw new RuntimeException("工作流不存在");
-        }
-
-        if (StpUtil.isLogin()) {
-            variables.put(Constants.LOGIN_USER_KEY, SaTokenUtil.getLoginAccount());
-        }
-
-        String chainExecId = IdUtil.fastSimpleUUID();
-        variables.put("chainExecId", chainExecId);
-
-        chainExecutor.executeAsync(workflow.getId().toString(), variables);
-
-//        ThreadUtil.execAsync(() -> {
-//            Map<String, Object> result = chain.executeForResult(variables);
-//            JSONObject content = new JSONObject();
-//            content.put("execResult", result);
-//            json.put("content", content);
-//            chainExecutor.addEventListener(, );
-//            emitter.sendAndComplete(json.toJSONString());
-//        });
-
-        return emitter;
-    }
-
-//    @PostMapping("/resumeChain")
-//    public SseEmitter resumeChain(
-//            @JsonBody(value = "chainId", required = true) String chainId,
-//            @JsonBody("confirmParams") Map<String, Object> confirmParams,
-//            HttpServletResponse response) {
-//        response.setContentType("text/event-stream");
-//        JSONObject json = new JSONObject();
-//        MySseEmitter emitter = new MySseEmitter((long) (1000 * 60 * 10));
-//        Object obj = defaultCache.get(RedisKey.CHAIN_SUSPEND_KEY + chainId);
-//        if (obj == null) {
-//            JSONObject content = new JSONObject();
-//            content.put("status", "execOnce");
-//            json.put("content", content);
-//            emitter.sendAndComplete(json.toJSONString());
-//            return emitter;
-//        }
-//        String chainJson = obj.toString();
-//        defaultCache.remove(RedisKey.CHAIN_SUSPEND_KEY + chainId);
-//        Chain chain = Chain.fromJSON(chainJson);
-//
-//        if (StpUtil.isLogin()) {
-//            chain.getMemory().put(Constants.LOGIN_USER_KEY, SaTokenUtil.getLoginAccount());
-//        }
-//
-//        addChainEvent(chain, json, emitter, chainId);
-//
-//        ThreadUtil.execAsync(() -> {
-//            chain.resume(confirmParams);
-//            Map<String, Object> result = chain.getExecuteResult();
-//            JSONObject content = new JSONObject();
-//            content.put("execResult", result);
-//            json.put("content", content);
-//            emitter.sendAndComplete(json.toJSONString());
-//        });
-//
-//        return emitter;
-//    }
-
 
     @Override
     public Result<AiWorkflow> detail(String id) {
         AiWorkflow workflow = service.getDetail(id);
         return Result.ok(workflow);
     }
-
-//    private void addChainEvent(Chain chain, JSONObject json, MySseEmitter emitter, String chainId) {
-//        chain.addEventListener(new ChainEventListener() {
-//            @Override
-//            public void onEvent(ChainEvent event, Chain chain) {
-//                if (event instanceof NodeStartEvent) {
-//                    JSONObject content = new JSONObject();
-//                    ChainNode node = ((NodeStartEvent) event).getNode();
-//                    if ((node instanceof ConfirmNode)) {
-//                        chain.getMemory().put("confirmNodeId", node.getId());
-//                        //System.out.println("确认节点开始 ---> " + node.getId());
-//                    }
-//                    content.put("nodeId", node.getId());
-//                    content.put("status", "start");
-//                    json.put("content", content);
-//                    emitter.send(json.toJSONString());
-//                }
-//                if (event instanceof NodeEndEvent) {
-//                    ChainNode node = ((NodeEndEvent) event).getNode();
-//                    if ((node instanceof ConfirmNode)) {
-//                        chain.getMemory().put("confirmNodeId", node.getId());
-//                        //System.out.println("确认节点结束 ---> " + node.getId());
-//                    }
-//                    Object errorInfo = node.getMemory().get(node.getId() + "|" + "errorInfo");
-//                    if (errorInfo != null) {
-//                        JSONObject content = new JSONObject();
-//                        content.put("nodeId", node.getId());
-//                        content.put("status", "nodeError");
-//                        content.put("errorMsg", errorInfo);
-//                        json.put("content", content);
-//                        emitter.sendAndComplete(json.toJSONString());
-//                    } else {
-//                        Map<String, Object> result = ((NodeEndEvent) event).getResult();
-//                        JSONObject content = new JSONObject();
-//                        content.put("nodeId", node.getId());
-//                        content.put("status", "end");
-//                        content.put("res", result);
-//                        json.put("content", content);
-//                        emitter.send(json.toJSONString());
-//                    }
-//                }
-//                if (event instanceof ChainStatusChangeEvent) {
-//                    ChainStatus status = ((ChainStatusChangeEvent) event).getStatus();
-//                    if (ChainStatus.FINISHED_ABNORMAL.equals(status)) {
-//                        String message = chain.getMessage();
-//                        JSONObject content = new JSONObject();
-//                        content.put("status", "error");
-//                        content.put("errorMsg", message);
-//                        json.put("content", content);
-//                        emitter.sendAndComplete(json.toJSONString());
-//                    }
-//                }
-//            }
-//        });
-//
-//        chain.addNodeErrorListener(new NodeErrorListener() {
-//            @Override
-//            public void onError(Throwable e, ChainNode node, Map<String, Object> map, Chain chain) {
-//                if (!(e instanceof ChainSuspendException)) {
-//                    String message = ExceptionUtil.getMessage(e);
-//                    node.getMemory().put(node.getId() + "|" + "errorInfo",message);
-//                }
-//            }
-//        });
-//
-//        chain.addSuspendListener(new ChainSuspendListener() {
-//            @Override
-//            public void onSuspend(Chain chain) {
-//                Object confirmNodeId = chain.getMemory().get("confirmNodeId");
-//                //System.out.println("流程挂起 ---> " + confirmNodeId);
-//                String message = chain.getMessage();
-//                List<Parameter> suspendForParameters = chain.getSuspendForParameters();
-//                JSONObject content = new JSONObject();
-//                content.put("chainMessage", message);
-//                content.put("nodeId", confirmNodeId);
-//                content.put("status", "confirm");
-//                content.put("suspendForParameters", suspendForParameters);
-//                //String chainId = IdUtil.fastSimpleUUID();
-//                String chainJson = chain.toJSON();
-//                content.put("chainId", chainId);
-//                defaultCache.put(RedisKey.CHAIN_SUSPEND_KEY + chainId, chainJson, 1, TimeUnit.HOURS);
-//                json.put("content", content);
-//                emitter.sendAndComplete(json.toJSONString());
-//            }
-//        });
-//    }
 
     @SaIgnore
     @GetMapping(value = "/external/getRunningParams", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -355,8 +211,8 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
     @NeedApiKeyAccess(value = "/api/v1/aiWorkflow/external/run")
     @ResponseBody
     public Result<?> externalRun(HttpServletRequest request,
-                              @JsonBody(value = "id", required = true) BigInteger id,
-                              @JsonBody("variables") Map<String, Object> variables) {
+                                 @JsonBody(value = "id", required = true) BigInteger id,
+                                 @JsonBody("variables") Map<String, Object> variables) {
         return tryRunning(id, variables);
     }
 
@@ -454,29 +310,20 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
     @Override
     protected Result onSaveOrUpdateBefore(AiWorkflow entity, boolean isSave) {
 
-
         String alias = entity.getAlias();
-
-        if (StringUtils.hasLength(alias)){
+        if (StringUtils.hasLength(alias)) {
             AiWorkflow workflow = service.getByAlias(alias);
-
-            if (workflow == null){
+            if (workflow == null) {
                 return null;
             }
-
-            if (isSave){
+            if (isSave) {
                 throw new BusinessException("别名已存在！");
             }
-
             BigInteger id = entity.getId();
-
-            if (id.compareTo(workflow.getId()) != 0){
+            if (id.compareTo(workflow.getId()) != 0) {
                 throw new BusinessException("别名已存在！");
             }
-
-
         }
-
         return null;
     }
 
@@ -489,7 +336,6 @@ public class AiWorkflowController extends BaseCurdController<AiWorkflowService, 
         if (exists) {
             return Result.fail(1, "此工作流还关联有bot，请先取消关联后再删除！");
         }
-
         return null;
     }
 }

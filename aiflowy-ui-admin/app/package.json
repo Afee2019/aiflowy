@@ -35,7 +35,7 @@
     "@aiflowy/types": "workspace:*",
     "@aiflowy/utils": "workspace:*",
     "@element-plus/icons-vue": "^2.3.2",
-    "@tinyflow-ai/vue": "^1.1.9",
+    "@tinyflow-ai/vue": "^1.1.10",
     "@vueuse/core": "catalog:",
     "dayjs": "catalog:",
     "element-plus": "catalog:",

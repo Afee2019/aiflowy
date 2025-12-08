@@ -229,6 +229,7 @@ function onAsyncExecute(info: any) {
         :workflow-params="runParams"
         :on-submit="onSubmit"
         :on-async-execute="onAsyncExecute"
+        :tiny-flow-data="tinyFlowData"
       />
       <div class="mb-2.5 font-semibold">{{ $t('aiWorkflow.steps') }}：</div>
       <WorkflowSteps

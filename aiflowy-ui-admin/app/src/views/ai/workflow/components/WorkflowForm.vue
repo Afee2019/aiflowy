@@ -11,7 +11,6 @@ import {
   ElForm,
   ElFormItem,
   ElInput,
-  ElMessage,
   ElRadioGroup,
   ElSelect,
 } from 'element-plus';
@@ -23,6 +22,7 @@ import ChooseResource from '#/views/ai/resource/ChooseResource.vue';
 export type WorkflowFormProps = {
   onAsyncExecute?: (values: any) => void;
   onSubmit?: (values: any) => void;
+  tinyFlowData: any;
   workflowId: any;
   workflowParams: any;
 };
@@ -46,6 +46,7 @@ const submitLoading = ref(false);
 const parameters = computed(() => {
   return props.workflowParams.parameters;
 });
+const executeId = ref('');
 function getContentType(item: any) {
   return item.contentType || 'text';
 }
@@ -67,7 +68,13 @@ function choose(data: any, propName: string) {
   runParams.value[propName] = data.resourceUrl;
 }
 function resume(data: any) {
+  data.executeId = executeId.value;
   submitLoading.value = true;
+  api.post('/api/v1/aiWorkflow/resume', data).then((res) => {
+    if (res.errorCode === 0) {
+      startPolling(executeId.value);
+    }
+  });
 }
 function submitV2() {
   runForm.value?.validate((valid) => {
@@ -83,6 +90,7 @@ function submitV2() {
       api.post('/api/v1/aiWorkflow/runAsync', data).then((res) => {
         if (res.errorCode === 0 && res.data) {
           // executeId
+          executeId.value = res.data;
           startPolling(res.data);
         }
       });
@@ -90,6 +98,12 @@ function submitV2() {
   });
 }
 const timer = ref();
+const nodes = ref(
+  props.tinyFlowData.nodes.map((node: any) => ({
+    nodeId: node.id,
+    nodeName: node.data.title,
+  })),
+);
 // 轮询执行结果
 function startPolling(executeId: any) {
   if (timer.value) return;
@@ -97,10 +111,12 @@ function startPolling(executeId: any) {
 }
 function executePolling(executeId: any) {
   api
-    .get('/api/v1/aiWorkflow/getChainStatus', {
-      params: {
-        executeId,
-      },
+    .post('/api/v1/aiWorkflow/getChainStatus', {
+      executeId,
+      nodes: props.tinyFlowData.nodes.map((node: any) => ({
+        nodeId: node.id,
+        nodeName: nodes.value,
+      })),
     })
     .then((res) => {
       // 5 是挂起状态

@@ -6,6 +6,7 @@ import { computed, ref, watch } from 'vue';
 import {
   CircleCloseFilled,
   SuccessFilled,
+  VideoPause,
   WarningFilled,
 } from '@element-plus/icons-vue';
 import {
@@ -96,7 +97,6 @@ function handleConfirm(node: any) {
   form.validate((valid) => {
     if (valid) {
       const value = {
-        chainId: node.chainId,
         confirmParams: {
           [confirmKey]: 'yes',
           ...confirmParams.value,
@@ -130,6 +130,9 @@ function handleConfirm(node: any) {
               <div v-if="node.status === 1" class="spinner"></div>
               <ElIcon v-if="node.status === 10" color="red" size="20">
                 <CircleCloseFilled />
+              </ElIcon>
+              <ElIcon v-if="node.status === 6" color="orange" size="20">
+                <VideoPause />
               </ElIcon>
               <ElIcon v-if="isChainError" color="orange" size="20">
                 <WarningFilled />
@@ -190,7 +193,7 @@ function handleConfirm(node: any) {
           </ElForm>
         </div>
         <div v-else>
-          <ShowJson :value="node.result" />
+          <ShowJson :value="node.result || node.message" />
         </div>
       </ElCollapseItem>
     </ElCollapse>

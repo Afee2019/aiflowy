@@ -13,9 +13,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import tech.aiflowy.ai.entity.AiWorkflow;
 import tech.aiflowy.ai.service.AiWorkflowService;
-import tech.aiflowy.ai.tinyflow.listener.ChainErrorListenerForFront;
-import tech.aiflowy.ai.tinyflow.listener.ChainEventListenerForFront;
-import tech.aiflowy.ai.tinyflow.listener.NodeErrorListenerForFront;
+import tech.aiflowy.ai.tinyflow.listener.ChainErrorListenerForSave;
+import tech.aiflowy.ai.tinyflow.listener.ChainEventListenerForSave;
+import tech.aiflowy.ai.tinyflow.listener.NodeErrorListenerForSave;
 import tech.aiflowy.ai.utils.TinyFlowConfigService;
 
 import javax.annotation.Resource;
@@ -101,7 +101,6 @@ public class ChainConfig {
             }
         });
 
-        addStateListeners(chainExecutor);
         saveStepsListeners(chainExecutor);
 
         return chainExecutor;
@@ -117,18 +116,11 @@ public class ChainConfig {
     }
 
     /**
-     * 执行状态监听器
-     */
-    private void addStateListeners(ChainExecutor chainExecutor) {
-        chainExecutor.addEventListener(new ChainEventListenerForFront(cache));
-        chainExecutor.addErrorListener(new ChainErrorListenerForFront(cache));
-        chainExecutor.addNodeErrorListener(new NodeErrorListenerForFront(cache));
-    }
-
-    /**
-     * 步骤保存监听器
+     * 步骤保存监听器 - 自行实现
      */
     private void saveStepsListeners(ChainExecutor chainExecutor) {
-
+        chainExecutor.addEventListener(new ChainEventListenerForSave());
+        chainExecutor.addErrorListener(new ChainErrorListenerForSave());
+        chainExecutor.addNodeErrorListener(new NodeErrorListenerForSave());
     }
 }
