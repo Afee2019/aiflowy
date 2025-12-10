@@ -110,7 +110,7 @@ const handleButtonClick = () => {
 </script>
 
 <template>
-  <div class="space-y-5 p-5">
+  <div class="space-y-5 p-6">
     <HeaderSearch
       :buttons="headerButtons"
       @search="handleSearch"

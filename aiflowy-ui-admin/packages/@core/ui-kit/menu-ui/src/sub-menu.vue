@@ -46,6 +46,7 @@ const hasChildren = computed(() => {
       <span>{{ menu.name }}</span>
     </template>
   </MenuItem>
+  <!-- 扁平化菜单 -->
   <div v-else class="mb-6 flex flex-col gap-3">
     <span class="mx-2 text-sm text-[#C7C7C7]">{{ menu.name }}</span>
     <div>
@@ -54,6 +55,7 @@ const hasChildren = computed(() => {
       </template>
     </div>
   </div>
+  <!-- 收缩菜单 -->
   <!-- <SubMenuComp
     v-else
     :key="`${menu.path}_sub`"

@@ -103,21 +103,23 @@ onMounted(() => {
 
 <template>
   <div class="page-data-container" v-loading="loading">
-    <div v-if="pageList.length > 0">
-      <slot :page-list="pageList"></slot>
-    </div>
+    <template v-if="pageList.length > 0">
+      <div>
+        <slot :page-list="pageList"></slot>
+      </div>
+      <div class="pagination-container mx-auto w-fit">
+        <ElPagination
+          v-model:current-page="pageInfo.pageNumber"
+          v-model:page-size="pageInfo.pageSize"
+          :total="pageInfo.total"
+          :page-sizes="pageSizes"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
+    </template>
     <ElEmpty v-else />
-    <div class="pagination-container">
-      <ElPagination
-        v-model:current-page="pageInfo.pageNumber"
-        v-model:page-size="pageInfo.pageSize"
-        :total="pageInfo.total"
-        :page-sizes="pageSizes"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
-    </div>
   </div>
 </template>
 
