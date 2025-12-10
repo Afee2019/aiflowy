@@ -48,6 +48,7 @@
     "vue3-json-viewer": "^2.4.1"
   },
   "devDependencies": {
+    "cssnano": "catalog:",
     "unplugin-element-plus": "catalog:"
   }
 }
