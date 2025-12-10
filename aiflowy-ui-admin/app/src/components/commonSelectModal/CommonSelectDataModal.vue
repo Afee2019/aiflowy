@@ -30,7 +30,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['getData']);
-const dialogVisible = ref(true);
+const dialogVisible = ref(false);
 const pageDataRef = ref();
 const loading = ref(false);
 const selectedIds = ref<(number | string)[]>([]);
@@ -229,5 +229,33 @@ const handleSearch = (query: string) => {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+.select-modal-container :deep(.el-collapse) {
+  border: none;
+}
+
+.select-modal-container :deep(.el-collapse-item) {
+  margin-bottom: 8px;
+}
+
+.select-modal-container :deep(.el-collapse-item__header) {
+  height: auto;
+  line-height: normal;
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid #e4e7ed;
+}
+
+.select-modal-container :deep(.el-collapse-item__wrap) {
+  border: none;
+}
+
+.select-modal-container :deep(.el-collapse-item__content) {
+  padding: 12px;
+}
+
+.select-modal-container
+  :deep(.el-collapse-item.is-active .el-collapse-item__header) {
+  border-bottom-color: transparent;
 }
 </style>
