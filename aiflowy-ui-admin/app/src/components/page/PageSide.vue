@@ -99,6 +99,7 @@ function getList() {
     });
 }
 function showDialog(item: any) {
+  formRef.value?.resetFields();
   formData.value = { ...item };
   dialogVisible.value = true;
 }
