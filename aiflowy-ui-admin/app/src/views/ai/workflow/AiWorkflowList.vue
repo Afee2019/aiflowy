@@ -28,6 +28,7 @@ import { api } from '#/api/request';
 import workflowIcon from '#/assets/ai/workflow/workflowIcon.png';
 import CardList from '#/components/page/CardList.vue';
 import PageData from '#/components/page/PageData.vue';
+import PageSide from '#/components/page/PageSide.vue';
 import { $t } from '#/locales';
 import { router } from '#/router';
 import { useDictStore } from '#/store';
@@ -182,6 +183,25 @@ function exportJson(row: any) {
       ElMessage.success($t('message.downloadSuccess'));
     });
 }
+const fieldDefinitions = ref<any>([
+  {
+    prop: 'categoryName',
+    label: $t('aiWorkflowCategory.categoryName'),
+    type: 'input',
+    required: true,
+    placeholder: $t('aiWorkflowCategory.categoryName'),
+  },
+  {
+    prop: 'sortNo',
+    label: $t('aiWorkflowCategory.sortNo'),
+    type: 'number',
+    required: false,
+    placeholder: $t('aiWorkflowCategory.sortNo'),
+  },
+]);
+function changeCategory(categoryId: any) {
+  pageDataRef.value.setQuery({ categoryId });
+}
 </script>
 
 <template>
@@ -215,20 +235,37 @@ function exportJson(row: any) {
         {{ $t('button.add') }}
       </ElButton>
     </div>
-    <PageData
-      ref="pageDataRef"
-      page-url="/api/v1/aiWorkflow/page"
-      :page-sizes="[12, 18, 24]"
-      :page-size="12"
-    >
-      <template #default="{ pageList }">
-        <CardList
-          :default-icon="workflowIcon"
-          :data="pageList"
-          :actions="actions"
-        />
-      </template>
-    </PageData>
+    <div class="flex gap-2.5">
+      <PageSide
+        list-url="/api/v1/aiWorkflowCategory/list"
+        save-url="/api/v1/aiWorkflowCategory/save"
+        update-url="/api/v1/aiWorkflowCategory/update"
+        delete-url="/api/v1/aiWorkflowCategory/remove"
+        :fields="fieldDefinitions"
+        name-key="categoryName"
+        @on-selected="changeCategory"
+        :extra-query-params="{
+          sortKey: 'sortNo',
+          sortType: 'asc',
+        }"
+      />
+      <div class="mt-[-10px] flex-auto">
+        <PageData
+          ref="pageDataRef"
+          page-url="/api/v1/aiWorkflow/page"
+          :page-sizes="[12, 18, 24]"
+          :page-size="12"
+        >
+          <template #default="{ pageList }">
+            <CardList
+              :default-icon="workflowIcon"
+              :data="pageList"
+              :actions="actions"
+            />
+          </template>
+        </PageData>
+      </div>
+    </div>
   </div>
 </template>
 

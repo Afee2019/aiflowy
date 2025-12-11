@@ -13,6 +13,7 @@
     "modifiedBy": "ModifiedBy",
     "englishName": "EnglishName",
     "status": "Status",
+    "categoryId": "Category",
     "params": "Params",
     "steps": "Steps",
     "result": "Result",

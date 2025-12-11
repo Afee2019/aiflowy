@@ -100,6 +100,12 @@ function closeDialog() {
       <ElFormItem prop="title" :label="$t('aiWorkflow.title')">
         <ElInput v-model.trim="entity.title" />
       </ElFormItem>
+      <ElFormItem prop="categoryId" :label="$t('aiWorkflow.categoryId')">
+        <DictSelect
+          v-model="entity.categoryId"
+          dict-code="aiWorkFlowCategory"
+        />
+      </ElFormItem>
       <ElFormItem prop="alias" :label="$t('aiWorkflow.alias')">
         <ElInput v-model.trim="entity.alias" />
       </ElFormItem>
