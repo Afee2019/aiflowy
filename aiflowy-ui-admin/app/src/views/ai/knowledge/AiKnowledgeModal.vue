@@ -135,6 +135,7 @@ function closeDialog() {
     :before-close="closeDialog"
     :close-on-click-modal="false"
     align-center
+    style="max-height: 80vh; overflow-y: auto"
   >
     <ElForm
       label-width="150px"

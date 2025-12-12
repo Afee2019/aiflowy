@@ -3,7 +3,7 @@ import type { FormInstance } from 'element-plus';
 
 import { computed, onMounted, ref } from 'vue';
 
-import { Menu, MoreFilled, Plus } from '@element-plus/icons-vue';
+import { Delete, Edit, Menu, MoreFilled, Plus } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElDialog,
@@ -173,7 +173,9 @@ const formRules = computed(() => {
     :style="{ width: `${panelWidth}px` }"
   >
     <div class="flex flex-1 flex-col gap-5">
-      <h3 class="text-base font-medium">{{ title }}</h3>
+      <h3 class="text-base font-medium" v-show="title.length > 0">
+        {{ title }}
+      </h3>
 
       <div class="flex-1 overflow-scroll">
         <div
@@ -208,10 +210,14 @@ const formRules = computed(() => {
               <template #dropdown>
                 <ElDropdownMenu>
                   <ElDropdownItem @click="showDialog(item)">
-                    {{ $t('button.edit') }}
+                    <ElButton :icon="Edit" link>
+                      {{ $t('button.edit') }}
+                    </ElButton>
                   </ElDropdownItem>
-                  <ElDropdownItem @click="remove(item)" style="color: red">
-                    {{ $t('button.delete') }}
+                  <ElDropdownItem @click="remove(item)">
+                    <ElButton type="danger" :icon="Delete" link>
+                      {{ $t('button.delete') }}
+                    </ElButton>
                   </ElDropdownItem>
                 </ElDropdownMenu>
               </template>

@@ -48,11 +48,13 @@ html .el-loading-mask {
 }
 
 .el-table thead {
-  --el-table-header-text-color: #323233;
+  /* --el-table-header-text-color: #323233; */
+  color: var(--table-header-text-color) !important;
 }
 
 .el-table th.el-table__cell {
-  --el-table-header-bg-color: #f7f9fd;
+  /* --el-table-header-bg-color: #f7f9fd; */
+  background-color: var(--table-header-bg-color) !important;
 }
 
 .el-table td.el-table__cell,
@@ -61,7 +63,7 @@ html .el-loading-mask {
 }
 
 .el-table td.el-table__cell {
-  box-shadow: inset 0px -1px 0px 0px #F2F3F6;
+  box-shadow: inset 0px -1px 0px 0px var(--table-cell-shadow-color);
 }
 
 .el-table--border .el-table__inner-wrapper:after,

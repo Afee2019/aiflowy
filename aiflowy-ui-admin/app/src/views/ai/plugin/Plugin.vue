@@ -185,7 +185,9 @@ const handleClickCategory = (item) => {
         />
       </div>
 
-      <div class="plugin-content-data-container">
+      <div
+        class="plugin-content-data-container h-[calc(100vh-185px)] overflow-auto"
+      >
         <PageData
           ref="pageDataRef"
           page-url="/api/v1/aiPlugin/pageByCategory"

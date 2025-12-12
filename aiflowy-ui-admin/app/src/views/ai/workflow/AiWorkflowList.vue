@@ -220,7 +220,7 @@ function changeCategory(categoryId: any) {
           sortType: 'asc',
         }"
       />
-      <div class="flex-auto">
+      <div class="h-[calc(100vh-192px)] flex-1 overflow-auto">
         <PageData
           ref="pageDataRef"
           page-url="/api/v1/aiWorkflow/page"

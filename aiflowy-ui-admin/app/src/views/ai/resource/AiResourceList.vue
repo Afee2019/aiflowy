@@ -168,7 +168,7 @@ function download(row: any) {
             >
               <template #default="{ row }">
                 <div class="flex items-center gap-2.5">
-                  <ElAvatar :src="getSrc(row)" shape="square" :size="50" />
+                  <ElAvatar :src="getSrc(row)" shape="square" :size="32" />
                   <div class="w-[200px]">
                     <ElTooltip :content="`${row.resourceName}`" placement="top">
                       <ElText truncated>

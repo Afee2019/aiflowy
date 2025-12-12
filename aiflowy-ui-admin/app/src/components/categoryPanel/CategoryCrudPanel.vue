@@ -3,7 +3,7 @@ import { computed, onMounted, ref, toRefs } from 'vue';
 
 import { $t } from '@aiflowy/locales';
 
-import { MoreFilled, Plus } from '@element-plus/icons-vue';
+import { Delete, Edit, MoreFilled, Plus } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElDialog,
@@ -201,7 +201,7 @@ const handleDeleteClick = (event: any, item: any) => {
     :style="{ width: `${panelWidth}px` }"
   >
     <div class="flex flex-1 flex-col gap-5">
-      <h3 class="text-base font-medium">{{ title }}</h3>
+      <!-- <h3 class="text-base font-medium">{{ title }}</h3> -->
 
       <div class="flex-1 overflow-scroll">
         <div v-for="(item, index) in categoryData" :key="index">
@@ -219,14 +219,14 @@ const handleDeleteClick = (event: any, item: any) => {
                 <template #dropdown>
                   <ElDropdownMenu>
                     <ElDropdownItem @click="handleEditClick($event, item)">
-                      {{ $t('button.edit') }}
+                      <ElButton :icon="Edit" link>
+                        {{ $t('button.edit') }}
+                      </ElButton>
                     </ElDropdownItem>
-                    <ElDropdownItem
-                      @click="handleDeleteClick($event, item)"
-                      divided
-                      style="color: red"
-                    >
-                      {{ $t('button.delete') }}
+                    <ElDropdownItem @click="handleDeleteClick($event, item)">
+                      <ElButton type="danger" :icon="Delete" link>
+                        {{ $t('button.delete') }}
+                      </ElButton>
                     </ElDropdownItem>
                   </ElDropdownMenu>
                 </template>
@@ -283,7 +283,7 @@ const handleDeleteClick = (event: any, item: any) => {
 
 .crud-category-item.selected {
   background-color: var(--el-color-primary-light-9);
-  color: var(--el-text-color-primary);
+  color: var(--el-color-primary);
 }
 
 .no-data {
