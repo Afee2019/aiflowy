@@ -9,6 +9,8 @@ import { $t } from '@aiflowy/locales';
 
 import { AIFlowyButton } from '@aiflowy-core/shadcn-ui';
 
+import Icon404 from './icons/icon-404.png';
+
 interface Props extends FallbackProps {}
 
 defineOptions({
@@ -25,7 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const Icon403 = defineAsyncComponent(() => import('./icons/icon-403.vue'));
-const Icon404 = defineAsyncComponent(() => import('./icons/icon-404.vue'));
+// const Icon404 = defineAsyncComponent(() => import('./icons/icon-404.vue'));
 const Icon500 = defineAsyncComponent(() => import('./icons/icon-500.vue'));
 const IconHello = defineAsyncComponent(
   () => import('./icons/icon-coming-soon.vue'),
@@ -129,7 +131,11 @@ function refresh() {
 
 <template>
   <div class="flex size-full flex-col items-center justify-center duration-300">
-    <img v-if="image" :src="image" class="md:1/3 w-1/2 lg:w-1/4" />
+    <img
+      v-if="image || props.status === '404'"
+      :src="image || Icon404"
+      class="md:1/3 w-1/2 lg:w-1/4"
+    />
     <component
       :is="fallbackIcon"
       v-else-if="fallbackIcon"
