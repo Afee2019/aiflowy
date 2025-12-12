@@ -283,7 +283,7 @@ const handleDeleteClick = (event: any, item: any) => {
 
 .crud-category-item.selected {
   background-color: var(--el-color-primary-light-9);
-  color: var(--el-text-color-primary);
+  color: var(--el-color-primary);
 }
 
 .no-data {
