@@ -26,6 +26,7 @@ export default defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     themeConfig: {
         logo: '/logo.png',
+        logoLink: "https://aiflowy.tech",
         outline: {
             label: '当前页导航',
             level: 'deep'
@@ -39,7 +40,7 @@ export default defineConfig({
         nav: [
             {text: '开发文档', link: '/zh/development/getting-started/getting-started'},
             {text: '产品手册', link: '/zh/product/info/what-is-aiflowy'},
-            {text: '价格', link: '/zh/product/pricing'},
+            {text: '价格', link: 'https://aiflowy.tech/pricing'},
             {text: '更新记录', link: '/zh/product/changes'},
         ],
 
@@ -206,7 +207,8 @@ function sidebarProduct(): DefaultTheme.SidebarItem[] {
                 {text: '管理知识库', link: 'knowledge/management-knowledge'},
                 {text: '文档分片', link: 'knowledge/splitter'},
                 {text: 'Embedding 模型', link: 'knowledge/embedding'},
-                {text: '向量数据库', collapsed: false,
+                {
+                    text: '向量数据库', collapsed: false,
                     items: [
                         {text: 'Redis-Stack', link: 'knowledge/vector-database/redis-stack.md'},
                         {text: 'Milvus', link: 'knowledge/vector-database/milvus.md'},
@@ -214,7 +216,7 @@ function sidebarProduct(): DefaultTheme.SidebarItem[] {
                         {text: 'openSearch', link: 'knowledge/vector-database/opensearch.md'},
                         {text: '阿里云', link: 'knowledge/vector-database/aliyun.md'},
                     ]
-                    }
+                }
             ]
         },
         {

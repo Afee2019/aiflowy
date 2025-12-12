@@ -9,6 +9,6 @@ cp ../changes.md ./zh/product/
 # build
 npm run docs:build
 
-ossutil rm oss://aiflowy-tech-website/ -rf
-ossutil cp -rf assets/images oss://aiflowy-tech-website/assets/images
-ossutil cp -rf .vitepress/dist  oss://aiflowy-tech-website/
+ossutil rm oss://docs-aiflowy-tech-website/ -rf
+ossutil cp -rf assets/images oss://docs-aiflowy-tech-website/assets/images
+ossutil cp -rf .vitepress/dist  oss://docs-aiflowy-tech-website/
