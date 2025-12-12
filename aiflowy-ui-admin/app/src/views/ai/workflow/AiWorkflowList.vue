@@ -15,8 +15,9 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 
 import { api } from '#/api/request';
 import workflowIcon from '#/assets/ai/workflow/workflowIcon.png';
+// import workflowSvg from '#/assets/workflow.svg';
 import HeaderSearch from '#/components/headerSearch/HeaderSearch.vue';
-import WorkFlowIcon from '#/components/icons/WorkFlowIcon.vue';
+import DesignIcon from '#/components/icons/DesignIcon.vue';
 import CardList from '#/components/page/CardList.vue';
 import PageData from '#/components/page/PageData.vue';
 import PageSide from '#/components/page/PageSide.vue';
@@ -37,7 +38,7 @@ const actions: ActionButton[] = [
     },
   },
   {
-    icon: markRaw(WorkFlowIcon),
+    icon: DesignIcon,
     text: $t('button.design'),
     className: '',
     permission: '',
