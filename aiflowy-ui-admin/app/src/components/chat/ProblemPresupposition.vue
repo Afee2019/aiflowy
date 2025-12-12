@@ -18,7 +18,18 @@ const openDialog = (data: BasicFormItem[]) => {
   nextTick(() => {
     basicFormRef.value?.resetFields();
   });
-  basicForm.value = data;
+  if (data.length === 0) {
+    basicForm.value = [
+      { key: '1', description: '' },
+      { key: '2', description: '' },
+      { key: '3', description: '' },
+      { key: '4', description: '' },
+      { key: '5', description: '' },
+    ];
+  } else {
+    basicForm.value = data;
+  }
+
   dialogVisible.value = true;
 };
 
@@ -34,7 +45,6 @@ const basicFormRef = ref();
 
 defineExpose({
   openDialog(data: BasicFormItem[]) {
-    console.log('openDialog', data);
     openDialog(data);
   },
 });

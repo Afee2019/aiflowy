@@ -106,6 +106,8 @@
 
   accent-color: var(--primary);
   color-scheme: light;
+
+  --bot-back-item: hsl(0deg 0% 91.76%);
 }
 
 [data-theme='violet'] {

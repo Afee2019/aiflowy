@@ -61,6 +61,7 @@ const handleDelete = (item: any) => {
   justify-content: space-between;
   align-items: center;
   padding: 8px;
+  background-color: var(--bot-back-item);
 }
 .collapse-item-container {
   display: flex;

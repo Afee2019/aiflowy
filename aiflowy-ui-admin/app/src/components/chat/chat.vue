@@ -22,12 +22,11 @@ import {
 import { ElAvatar, ElButton, ElIcon, ElMessage, ElSpace } from 'element-plus';
 
 import { getMessageList } from '#/api';
-import { api, sse } from '#/api/request';
+import { api, sseClient } from '#/api/request';
 import MarkdownRenderer from '#/components/chat/MarkdownRenderer.vue';
 
 import BotAvatar from '../botAvatar/botAvatar.vue';
 import SendingIcon from '../icons/SendingIcon.vue';
-import ProblemPresupposition from "#/components/chat/ProblemPresupposition.vue";
 
 const props = defineProps<{
   bot?: BotInfo;
@@ -41,7 +40,6 @@ interface historyMessageType {
 }
 const route = useRoute();
 const botId = ref<string>((route.params.id as string) || '');
-const { postSse, stop } = sse();
 const router = useRouter();
 const userStore = useUserStore();
 const bubbleItems = ref<BubbleListProps<ChatMessage>['list']>([]);
@@ -116,8 +114,17 @@ watchEffect(async () => {
 const lastUserMessage = ref('');
 const messages = ref<historyMessageType[]>([]);
 const stopSse = () => {
-  stop();
+  sseClient.abort();
   sending.value = false;
+  const lastBubbleItem = bubbleItems.value[bubbleItems.value.length - 1];
+  if (lastBubbleItem) {
+    bubbleItems.value[bubbleItems.value.length - 1] = {
+      ...lastBubbleItem,
+      content: lastBubbleItem.content,
+      loading: false,
+      typing: false,
+    };
+  }
 };
 const handleSubmit = async (refreshContent: string) => {
   const currentPrompt = refreshContent || senderValue.value.trim();
@@ -142,7 +149,7 @@ const handleSubmit = async (refreshContent: string) => {
   bubbleItems.value.push(...mockMessages);
   senderRef.value?.clear();
 
-  postSse('/api/v1/aiBot/chat', data, {
+  sseClient.post('/api/v1/aiBot/chat', data, {
     onMessage(message) {
       const event = message.event;
       //  finish

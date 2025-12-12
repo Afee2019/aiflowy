@@ -103,7 +103,7 @@
 
   /* header */
   --header: 222.34deg 10.43% 12.27%;
-
+  --bot-back-item: hsl(0deg 0% 91.76%);
   color-scheme: dark;
 }
 

@@ -705,6 +705,7 @@ const handleProblemPresuppositionSuccess = (data: any) => {
   justify-content: space-between;
   align-items: center;
   padding: 8px;
+  background-color: var(--bot-back-item);
 }
 .preset-delete {
   cursor: pointer;
@@ -714,9 +715,20 @@ const handleProblemPresuppositionSuccess = (data: any) => {
   font-size: 14px;
   font-weight: 500;
   color: var(--el-text-color-primary);
+  font-family:
+    PingFangSC,
+    PingFang SC;
+  line-height: 22px;
 }
 .options-config-item-left {
   flex: 0 0 auto;
+}
+
+:deep(.el-collapse-item__title) {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--el-text-color-primary);
+  line-height: 22px;
 }
 .options-config-item-middle {
   flex: 1;
@@ -726,7 +738,14 @@ const handleProblemPresuppositionSuccess = (data: any) => {
   flex: 0 0 auto;
   width: auto;
 }
-.el-collapse-icon-position-left .el-collapse-item__header {
-  padding: 12px;
+:deep(.el-slider__runway) {
+  height: 4px;
+}
+:deep(.el-slider__bar) {
+  height: 4px;
+}
+:deep(.el-slider__button) {
+  width: 14px;
+  height: 14px;
 }
 </style>

@@ -127,46 +127,95 @@ export interface SseOptions {
   onError?: (err: any) => void;
   onFinished?: () => void;
 }
+export class SseClient {
+  private controller: AbortController | null = null;
+  private currentRequestId = 0;
 
-export const sse = () => {
-  let ctrl: AbortController | null = null;
-  const accessStore = useAccessStore();
-  const sseHeaders = {
-    Accept: 'text/event-stream',
-    'aiflowy-token': accessStore.accessToken || '',
-  };
-  return {
-    stop() {
-      if (ctrl) {
-        ctrl.abort();
-        ctrl = null;
-      }
-    },
-    postSse: async (url: string, data?: any, options?: SseOptions) => {
-      stop();
-      ctrl = new AbortController();
+  abort(): void {
+    if (this.controller) {
+      this.controller.abort();
+      this.controller = null;
+    }
+  }
+
+  isActive(): boolean {
+    return this.controller !== null;
+  }
+
+  async post(url: string, data?: any, options?: SseOptions): Promise<void> {
+    // 生成唯一的请求ID
+    const requestId = ++this.currentRequestId;
+    const currentRequestId = requestId;
+
+    // 如果已有请求，先取消
+    this.abort();
+
+    // 创建新的控制器
+    const controller = new AbortController();
+    this.controller = controller;
+
+    // 保存信号的引用到局部变量
+    const signal = controller.signal;
+
+    try {
       const res = await fetch(apiURL + url, {
-        method: 'post',
-        signal: ctrl.signal,
-        headers: sseHeaders,
+        method: 'POST',
+        signal, // 使用局部变量 signal
+        headers: this.getHeaders(),
         body: JSON.stringify(data),
       });
 
       if (!res.ok) {
-        options?.onError?.(res.status);
+        const error = new Error(`HTTP ${res.status}: ${res.statusText}`);
+        options?.onError?.(error);
         return;
       }
+
+      // 在开始事件流之前检查是否还是同一个请求
+      if (this.currentRequestId !== currentRequestId) {
+        return;
+      }
+
+      const msgEvents = events(res, signal);
+
       try {
-        const msgEvents = events(res, ctrl.signal);
         for await (const event of msgEvents) {
+          // 每次迭代都检查是否还是同一个请求
+          if (this.currentRequestId !== currentRequestId) {
+            break;
+          }
           options?.onMessage?.(event);
         }
-      } catch (error) {
-        console.error('error', error);
-        options?.onError?.(error);
-      } finally {
+      } catch (innerError) {
+        options?.onError?.(innerError);
+      }
+
+      // 只有在还是同一个请求的情况下才调用 onFinished
+      if (this.currentRequestId === currentRequestId) {
         options?.onFinished?.();
       }
-    },
-  };
-};
+    } catch (error) {
+      if (this.currentRequestId !== currentRequestId) {
+        return;
+      }
+      console.error('SSE错误:', error);
+      options?.onError?.(error);
+    } finally {
+      // 只有当还是当前请求时才清除 controller
+      if (this.currentRequestId === currentRequestId) {
+        this.controller = null;
+      }
+    }
+  }
+
+  private getHeaders() {
+    const accessStore = useAccessStore();
+    return {
+      Accept: 'text/event-stream',
+      'Content-Type': 'application/json',
+      'aiflowy-token': accessStore.accessToken || '',
+    };
+  }
+}
+
+export const sseClient = new SseClient();
