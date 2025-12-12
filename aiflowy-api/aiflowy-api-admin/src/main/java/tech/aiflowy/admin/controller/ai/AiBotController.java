@@ -141,6 +141,8 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
      * @param prompt    用户输入的聊天内容，必须提供
      * @param botId     聊天机器人的唯一标识符，必须提供
      * @param sessionId 会话ID，用于标识当前对话会话，必须提供
+     * @param messages  历史消息，用于提供上下文，可选
+     * @param fileList  文件列表，用于提供文件上传，可选, 值位文件路径
      * @return 返回SseEmitter对象，用于服务器向客户端推送聊天响应数据
      */
     @PostMapping("chat")
@@ -149,7 +151,8 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
             @JsonBody(value = "prompt", required = true) String prompt,
             @JsonBody(value = "botId", required = true) BigInteger botId,
             @JsonBody(value = "sessionId", required = true) String sessionId,
-            @JsonBody(value = "messages") List<Map<String, String>>  messages
+            @JsonBody(value = "messages") List<Map<String, String>>  messages,
+            @JsonBody(value = "fileList") List<String> fileList
 
     ) {
 
@@ -360,8 +363,8 @@ public class AiBotController extends BaseCurdController<AiBotService, AiBot> {
 
         // 工作流 function 集合
         queryWrapper.eq(AiBotWorkflow::getBotId, botId);
-//        List<AiBotWorkflow> aiBotWorkflows = aiBotWorkflowService.getMapper()
-//                .selectListWithRelationsByQuery(queryWrapper);
+        List<AiBotWorkflow> aiBotWorkflows = aiBotWorkflowService.getMapper()
+                .selectListWithRelationsByQuery(queryWrapper);
 //        if (aiBotWorkflows != null && !aiBotWorkflows.isEmpty()) {
 //            for (AiBotWorkflow aiBotWorkflow : aiBotWorkflows) {
 //                Tool function = aiBotWorkflow.getWorkflow().toFunction(needEnglishName);

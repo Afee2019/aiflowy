@@ -18,17 +18,16 @@ const openDialog = (data: BasicFormItem[]) => {
   nextTick(() => {
     basicFormRef.value?.resetFields();
   });
-  if (data.length === 0) {
-    basicForm.value = [
-      { key: '1', description: '' },
-      { key: '2', description: '' },
-      { key: '3', description: '' },
-      { key: '4', description: '' },
-      { key: '5', description: '' },
-    ];
-  } else {
-    basicForm.value = data;
-  }
+  basicForm.value =
+    data.length === 0
+      ? [
+          { key: '1', description: '' },
+          { key: '2', description: '' },
+          { key: '3', description: '' },
+          { key: '4', description: '' },
+          { key: '5', description: '' },
+        ]
+      : data;
 
   dialogVisible.value = true;
 };

@@ -4,7 +4,7 @@ import type { TypewriterInstance } from 'vue-element-plus-x/types/Typewriter';
 
 import type { BotInfo, ChatMessage } from '@aiflowy/types';
 
-import { onMounted, ref, watchEffect } from 'vue';
+import { nextTick, onMounted, ref, watchEffect } from 'vue';
 import { BubbleList, Sender } from 'vue-element-plus-x';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -24,6 +24,7 @@ import { ElAvatar, ElButton, ElIcon, ElMessage, ElSpace } from 'element-plus';
 import { getMessageList } from '#/api';
 import { api, sseClient } from '#/api/request';
 import MarkdownRenderer from '#/components/chat/MarkdownRenderer.vue';
+import SenderHeader from '#/components/chat/SenderHeader.vue';
 
 import BotAvatar from '../botAvatar/botAvatar.vue';
 import SendingIcon from '../icons/SendingIcon.vue';
@@ -239,6 +240,17 @@ const handleCopy = (content: string) => {
 const handleRefresh = () => {
   handleSubmit(lastUserMessage.value);
 };
+const uploadRef = ref();
+const senderHeader = ref();
+async function handlePasteFile(firstFile: File, fileList: FileList) {
+  if (senderRef.value) {
+    senderRef.value.openHeader();
+    await nextTick();
+    if (senderHeader.value) {
+      senderHeader.value.init(firstFile, fileList);
+    }
+  }
+}
 </script>
 
 <template>
@@ -270,17 +282,6 @@ const handleRefresh = () => {
               :size="40"
             />
             <ElAvatar v-else :src="userStore.userInfo?.avatar" :size="40" />
-          </template>
-
-          <!-- 自定义头部 -->
-          <template #header="{ item }">
-            <div class="text-sm text-[#979797]">
-              {{
-                item.role === 'assistant'
-                  ? bot?.title
-                  : userStore.userInfo?.nickname
-              }}
-            </div>
           </template>
           <template #content="{ item }">
             <MarkdownRenderer :content="item.content" />
@@ -331,12 +332,18 @@ const handleRefresh = () => {
         :auto-size="{ minRows: 3, maxRows: 6 }"
         allow-speech
         @submit="handleSubmit"
+        @paste-file="handlePasteFile"
       >
         <!-- 自定义头部内容 -->
-        <!-- <template #header></template> -->
+        <template #header>
+          <div class="header-self-wrap">
+            <SenderHeader ref="senderHeader" />
+          </div>
+        </template>
+
         <template #action-list>
           <ElSpace>
-            <ElButton circle>
+            <ElButton circle @click="uploadRef.triggerFileSelect()">
               <ElIcon><Paperclip /></ElIcon>
             </ElButton>
             <ElButton circle>

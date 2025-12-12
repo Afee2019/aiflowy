@@ -7,7 +7,7 @@ import { useRoute } from 'vue-router';
 import { $t } from '@aiflowy/locales';
 import { tryit } from '@aiflowy/utils';
 
-import { Delete, Plus } from '@element-plus/icons-vue';
+import { Delete, Plus, Setting } from '@element-plus/icons-vue';
 import { useDebounceFn } from '@vueuse/core';
 import {
   ElCol,
@@ -25,6 +25,7 @@ import {
 import { getAiLlmList, updateLlmId, updateLlmOptions } from '#/api';
 import { api } from '#/api/request';
 import ProblemPresupposition from '#/components/chat/ProblemPresupposition.vue';
+import PublishWxOfficalAccount from '#/components/chat/PublishWxOfficalAccount.vue';
 import CollapseViewItem from '#/components/collapseViewItem/CollapseViewItem.vue';
 import CommonSelectDataModal from '#/components/commonSelectModal/CommonSelectDataModal.vue';
 
@@ -201,6 +202,7 @@ const handleInvalidNumber = (
 const pluginToolDataRef = ref();
 const knowledgeDataRef = ref();
 const workflowDataRef = ref();
+const publishWxRef = ref();
 
 const handleAddPlugin = () => {
   pluginToolDataRef.value.openDialog(pluginToolIdsData.value);
@@ -327,6 +329,10 @@ const handleProblemPresuppositionSuccess = (data: any) => {
         ElMessage.error(res.message);
       }
     });
+};
+
+const handlePublishWx = () => {
+  publishWxRef.value.openDialog(botId.value, botInfo.value?.options);
 };
 </script>
 
@@ -635,6 +641,17 @@ const handleProblemPresuppositionSuccess = (data: any) => {
         <ElCollapse expand-icon-position="left">
           <ElCollapseItem title="嵌入" />
           <ElCollapseItem title="API" />
+          <ElCollapseItem title="发布到微信公众号">
+            <div class="publish-wx">
+              <span>未配置</span>
+              <div class="publish-wx-right-container" @click="handlePublishWx">
+                <ElIcon>
+                  <Setting />
+                </ElIcon>
+                <span>{{ $t('button.edit') }}</span>
+              </div>
+            </div>
+          </ElCollapseItem>
         </ElCollapse>
       </div>
     </div>
@@ -669,6 +686,7 @@ const handleProblemPresuppositionSuccess = (data: any) => {
       ref="problemPresuppositionRef"
       @success="handleProblemPresuppositionSuccess"
     />
+    <PublishWxOfficalAccount ref="publishWxRef"/>
   </div>
 </template>
 
@@ -747,5 +765,18 @@ const handleProblemPresuppositionSuccess = (data: any) => {
 :deep(.el-slider__button) {
   width: 14px;
   height: 14px;
+}
+.publish-wx {
+  padding: 0 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.publish-wx-right-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
 }
 </style>
