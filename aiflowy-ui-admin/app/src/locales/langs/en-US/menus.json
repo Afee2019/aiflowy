@@ -11,6 +11,7 @@
     "sysLog": "Log"
   },
   "ai": {
+    "bots": "ChatAssistant",
     "title": "AI",
     "resources": "Resources",
     "datacenter": "Datacenter",
