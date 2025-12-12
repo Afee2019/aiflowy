@@ -91,4 +91,5 @@ const handleDelete = (item: any) => {
 .el-list-item-delete-container {
   cursor: pointer;
 }
+
 </style>
