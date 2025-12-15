@@ -2,6 +2,7 @@ package tech.aiflowy.common.filestorage.s3;
 
 
 import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotWebContextException;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateUtil;
@@ -133,8 +134,8 @@ public class S3Client {
                 path = StpUtil.getLoginIdAsString() + PathGeneratorUtil.generatePath(file.getOriginalFilename());
             }
         } catch (Exception e) {
-            if (e instanceof NotLoginException) {
-                path = "/" + "commons" + PathGeneratorUtil.generatePath(file.getOriginalFilename());
+            if (e instanceof NotLoginException || e instanceof NotWebContextException) {
+                path = "commons" + PathGeneratorUtil.generatePath(file.getOriginalFilename());
             } else {
                 e.printStackTrace();
             }

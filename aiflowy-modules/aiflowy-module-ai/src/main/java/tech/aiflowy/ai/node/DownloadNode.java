@@ -75,6 +75,7 @@ public class DownloadNode extends BaseNode {
         resource.setCreatedBy(account.getId());
         resource.setModified(new Date());
         resource.setModifiedBy(account.getId());
+        resource.setFileSize(BigInteger.valueOf(bytes.length));
         try {
             TenantManager.ignoreTenantCondition();
             AiResourceService service = SpringContextUtil.getBean(AiResourceService.class);
