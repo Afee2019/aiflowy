@@ -28,7 +28,7 @@ interface Props {
     label: string;
     onClick: () => void;
   };
-  defaultSelected?: number | string;
+  defaultSelected?: string;
 }
 
 const props = defineProps<Props>();
@@ -36,7 +36,7 @@ const emits = defineEmits<{
   (e: 'change', item: T): void;
 }>();
 const panelWidth = ref(225);
-const selected = ref<string>('');
+const selected = ref<string>(props.defaultSelected ?? '');
 
 const handleChange = (item: T) => {
   selected.value = item[props.valueKey];
@@ -46,7 +46,7 @@ const handleChange = (item: T) => {
 
 <template>
   <div
-    class="flex w-[225px] flex-col rounded-lg border border-[var(--el-border-color)] bg-[var(--el-bg-color)] p-2"
+    class="flex h-full w-[225px] flex-col rounded-lg border border-[var(--el-border-color)] bg-[var(--el-bg-color)] p-2"
     :style="{ width: `${panelWidth}px` }"
   >
     <div class="flex flex-1 flex-col gap-5">
@@ -60,7 +60,7 @@ const handleChange = (item: T) => {
           :key="item[valueKey]"
           class="list-item"
           :class="{
-            selected: (selected ?? defaultSelected) === item[valueKey],
+            selected: selected === item[valueKey],
           }"
           @click="handleChange(item)"
         >

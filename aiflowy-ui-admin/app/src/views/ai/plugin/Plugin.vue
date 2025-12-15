@@ -248,6 +248,7 @@ const handleClickCategory = (item) => {
           :menus="categoryList"
           :control-btns="controlBtns"
           :footer-button="footerButton"
+          default-selected="0"
           @change="handleClickCategory"
         />
       </div>
