@@ -147,7 +147,7 @@ const finishImport = () => {
 <style scoped>
 .imp-doc-kno-container {
   position: relative;
-  height: calc(100vh - 161px);
+  height: 100%;
   background-color: var(--el-bg-color);
   border-radius: 12px;
   padding: 20px;
@@ -162,7 +162,7 @@ const finishImport = () => {
 }
 .imp-doc-footer {
   position: absolute;
-  bottom: 0;
+  bottom: 20px;
   right: 20px;
   display: flex;
   height: 40px;

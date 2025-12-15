@@ -9,25 +9,28 @@ import { BubbleList, Sender } from 'vue-element-plus-x';
 import { useRoute, useRouter } from 'vue-router';
 
 import { $t } from '@aiflowy/locales';
+import { useBotStore } from '@aiflowy/stores';
 import { cn, tryit, uuid } from '@aiflowy/utils';
 
-import { CopyDocument, Promotion, RefreshRight } from '@element-plus/icons-vue';
+import { CopyDocument, RefreshRight } from '@element-plus/icons-vue';
 import { ElButton, ElIcon, ElMessage, ElSpace } from 'element-plus';
 
-import {getMessageList, getPerQuestions} from '#/api';
+import { getMessageList, getPerQuestions } from '#/api';
 import { api, sseClient } from '#/api/request';
 import MarkdownRenderer from '#/components/chat/MarkdownRenderer.vue';
+import SendIcon from '#/components/icons/SendIcon.vue';
 
 import BotAvatar from '../botAvatar/botAvatar.vue';
 import SendingIcon from '../icons/SendingIcon.vue';
-import { useBotStore } from '@aiflowy/stores';
-const botStore = useBotStore();
+import SendEnableIcon from "#/components/icons/SendEnableIcon.vue";
+
 const props = defineProps<{
   bot?: BotInfo;
   // 是否是外部消息 1 外部消息 0 内部消息
   isExternalMsg: number;
   sessionId?: string;
 }>();
+const botStore = useBotStore();
 interface historyMessageType {
   role: string;
   content: string;
@@ -337,7 +340,10 @@ const handleRefresh = () => {
       </div>
 
       <!--问题预设-->
-      <div class="questions-preset-container" v-if="botStore.presetQuestions.length > 0">
+      <div
+        class="questions-preset-container"
+        v-if="botStore.presetQuestions.length > 0"
+      >
         <ElButton
           v-for="item in getPerQuestions(botStore.presetQuestions)"
           :key="item.key"
@@ -375,9 +381,15 @@ const handleRefresh = () => {
             <ElButton v-if="sending" circle @click="stopSse">
               <ElIcon size="30" color="#409eff"><SendingIcon /></ElIcon>
             </ElButton>
-            <ElButton v-else circle color="#0066FF" @click="handleSubmit('')">
-              <ElIcon><Promotion /></ElIcon>
-            </ElButton>
+            <template v-else>
+              <ElButton v-if="!senderValue" circle disabled>
+                <SendIcon />
+              </ElButton>
+              <ElButton v-else circle @click="handleSubmit('')">
+                <SendEnableIcon />
+              </ElButton>
+            </template>
+
           </ElSpace>
         </template>
       </Sender>

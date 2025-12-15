@@ -109,7 +109,7 @@ const handleDelete = (row: any) => {
                 <ElDropdownMenu>
                   <div>
                     <ElDropdownItem @click="handleView(row)">
-                      <ElButton link type="primary">
+                      <ElButton link>
                         <ElIcon class="mr-1">
                           <View />
                         </ElIcon>
