@@ -1,6 +1,6 @@
 <!-- src/components/MarkdownRenderer.vue -->
 <script setup lang="ts">
-import { computed, defineProps } from 'vue';
+import { computed } from 'vue';
 
 import DOMPurify from 'dompurify';
 import hljs from 'highlight.js';

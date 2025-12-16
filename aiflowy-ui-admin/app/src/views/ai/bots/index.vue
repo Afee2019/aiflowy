@@ -61,17 +61,6 @@ const actions: ActionButton[] = [
     },
   },
   {
-    icon: VideoPlay,
-    text: $t('button.run'),
-    className: '',
-    permission: '',
-    onClick(row: BotInfo) {
-      router.push({ path: `/ai/bots/run/${row.id}` });
-      // 打开新窗口
-      // window.open(`/ai/bots/run/${item.id}`, '_blank');
-    },
-  },
-  {
     icon: DeleteFilled,
     text: $t('button.delete'),
     className: '',

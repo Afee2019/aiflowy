@@ -35,7 +35,13 @@ interface Props {
   defaultSelected?: string;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  title: '',
+  iconSize: 16,
+  controlBtns: () => [],
+  footerButton: undefined,
+  defaultSelected: '',
+});
 const emits = defineEmits<{
   (e: 'change', item: T): void;
 }>();

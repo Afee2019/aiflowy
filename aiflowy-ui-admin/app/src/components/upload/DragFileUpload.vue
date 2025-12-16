@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { UploadProps } from 'element-plus';
 
-import { defineExpose, ref } from 'vue';
+import { ref } from 'vue';
 
 import { useAppConfig } from '@aiflowy/hooks';
 import { useAccessStore } from '@aiflowy/stores';
