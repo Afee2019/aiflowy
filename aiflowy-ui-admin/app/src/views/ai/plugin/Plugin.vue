@@ -16,7 +16,6 @@ import {
 } from 'element-plus';
 
 import { api } from '#/api/request';
-// import CategoryCrudPanel from '#/components/categoryPanel/CategoryCrudPanel.vue';
 import HeaderSearch from '#/components/headerSearch/HeaderSearch.vue';
 import CategorizeIcon from '#/components/icons/CategorizeIcon.vue';
 import PluginToolIcon from '#/components/icons/PluginToolIcon.vue';
@@ -78,6 +77,8 @@ const controlBtns = [
     icon: Edit,
     label: $t('button.edit'),
     onClick(row) {
+      formData.value.name = row.name;
+      formData.value.id = row.id;
       isEdit.value = true;
       dialogVisible.value = true;
     },
@@ -95,7 +96,8 @@ const footerButton = {
   icon: Plus,
   label: $t('button.add'),
   onClick() {
-    handleAddCategory();
+    dialogVisible.value = true;
+    isEdit.value = false;
   },
 };
 const getPluginCategoryList = async () => {
@@ -145,18 +147,8 @@ const headerButtons = [
 const pluginCategoryId = ref('0');
 const dialogVisible = ref(false); // 弹窗显隐
 const isEdit = ref(false); // 是否为编辑模式
-const formData = ref({ name: '' });
+const formData = ref({ name: '', id: '' });
 
-/**
- * 编辑按钮点击事件
- * @param {object} row - 表格当前行数据
- */
-const handleEdit = (row) => {
-  isEdit.value = true;
-  // 使用提取原始数据的方法
-  formData.value = extractFromProxy(row);
-  dialogVisible.value = true;
-};
 const handleSubmit = () => {
   // 触发对应事件，传递表单数据
   if (isEdit.value) {
@@ -228,19 +220,6 @@ const handleClickCategory = (item) => {
     </div>
     <div class="plugin-content-container">
       <div class="category-panel-container">
-        <!-- <CategoryCrudPanel
-          :title="$t('plugin.pluginCategory')"
-          title-key="name"
-          :panel-width="220"
-          default-selected-category="0"
-          :category-data="categoryList"
-          @edit="handleEditCategory"
-          @add="handleAddCategory"
-          @delete="handleDeleteCategory"
-          @click="handleClickCategory"
-          value-key="id"
-          :default-form-data="{ name: '' }"
-        /> -->
         <PageSide
           label-key="name"
           value-key="id"
@@ -277,16 +256,14 @@ const handleClickCategory = (item) => {
     <AddPluginModal ref="aiPluginModalRef" @reload="handleSearch" />
     <CategoryPluginModal ref="categoryCategoryModal" @reload="handleSearch" />
     <ElDialog
-      :title="
-        isEdit ? `${$t('button.edit')}${title}` : `${$t('button.add')}${title}`
-      "
+      :title="isEdit ? `${$t('button.edit')}` : `${$t('button.add')}`"
       v-model="dialogVisible"
       width="500px"
       :close-on-click-modal="false"
     >
       <ElForm :model="formData" status-icon>
-        <ElFormItem :prop="titleKey">
-          <ElInput v-model.trim="formData[titleKey]" />
+        <ElFormItem>
+          <ElInput v-model.trim="formData.name" />
         </ElFormItem>
       </ElForm>
 

@@ -97,7 +97,7 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
 
 <style>
 .avatar-uploader .el-upload {
-  border: 1px dashed var(--el-border-color);
+  border: 1px solid #e6e9ee;
   border-radius: 50%;
   cursor: pointer;
   position: relative;

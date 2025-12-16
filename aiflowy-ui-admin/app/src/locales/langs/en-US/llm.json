@@ -47,5 +47,18 @@
   },
   "message": {
     "verifySuccess": "Verification successful"
+  },
+  "addProvider": "Add Provider",
+  "modelType": "ModelType",
+  "llmModel": "ModelName",
+  "title": "name",
+  "groupName": "GroupName",
+  "provider": "供应商",
+  "ability": "ModelAbility",
+  "modelAbility": {
+    "reasoning": "reasoning",
+    "tool": "Tool",
+    "embedding": "Embedding",
+    "rerank": "Rerank"
   }
 }

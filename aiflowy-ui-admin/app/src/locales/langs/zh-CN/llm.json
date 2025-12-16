@@ -44,5 +44,18 @@
   },
   "message": {
     "verifySuccess": "验证成功"
+  },
+  "addProvider": "添加供应商",
+  "modelType": "模型类型",
+  "llmModel": "模型名称",
+  "title": "名称",
+  "groupName": "分组名称",
+  "provider": "供应商",
+  "ability": "模型能力",
+  "modelAbility": {
+    "reasoning": "推理",
+    "tool": "工具",
+    "embedding": "嵌入",
+    "rerank": "重排"
   }
 }
