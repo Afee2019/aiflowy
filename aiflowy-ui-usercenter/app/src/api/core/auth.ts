@@ -23,7 +23,10 @@ export namespace AuthApi {
  * 登录
  */
 export async function loginApi(data: AuthApi.LoginParams) {
-  return requestClient.post<AuthApi.LoginResult>('/userCenter/auth/login', data);
+  return requestClient.post<AuthApi.LoginResult>(
+    '/userCenter/auth/login',
+    data,
+  );
 }
 
 /**
@@ -39,7 +42,7 @@ export async function refreshTokenApi() {
  * 退出登录
  */
 export async function logoutApi() {
-  return baseRequestClient.post('/api/v1/auth/logout', {
+  return baseRequestClient.post('/userCenter/auth/logout', {
     withCredentials: true,
   });
 }
@@ -48,5 +51,5 @@ export async function logoutApi() {
  * 获取用户权限码
  */
 export async function getAccessCodesApi() {
-  return requestClient.get<string[]>('/api/v1/auth/getPermissions');
+  return requestClient.get<string[]>('/userCenter/auth/getPermissions');
 }

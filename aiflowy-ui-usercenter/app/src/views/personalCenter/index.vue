@@ -74,6 +74,9 @@ function submit(field: keyof typeof formData) {
     }
   });
 }
+function logout() {
+  useAuth.logout();
+}
 </script>
 
 <template>
@@ -148,7 +151,7 @@ function submit(field: keyof typeof formData) {
       </ElFormItem>
       <ElFormItem>
         <div class="mt-20 flex w-full justify-center">
-          <ElButton type="primary" class="!h-11 w-[333px]">退出登录</ElButton>
+          <ElButton @click="logout" type="primary" class="!h-11 w-[333px]">退出登录</ElButton>
         </div>
       </ElFormItem>
     </ElForm>
