@@ -1,0 +1,22 @@
+{
+    "id": "主键",
+    "recordId": "执行记录ID",
+    "execKey": "执行标识",
+    "nodeId": "节点ID",
+    "nodeName": "节点名称",
+    "input": "输入",
+    "output": "输出",
+    "nodeData": "节点信息",
+    "startTime": "开始时间",
+    "endTime": "结束时间",
+    "tokens": "消耗总token",
+    "status": "状态",
+    "errorInfo": "错误信息",
+    "moduleName": "步骤信息",
+    "execTime": "耗时",
+    "status1": "运行中",
+    "status6": "挂起",
+    "status10": "错误",
+    "status20": "成功",
+    "status21": "失败"
+}

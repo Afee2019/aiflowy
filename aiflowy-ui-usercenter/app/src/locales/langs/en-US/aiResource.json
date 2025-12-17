@@ -14,5 +14,6 @@
     "modifiedBy": "ModifiedBy",
     "options": "Options",
     "isDeleted": "IsDeleted",
-    "fileSize": "FileSize"
+    "fileSize": "FileSize",
+    "choose": "Choose"
 }

@@ -10,8 +10,12 @@ export const overridesPreferences = defineOverridesPreferences({
   app: {
     name: import.meta.env.VITE_APP_TITLE,
     accessMode: 'mixed',
+    defaultHomePath: '/workflow',
   },
   widget: {
     timezone: false,
+  },
+  theme: {
+    mode: 'light',
   },
 });

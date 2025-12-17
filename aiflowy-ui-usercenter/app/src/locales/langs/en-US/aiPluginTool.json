@@ -1,0 +1,26 @@
+{
+  "id": "Id",
+  "pluginId": "PluginId",
+  "name": "Tool name",
+  "description": "Description",
+  "basePath": "BasePath",
+  "created": "Created",
+  "status": "Status",
+  "inputData": "InputData",
+  "outputData": "OutputData",
+  "requestMethod": "RequestMethod",
+  "serviceStatus": "ServiceStatus",
+  "debugStatus": "DebugStatus",
+  "englishName": "EnglishName",
+  "createPluginTool": "Create tool",
+  "pluginToolEdit": {
+    "basicInfo": "Basic Info",
+    "configureInputParameters": "Configure input parameters",
+    "configureOutputParameters": "Configure output parameters",
+    "trialRun": "Trial run",
+    "toolPath": "Tool path",
+    "requestMethod": "RequestMethod",
+    "runResult": "Run result",
+    "run": "run"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "pluginCategory": "插件分类",
+  "id": "插件id",
+  "alias": "别名",
+  "name": "名称",
+  "description": "描述",
+  "type": "类型",
+  "baseUrl": "基础URL",
+  "authType": "认证方式",
+  "created": "创建时间",
+  "icon": "图标地址",
+  "position": "认证参数位置",
+  "headers": "请求头",
+  "tokenKey": "token键",
+  "tokenValue": "token值",
+  "deptId": "部门id",
+  "tenantId": "租户id",
+  "createdBy": "创建人",
+  "category": "分类",
+  "placeholder": {
+    "name": "请输入插件名称",
+    "description": "请输入插件描述",
+    "categorize": "请选择分类"
+  },
+  "button": {
+    "addPlugin": "新增插件",
+    "categorize": "归类",
+    "tools": "工具"
+  },
+  "toolsManagement": "工具管理"
+}

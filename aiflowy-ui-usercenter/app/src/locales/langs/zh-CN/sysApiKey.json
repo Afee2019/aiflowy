@@ -1,0 +1,18 @@
+{
+  "id": "id",
+  "apiKey": "apiKey",
+  "created": "创建时间",
+  "status": "数据状态",
+  "deptId": "部门id",
+  "tenantId": "租户id",
+  "expiredAt": "失效时间",
+  "createdBy": "创建人",
+  "addApiKey": "新增apiKey",
+  "actions": {
+    "enable": "启用",
+    "disable": "未启用",
+    "failure": "已失效"
+  },
+  "permissions": "授权接口",
+  "addApiKeyNotice": "该操作会生成一个apiKey,请确认是否生成"
+}

@@ -13,5 +13,16 @@
   "updateOkMessage": "Updated successfully",
   "startAlert": "Are you sure to start?",
   "stopAlert": "Are you sure to stop?",
-  "preview": "Preview"
+  "preview": "Preview",
+  "notEmpty": "Can not be empty",
+  "success": "Success",
+  "fail": "Fail",
+  "pleaseInputContent": "Please input content",
+  "notSupported": "Not supported yet",
+  "englishNameRule": "Rural subsistence allowance please enter characters consisting of letters, numbers, underscores, and hyphens, with a length not exceeding 64 characters",
+  "downloadSuccess": "Download success",
+  "downloadFail": "Download fail",
+  "copySuccess": "Copy success",
+  "copyFail": "Copy fail",
+  "clickOrDrop": "Click or drag and drop files here to upload"
 }

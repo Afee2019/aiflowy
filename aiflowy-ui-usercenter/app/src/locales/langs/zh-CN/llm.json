@@ -38,5 +38,24 @@
     "brand": "请选择品牌",
     "llmModel": "请输入大模型名称",
     "description": "请输入描述"
+  },
+  "actions": {
+    "verifyConfiguration": "验证配置"
+  },
+  "message": {
+    "verifySuccess": "验证成功"
+  },
+  "addProvider": "添加供应商",
+  "modelType": "模型类型",
+  "llmModel": "模型名称",
+  "title": "名称",
+  "groupName": "分组名称",
+  "provider": "供应商",
+  "ability": "模型能力",
+  "modelAbility": {
+    "reasoning": "推理",
+    "tool": "工具",
+    "embedding": "嵌入",
+    "rerank": "重排"
   }
 }

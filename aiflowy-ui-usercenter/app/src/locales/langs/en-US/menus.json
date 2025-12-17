@@ -11,7 +11,18 @@
     "sysLog": "Log"
   },
   "ai": {
+    "bots": "ChatAssistant",
     "title": "AI",
-    "resources": "Resources"
+    "resources": "Resources",
+    "datacenter": "Datacenter",
+    "workflow": "Workflow",
+    "plugin": "Plugin",
+    "llm": "LLM",
+    "knowledge": "Knowledge"
+  },
+  "settings": {
+    "title": "SettingsConfiguration",
+    "settingsConfig": "SettingsConfig",
+    "apiKey": "API Key"
   }
 }

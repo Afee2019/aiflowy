@@ -13,6 +13,7 @@ import tech.aiflowy.ai.service.AiWorkflowService;
 import tech.aiflowy.ai.tinyflow.entity.ChainInfo;
 import tech.aiflowy.ai.tinyflow.entity.NodeInfo;
 import tech.aiflowy.ai.tinyflow.service.TinyFlowService;
+import tech.aiflowy.common.annotation.UsePermission;
 import tech.aiflowy.common.constant.Constants;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.satoken.util.SaTokenUtil;
@@ -29,6 +30,7 @@ import java.util.*;
  */
 @RestController
 @RequestMapping("/userCenter/aiWorkflow")
+@UsePermission(moduleName = "/api/v1/aiWorkflow")
 public class UcAiWorkflowController extends BaseCurdController<AiWorkflowService, AiWorkflow> {
 
     @Resource

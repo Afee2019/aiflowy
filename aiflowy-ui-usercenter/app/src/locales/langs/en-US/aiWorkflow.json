@@ -1,0 +1,22 @@
+{
+    "id": "Id",
+    "alias": "Alias",
+    "deptId": "DeptId",
+    "tenantId": "TenantId",
+    "title": "Title",
+    "description": "Description",
+    "icon": "Icon",
+    "content": "Content",
+    "created": "Created",
+    "createdBy": "CreatedBy",
+    "modified": "Modified",
+    "modifiedBy": "ModifiedBy",
+    "englishName": "EnglishName",
+    "status": "Status",
+    "categoryId": "Category",
+    "params": "Params",
+    "steps": "Steps",
+    "result": "Result",
+    "confirm": "For contents to be confirmed, please confirm first!",
+    "completed": "Chain has been completed, please start a new one."
+}

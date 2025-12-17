@@ -13,5 +13,16 @@
   "updateOkMessage": "更新成功！",
   "startAlert": "确定启动吗？",
   "stopAlert": "确定停止吗？",
-  "preview": "预览"
+  "preview": "预览",
+  "notEmpty": "不能为空",
+  "success": "成功",
+  "fail": "失败",
+  "pleaseInputContent": "请输入内容",
+  "notSupported": "暂不支持",
+  "englishNameRule": "请输入由字母、数字、下划线、连字符组成的字符，且长度不超过64位",
+  "downloadSuccess": "下载成功",
+  "downloadFail": "下载失败",
+  "copySuccess": "复制成功",
+  "copyFail": "复制失败",
+  "clickOrDrop": "点击或将文件拖拽到这里上传"
 }

@@ -1,0 +1,8 @@
+{
+  "title": "Large Model Configuration",
+  "modelOfChat": "Chat Model Provider",
+  "dialogModel": "Chat Model Settings",
+  "modelName": "Model Name",
+  "basic": "BasicInformation",
+  "updatePwd": "UpdatePassword"
+}

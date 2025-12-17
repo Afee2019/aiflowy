@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tech.aiflowy.ai.entity.AiResource;
 import tech.aiflowy.ai.service.AiResourceService;
+import tech.aiflowy.common.annotation.UsePermission;
 import tech.aiflowy.common.domain.Result;
 import tech.aiflowy.common.entity.LoginAccount;
 import tech.aiflowy.common.satoken.util.SaTokenUtil;
@@ -23,6 +24,7 @@ import java.util.Date;
  */
 @RestController
 @RequestMapping("/userCenter/aiResource")
+@UsePermission(moduleName = "/api/v1/aiResource")
 public class UcAiResourceController extends BaseCurdController<AiResourceService, AiResource> {
     public UcAiResourceController(AiResourceService service) {
         super(service);

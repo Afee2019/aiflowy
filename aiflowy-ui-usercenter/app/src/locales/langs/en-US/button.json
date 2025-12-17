@@ -20,5 +20,19 @@
   "view": "View",
   "download": "Download",
   "upload": "Upload",
-  "preview": "Preview"
+  "preview": "Preview",
+  "nextStep": "NextStep",
+  "previousStep": "PreviousStep",
+  "addLine": "AddRecord",
+  "batchImport": "BatchImport",
+  "startImport": "StartImport",
+  "design": "Design",
+  "run": "Run",
+  "runTest": "RunTest",
+  "copy": "Copy",
+  "selectAll": "Select All",
+  "choose": "Select",
+  "setting": "Setting",
+  "create": "Create",
+  "update": "Update"
 }

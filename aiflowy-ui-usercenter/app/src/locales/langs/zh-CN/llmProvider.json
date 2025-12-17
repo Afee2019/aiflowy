@@ -1,0 +1,11 @@
+{
+  "providerName": "供应商名称",
+  "provider": "供应商",
+  "icon": "Icon",
+  "apiKey": "API 密钥",
+  "endPoint": "API 地址",
+  "embedPath": "向量地址",
+  "chatPath": "对话地址",
+  "embeddingModel": "向量模型",
+  "chatModel": "对话模型"
+}

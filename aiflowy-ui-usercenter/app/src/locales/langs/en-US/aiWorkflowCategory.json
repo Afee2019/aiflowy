@@ -1,0 +1,10 @@
+{
+    "id": "Id",
+    "categoryName": "CategoryName",
+    "sortNo": "SortNo",
+    "created": "Created",
+    "createdBy": "CreatedBy",
+    "modified": "Modified",
+    "modifiedBy": "ModifiedBy",
+    "status": "Status"
+}

@@ -1,0 +1,22 @@
+{
+    "id": "Id",
+    "recordId": "RecordId",
+    "execKey": "ExecKey",
+    "nodeId": "NodeId",
+    "nodeName": "NodeName",
+    "input": "Input",
+    "output": "Output",
+    "nodeData": "NodeData",
+    "startTime": "StartTime",
+    "endTime": "EndTime",
+    "tokens": "Tokens",
+    "status": "Status",
+    "errorInfo": "ErrorInfo",
+    "moduleName": "Steps",
+    "execTime": "TimeConsuming",
+    "status1": "Running",
+    "status6": "Suspend",
+    "status10": "Error",
+    "status20": "Success",
+    "status21": "Failed"
+}

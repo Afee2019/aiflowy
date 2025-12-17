@@ -1,0 +1,10 @@
+{
+    "id": "主键",
+    "categoryName": "分类名称",
+    "sortNo": "排序",
+    "created": "创建时间",
+    "createdBy": "创建者",
+    "modified": "修改时间",
+    "modifiedBy": "修改者",
+    "status": "数据状态"
+}

@@ -20,5 +20,19 @@
   "view": "查看",
   "download": "下载",
   "upload": "上传",
-  "preview": "预览"
+  "preview": "预览",
+  "nextStep": "下一步",
+  "previousStep": "上一步",
+  "addLine": "增加行",
+  "batchImport": "批量导入",
+  "startImport": "开始导入",
+  "design": "设计",
+  "run": "运行",
+  "runTest": "试运行",
+  "copy": "复制",
+  "selectAll": "全选",
+  "choose": "选择",
+  "setting": "设置",
+  "create": "创建",
+  "update": "更新"
 }

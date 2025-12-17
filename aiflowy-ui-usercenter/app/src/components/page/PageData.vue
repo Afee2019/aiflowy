@@ -51,8 +51,8 @@ const getPageList = async () => {
     const res = await doGet({
       pageNumber: pageInfo.pageNumber,
       pageSize: pageInfo.pageSize,
-      ...queryParams.value,
       ...props.extraQueryParams,
+      ...queryParams.value,
     });
     pageList.value = res.data?.records || [];
     pageInfo.total = res.data?.totalRow || 0;
@@ -103,26 +103,22 @@ onMounted(() => {
 
 <template>
   <div class="page-data-container" v-loading="loading">
-    <div v-if="pageList.length > 0">
-      <slot :page-list="pageList"></slot>
-    </div>
-    <ElEmpty v-else />
-    <div class="pagination-container">
-      <ElPagination
-        v-model:current-page="pageInfo.pageNumber"
-        v-model:page-size="pageInfo.pageSize"
-        :total="pageInfo.total"
-        :page-sizes="pageSizes"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
-    </div>
+    <template v-if="pageList.length > 0">
+      <div>
+        <slot :page-list="pageList"></slot>
+      </div>
+      <div v-if="pageInfo.total > pageInfo.pageSize" class="mx-auto mt-8 w-fit">
+        <ElPagination
+          v-model:current-page="pageInfo.pageNumber"
+          v-model:page-size="pageInfo.pageSize"
+          :total="pageInfo.total"
+          :page-sizes="pageSizes"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
+    </template>
+    <ElEmpty image="/empty.png" v-else />
   </div>
 </template>
-
-<style scoped>
-.pagination-container {
-  margin-top: 10px;
-}
-</style>

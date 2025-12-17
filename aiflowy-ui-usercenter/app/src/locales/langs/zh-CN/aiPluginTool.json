@@ -1,0 +1,26 @@
+{
+  "id": "插件工具id",
+  "pluginId": "插件id",
+  "name": "工具名称",
+  "description": "工具描述",
+  "basePath": "基础路径",
+  "created": "创建时间",
+  "status": "是否启用",
+  "inputData": "输入参数",
+  "outputData": "输出参数",
+  "requestMethod": "请求方式【Post, Get, Put, Delete】",
+  "serviceStatus": "服务状态[0 下线 1 上线]",
+  "debugStatus": "调试状态【0失败 1成功】",
+  "englishName": "英文名称",
+  "createPluginTool": "创建工具",
+  "pluginToolEdit": {
+    "basicInfo": "基本信息",
+    "configureInputParameters": "配置输入参数",
+    "configureOutputParameters": "配置输出参数",
+    "trialRun": "试运行",
+    "toolPath": "工具路径",
+    "requestMethod": "请求方法",
+    "runResult": "运行结果",
+    "run": "运行"
+  }
+}
