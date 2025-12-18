@@ -173,7 +173,7 @@ public class UcAiBotController extends BaseCurdController<AiBotService, AiBot> {
         Map<String, Object> llmOptions = aiBot.getLlmOptions();
         String systemPrompt = MapUtil.getString(llmOptions, "systemPrompt");
 
-        AiLlm aiLlm = aiLlmService.getById(aiBot.getLlmId());
+        AiLlm aiLlm = aiLlmService.getLlmInstance(aiBot.getLlmId());
         if (aiLlm == null) {
             return ChatManager.getInstance().sseEmitterForContent(JSON.toJSONString(Maps.of("content", "LLM不存在")));
         }

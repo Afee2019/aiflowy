@@ -12,7 +12,7 @@ import { ElAvatar, ElButton } from 'element-plus';
 
 type listType = BubbleListItemProps & {
   key: number;
-  role: 'ai' | 'user';
+  role: 'assistant' | 'user';
 };
 
 const avatar = ref('https://avatars.githubusercontent.com/u/76239030?v=4');
@@ -29,7 +29,7 @@ const messageList: BubbleListProps<listType>['list'] = [
   },
   {
     key: 1,
-    role: 'ai',
+    role: 'assistant',
     placement: 'start',
     content: '💖 感谢使用 Element Plus X ! 你的支持，是我们开源的最强动力 ~',
     typing: true,
@@ -43,7 +43,7 @@ const messageList: BubbleListProps<listType>['list'] = [
   },
   {
     key: 3,
-    role: 'ai',
+    role: 'assistant',
     placement: 'start',
     content: '💖 感谢使用 Element Plus X ! 你的支持，是我们开源的最强动力 ~',
     loading: true,
@@ -55,13 +55,13 @@ const messageList: BubbleListProps<listType>['list'] = [
   <BubbleList :list="messageList" max-height="calc(100vh - 345px)">
     <!-- 自定义头像 -->
     <template #avatar="{ item }">
-      <ElAvatar :src="item.role === 'ai' ? avartAi : avatar" :size="40" />
+      <ElAvatar :src="item.role === 'assistant' ? avartAi : avatar" :size="40" />
     </template>
 
     <!-- 自定义头部 -->
     <template #header="{ item }">
       <span class="text-foreground/50 text-xs">{{
-        item.role === 'ai' ? '下午 2:32' : '下午 2:33'
+        item.role === 'assistant' ? '下午 2:32' : '下午 2:33'
       }}</span>
     </template>
 
@@ -72,7 +72,7 @@ const messageList: BubbleListProps<listType>['list'] = [
     <!-- 自定义底部 -->
     <template #footer="{ item }">
       <div class="flex items-center">
-        <template v-if="item.role === 'ai'">
+        <template v-if="item.role === 'assistant'">
           <ElButton :icon="RefreshRight" link />
           <ElButton :icon="CopyDocument" link />
         </template>

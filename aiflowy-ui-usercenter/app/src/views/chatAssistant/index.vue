@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import { cn } from '@aiflowy/utils';
 
 import { ElAside, ElContainer, ElMain, ElSpace } from 'element-plus';
 
+import { api } from '#/api/request';
 import {
   Card,
   CardAvatar,
@@ -14,32 +15,22 @@ import {
 } from '#/components/card';
 import { ChatBubbleList, ChatContainer, ChatSender } from '#/components/chat';
 
-const recentUsedAssistant = reactive([
-  {
-    id: 0,
-    title: '客服助手',
-    description: '智能客服，回答用户问题',
-    checked: true,
-  },
-  {
-    id: 1,
-    title: '知识助手',
-    description: '基于知识库的问答助手dhish…',
-    checked: false,
-  },
-  {
-    id: 2,
-    title: '业务助手',
-    description: '业务咨询和指导',
-    checked: false,
-  },
-]);
-
-const handleSelectAssistant = (id: number) => {
-  recentUsedAssistant.forEach((assistant) => {
-    assistant.checked = assistant.id === id ? !assistant.checked : false;
-  });
+onMounted(() => {
+  getAssistantList();
+});
+const recentUsedAssistant = ref<any[]>([]);
+const currentBot = ref<any>({});
+const handleSelectAssistant = (bot: any) => {
+  currentBot.value = bot;
 };
+function getAssistantList() {
+  api.get('/userCenter/aiBotRecentlyUsed/getRecentlyBot').then((res) => {
+    recentUsedAssistant.value = res.data;
+    if (recentUsedAssistant.value.length > 0) {
+      currentBot.value = recentUsedAssistant.value[0];
+    }
+  });
+}
 </script>
 
 <template>
@@ -58,12 +49,12 @@ const handleSelectAssistant = (id: number) => {
             :key="assistant.id"
             :class="
               cn(
-                assistant.checked
+                currentBot.id === assistant.id
                   ? 'bg-[hsl(var(--primary)/15%)] dark:bg-[hsl(var(--accent))]'
                   : 'hover:bg-[hsl(var(--accent))]',
               )
             "
-            @click="handleSelectAssistant(assistant.id)"
+            @click="handleSelectAssistant(assistant)"
           >
             <CardAvatar />
             <CardContent>
@@ -79,7 +70,7 @@ const handleSelectAssistant = (id: number) => {
       </ElSpace>
     </ElAside>
     <ElMain class="p-6 pl-0">
-      <ChatContainer>
+      <ChatContainer :bot="currentBot">
         <div class="flex h-full flex-col justify-between">
           <ChatBubbleList />
           <ChatSender />
