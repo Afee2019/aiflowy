@@ -36,10 +36,10 @@ const chatModelTabList = [
     label: $t('llmProvider.chatModel'),
     name: 'chatModel',
   },
-  {
-    label: $t('llm.modelAbility.free'),
-    name: 'supportFree',
-  },
+  // {
+  //   label: $t('llm.modelAbility.free'),
+  //   name: 'supportFree',
+  // },
 ];
 const embeddingModelTabList = [
   // {
@@ -50,10 +50,10 @@ const embeddingModelTabList = [
     label: $t('llmProvider.embeddingModel'),
     name: 'embeddingModel',
   },
-  {
-    label: $t('llm.modelAbility.free'),
-    name: 'supportFree',
-  },
+  // {
+  //   label: $t('llm.modelAbility.free'),
+  //   name: 'supportFree',
+  // },
 ];
 const formDataRef = ref();
 const providerInfo = ref<any>();

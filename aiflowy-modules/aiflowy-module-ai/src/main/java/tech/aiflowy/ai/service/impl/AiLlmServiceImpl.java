@@ -83,27 +83,21 @@ public class AiLlmServiceImpl extends ServiceImpl<AiLlmMapper, AiLlm> implements
 
     @Override
     public void verifyLlmConfig(AiLlm llm) {
-
-        Boolean supportReasoning = llm.getSupportReasoning();
-
-        if (supportReasoning != null && supportReasoning) {
+        String modelType = llm.getModelType();
+        if ("chatModel".equals(modelType)) {
             // 走聊天验证逻辑
             verifyChatLlm(llm);
             return;
         }
 
-        Boolean supportEmbedding = llm.getSupportEmbedding();
-        if (supportEmbedding != null && supportEmbedding) {
-
+        if ("embeddingModel".equals(modelType)) {
             // 走向量化验证逻辑
             verifyEmbedLlm(llm);
             return;
 
         }
 
-        Boolean supportRerank = llm.getSupportRerank();
-        if (supportRerank != null && supportRerank) {
-
+        if ("rerankModel".equals(modelType)) {
             // 走重排验证逻辑
             verifyRerankLlm(llm);
             return;
@@ -337,7 +331,7 @@ public class AiLlmServiceImpl extends ServiceImpl<AiLlmMapper, AiLlm> implements
 
     @Override
     public void removeByEntity(AiLlm entity) {
-        QueryWrapper queryWrapper = QueryWrapper.create().eq(AiLlm::getProvider, entity.getProvider()).eq(AiLlm::getGroupName, entity.getGroupName());
+        QueryWrapper queryWrapper = QueryWrapper.create().eq(AiLlm::getProviderId, entity.getProviderId()).eq(AiLlm::getGroupName, entity.getGroupName());
         aiLlmMapper.deleteByQuery(queryWrapper);
     }
 

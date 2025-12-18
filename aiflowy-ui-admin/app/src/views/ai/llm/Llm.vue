@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import { $t } from '@aiflowy/locales';
 
@@ -51,31 +51,31 @@ const getLlmDetailList = (providerId) => {
   api
     .get(`/api/v1/aiLlm/getList?providerId=${providerId}&added=true`, {})
     .then((res) => {
-    if (res.errorCode === 0) {
-      modelListData.value = res.data;
-      // 初始化模型分组数据（按modelType分类，存储groupName和对应的llm列表）
-      chatModelListData.value = [];
-      embeddingModelListData.value = [];
+      if (res.errorCode === 0) {
+        modelListData.value = res.data;
+        // 初始化模型分组数据（按modelType分类，存储groupName和对应的llm列表）
+        chatModelListData.value = [];
+        embeddingModelListData.value = [];
 
-      // 处理chatModel数据
-      const chatModelMap = res.data.chatModel || {};
-      // 将chatModel的key-value（groupName-llmList）转为数组，方便v-for遍历
-      chatModelListData.value = Object.entries(chatModelMap).map(
-        ([groupName, llmList]) => ({
-          groupName,
-          llmList,
-        }),
-      );
-      // 处理embeddingModel数据
-      const embeddingModelMap = res.data.embeddingModel || {};
-      embeddingModelListData.value = Object.entries(embeddingModelMap).map(
-        ([groupName, llmList]) => ({
-          groupName,
-          llmList,
-        }),
-      );
-    }
-  });
+        // 处理chatModel数据
+        const chatModelMap = res.data.chatModel || {};
+        // 将chatModel的key-value（groupName-llmList）转为数组，方便v-for遍历
+        chatModelListData.value = Object.entries(chatModelMap).map(
+          ([groupName, llmList]) => ({
+            groupName,
+            llmList,
+          }),
+        );
+        // 处理embeddingModel数据
+        const embeddingModelMap = res.data.embeddingModel || {};
+        embeddingModelListData.value = Object.entries(embeddingModelMap).map(
+          ([groupName, llmList]) => ({
+            groupName,
+            llmList,
+          }),
+        );
+      }
+    });
 };
 
 const getLlmProviderListData = () => {
@@ -209,13 +209,13 @@ const handleGroupNameDelete = (groupName) => {
   }).then(() => {
     api
       .post('/api/v1/aiLlm/removeByEntity', {
-        provider: selectCategory.value.provider,
+        providerId: defaultSelectProviderId.value,
         groupName,
       })
       .then((res) => {
         if (res.errorCode === 0) {
           ElMessage.success($t('message.deleteOkMessage'));
-          getLlmDetailList(selectCategory.value.provider);
+          getLlmDetailList(defaultSelectProviderId.value);
         }
       });
   });
@@ -237,6 +237,7 @@ const handleFormBlur = async () => {
     if (res.errorCode === 0) {
       getLlmProviderList().then((res) => {
         brandListData.value = res.data;
+        checkAndFillDefaultIcon(res.data);
         brandListData.value.forEach((item) => {
           if (item.id === defaultSelectProviderId.value) {
             llmProviderForm.value = { ...item };

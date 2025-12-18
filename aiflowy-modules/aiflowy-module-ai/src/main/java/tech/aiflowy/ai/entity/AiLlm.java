@@ -7,6 +7,8 @@ import com.agentsflex.embedding.ollama.OllamaEmbeddingConfig;
 import com.agentsflex.embedding.ollama.OllamaEmbeddingModel;
 import com.agentsflex.embedding.openai.OpenAIEmbeddingConfig;
 import com.agentsflex.embedding.openai.OpenAIEmbeddingModel;
+import com.agentsflex.llm.deepseek.DeepseekChatModel;
+import com.agentsflex.llm.deepseek.DeepseekConfig;
 import com.agentsflex.llm.ollama.OllamaChatConfig;
 import com.agentsflex.llm.ollama.OllamaChatModel;
 import com.agentsflex.llm.openai.OpenAIChatConfig;
@@ -104,6 +106,8 @@ public class AiLlm extends AiLlmBase {
         switch (provider.toLowerCase()) {
             case "ollama":
                 return ollamaLlm();
+            case "deepseek":
+                return deepSeekLLm();
             default:
                 return openaiLLm();
         }
@@ -115,6 +119,14 @@ public class AiLlm extends AiLlmBase {
         ollamaChatConfig.setApiKey(getLlmApiKey());
         ollamaChatConfig.setModel(getLlmModel());
         return new OllamaChatModel(ollamaChatConfig);
+    }
+
+    private ChatModel deepSeekLLm() {
+        DeepseekConfig deepseekConfig = new DeepseekConfig();
+        deepseekConfig.setEndpoint(getLlmEndpoint());
+        deepseekConfig.setApiKey(getLlmApiKey());
+        deepseekConfig.setModel(getLlmModel());
+        return new DeepseekChatModel(deepseekConfig);
     }
 
     private ChatModel openaiLLm() {
