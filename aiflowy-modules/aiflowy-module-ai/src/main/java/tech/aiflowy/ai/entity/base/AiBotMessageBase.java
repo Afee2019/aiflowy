@@ -43,12 +43,6 @@ public class AiBotMessageBase extends DateEntity implements Serializable {
 
     private String image;
 
-    /**
-     * 方法定义
-     */
-    @Column(comment = "方法定义")
-    private String functions;
-
     @Column(typeHandler = FastjsonTypeHandler.class)
     private Map<String, Object> options;
 
@@ -110,14 +104,6 @@ public class AiBotMessageBase extends DateEntity implements Serializable {
 
     public void setImage(String image) {
         this.image = image;
-    }
-
-    public String getFunctions() {
-        return functions;
-    }
-
-    public void setFunctions(String functions) {
-        this.functions = functions;
     }
 
     public Map<String, Object> getOptions() {

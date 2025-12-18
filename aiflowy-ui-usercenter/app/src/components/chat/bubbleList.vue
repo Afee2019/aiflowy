@@ -10,52 +10,60 @@ import { BubbleList } from 'vue-element-plus-x';
 import { CopyDocument, EditPen, RefreshRight } from '@element-plus/icons-vue';
 import { ElAvatar, ElButton } from 'element-plus';
 
-type listType = BubbleListItemProps & {
-  key: number;
-  role: 'assistant' | 'user';
-};
-
+// type listType = BubbleListItemProps & {
+//   key: number;
+//   role: 'assistant' | 'user';
+// };
+// const messageList: BubbleListProps<listType>['list'] = [
+//   {
+//     key: 0,
+//     role: 'user',
+//     placement: 'end',
+//     content: '哈哈哈，让我试试',
+//     typing: true,
+//   },
+//   {
+//     key: 1,
+//     role: 'assistant',
+//     placement: 'start',
+//     content: '💖 感谢使用 Element Plus X ! 你的支持，是我们开源的最强动力 ~',
+//     typing: true,
+//   },
+//   {
+//     key: 2,
+//     role: 'user',
+//     placement: 'end',
+//     content: '哈哈哈，让我试试',
+//     typing: true,
+//   },
+//   {
+//     key: 3,
+//     role: 'assistant',
+//     placement: 'start',
+//     content: '💖 感谢使用 Element Plus X ! 你的支持，是我们开源的最强动力 ~',
+//     loading: true,
+//   },
+// ];
+defineProps({
+  messageList: {
+    type: Array<any>,
+    default: () => [],
+  },
+});
 const avatar = ref('https://avatars.githubusercontent.com/u/76239030?v=4');
 const avartAi = ref(
   'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
 );
-const messageList: BubbleListProps<listType>['list'] = [
-  {
-    key: 0,
-    role: 'user',
-    placement: 'end',
-    content: '哈哈哈，让我试试',
-    typing: true,
-  },
-  {
-    key: 1,
-    role: 'assistant',
-    placement: 'start',
-    content: '💖 感谢使用 Element Plus X ! 你的支持，是我们开源的最强动力 ~',
-    typing: true,
-  },
-  {
-    key: 2,
-    role: 'user',
-    placement: 'end',
-    content: '哈哈哈，让我试试',
-    typing: true,
-  },
-  {
-    key: 3,
-    role: 'assistant',
-    placement: 'start',
-    content: '💖 感谢使用 Element Plus X ! 你的支持，是我们开源的最强动力 ~',
-    loading: true,
-  },
-];
 </script>
 
 <template>
   <BubbleList :list="messageList" max-height="calc(100vh - 345px)">
     <!-- 自定义头像 -->
     <template #avatar="{ item }">
-      <ElAvatar :src="item.role === 'assistant' ? avartAi : avatar" :size="40" />
+      <ElAvatar
+        :src="item.role === 'assistant' ? avartAi : avatar"
+        :size="40"
+      />
     </template>
 
     <!-- 自定义头部 -->

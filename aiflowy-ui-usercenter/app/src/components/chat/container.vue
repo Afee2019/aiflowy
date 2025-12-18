@@ -110,7 +110,7 @@ function clickSession(session: any) {
         </span>
       </ElHeader>
       <ElMain>
-        <slot></slot>
+        <slot :session-id="currentSession.sessionId"></slot>
       </ElMain>
     </ElContainer>
   </ElContainer>

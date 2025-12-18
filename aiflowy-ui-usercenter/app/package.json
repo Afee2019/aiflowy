@@ -38,6 +38,7 @@
     "@vueuse/core": "catalog:",
     "dayjs": "catalog:",
     "element-plus": "catalog:",
+    "fetch-event-stream": "^0.1.6",
     "pinia": "catalog:",
     "radash": "^12.1.1",
     "vue": "catalog:",

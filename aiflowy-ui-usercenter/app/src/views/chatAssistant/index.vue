@@ -31,6 +31,19 @@ function getAssistantList() {
     }
   });
 }
+const messageList = ref<any>([]);
+function addMessage(message: any) {
+  console.log('addMessage', message)
+  // 查找是否有相同key，有就替换，没有就添加，messageList是一个对象数组
+  const index = messageList.value.findIndex(
+    (item: any) => item.key === message.key,
+  );
+  if (index === -1) {
+    messageList.value.push(message);
+  } else {
+    messageList.value[index] = message;
+  }
+}
 </script>
 
 <template>
@@ -71,10 +84,16 @@ function getAssistantList() {
     </ElAside>
     <ElMain class="p-6 pl-0">
       <ChatContainer :bot="currentBot">
-        <div class="flex h-full flex-col justify-between">
-          <ChatBubbleList />
-          <ChatSender />
-        </div>
+        <template #default="{ sessionId }">
+          <div class="flex h-full flex-col justify-between">
+            <ChatBubbleList :messages="messageList" />
+            <ChatSender
+              :add-message="addMessage"
+              :bot="currentBot"
+              :session-id="sessionId"
+            />
+          </div>
+        </template>
       </ChatContainer>
     </ElMain>
   </ElContainer>
