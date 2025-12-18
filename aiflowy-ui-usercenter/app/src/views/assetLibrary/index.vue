@@ -4,16 +4,22 @@ import { ref } from 'vue';
 import { IconifyIcon } from '@aiflowy/icons';
 import { cn } from '@aiflowy/utils';
 
-import { Plus } from '@element-plus/icons-vue';
+import { Delete, Edit, Plus, View } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElContainer,
   ElHeader,
   ElMain,
-  ElPagination,
-  ElProgress,
+  ElMessage,
+  ElMessageBox,
   ElSpace,
 } from 'element-plus';
+
+import { api } from '#/api/request';
+import PageData from '#/components/page/PageData.vue';
+import { $t } from '#/locales';
+import AiResourceModal from '#/views/ai/resource/AiResourceModal.vue';
+import PreviewModal from '#/views/ai/resource/PreviewModal.vue';
 
 import Grid from './grid.vue';
 import List from './list.vue';
@@ -29,40 +35,99 @@ export interface Asset {
 }
 
 const viewType = ref<ViewType>('list');
-const assetList: Asset[] = [
-  {
-    id: 0,
-    name: '29622d87bb474d21ca5562.docx',
-    source: '自动生成',
-    type: '文档',
-    size: '1.5M',
-    lastUpdateTime: '2025-06-19 11:10:00',
-  },
-  {
-    id: 1,
-    name: '29622d87bb474d21ca5562.docx',
-    source: '自动生成',
-    type: '文档',
-    size: '1.5M',
-    lastUpdateTime: '2025-06-19 11:10:00',
-  },
-  {
-    id: 2,
-    name: '29622d87bb474d21ca5562.docx',
-    source: '自动生成',
-    type: '文档',
-    size: '1.5M',
-    lastUpdateTime: '2025-06-19 11:10:00',
-  },
-  {
-    id: 3,
-    name: '29622d87bb474d21ca5562.docx',
-    source: '自动生成',
-    type: '文档',
-    size: '1.5M',
-    lastUpdateTime: '2025-06-19 11:10:00',
-  },
-];
+const pageDataRef = ref();
+const checkedItems = ref<any[]>([]);
+const saveDialog = ref();
+const previewDialog = ref();
+function setCheckedItem(items: any[]) {
+  checkedItems.value = items;
+}
+function reset() {
+  pageDataRef.value.setQuery({});
+}
+function preview(row: any) {
+  previewDialog.value.openDialog({ ...row });
+}
+function showDialog(row: any) {
+  saveDialog.value.openDialog({ ...row });
+}
+function download(row: any) {
+  window.open(row.resourceUrl, '_blank');
+}
+function remove(row: any) {
+  ElMessageBox.confirm($t('message.deleteAlert'), $t('message.noticeTitle'), {
+    confirmButtonText: $t('message.ok'),
+    cancelButtonText: $t('message.cancel'),
+    type: 'warning',
+    beforeClose: (action, instance, done) => {
+      if (action === 'confirm') {
+        instance.confirmButtonLoading = true;
+        api
+          .post('/userCenter/aiResource/remove', { id: row.id })
+          .then((res) => {
+            instance.confirmButtonLoading = false;
+            if (res.errorCode === 0) {
+              ElMessage.success(res.message);
+              reset();
+              done();
+            }
+          })
+          .catch(() => {
+            instance.confirmButtonLoading = false;
+          });
+      } else {
+        done();
+      }
+    },
+  }).catch(() => {});
+}
+function batchRemove() {
+  const ids = checkedItems.value.map((item) => item.id);
+  ElMessageBox.confirm($t('message.deleteAlert'), $t('message.noticeTitle'), {
+    confirmButtonText: $t('message.ok'),
+    cancelButtonText: $t('message.cancel'),
+    type: 'warning',
+    beforeClose: (action, instance, done) => {
+      if (action === 'confirm') {
+        instance.confirmButtonLoading = true;
+        api
+          .post('/userCenter/aiResource/removeBatch', { ids })
+          .then((res) => {
+            instance.confirmButtonLoading = false;
+            if (res.errorCode === 0) {
+              ElMessage.success(res.message);
+              reset();
+              done();
+            }
+          })
+          .catch(() => {
+            instance.confirmButtonLoading = false;
+          });
+      } else {
+        done();
+      }
+    },
+  }).catch(() => {});
+}
+function handleOperation(type: string) {
+  if (checkedItems.value.length > 1 || checkedItems.value.length === 0) {
+    ElMessage.warning('只能操作一项数据');
+    return;
+  }
+  switch (type) {
+    case 'edit': {
+      showDialog(checkedItems.value[0]);
+      break;
+    }
+    case 'preview': {
+      preview(checkedItems.value[0]);
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+}
 </script>
 
 <template>
@@ -70,7 +135,7 @@ const assetList: Asset[] = [
     <ElHeader class="flex flex-col gap-6 !p-8 !pb-0" height="auto">
       <ElSpace :size="24">
         <h1 class="text-2xl font-medium text-[#333333]">素材库</h1>
-        <ElSpace
+        <!--<ElSpace
           class="rounded-lg border border-[#E6E9EE] bg-[#F8FBFE] px-3.5 py-2.5"
         >
           <span class="text-sm font-medium text-[#969799]">
@@ -82,7 +147,7 @@ const assetList: Asset[] = [
             :stroke-width="4"
             :show-text="false"
           />
-        </ElSpace>
+        </ElSpace>-->
       </ElSpace>
       <div class="flex w-full items-center justify-between">
         <ElSpace class="text-2xl text-[#969799]">
@@ -111,20 +176,68 @@ const assetList: Asset[] = [
             <IconifyIcon icon="mdi:view-grid-outline" />
           </button>
         </ElSpace>
-        <ElButton type="primary" :icon="Plus">本地上传</ElButton>
+        <div class="flex items-center gap-2.5">
+          <div class="operation-div" v-if="checkedItems.length > 0">
+            <ElButton
+              type="primary"
+              link
+              :icon="View"
+              @click="handleOperation('preview')"
+            >
+              预览
+            </ElButton>
+            <ElButton
+              type="primary"
+              link
+              :icon="Edit"
+              @click="handleOperation('edit')"
+            >
+              编辑
+            </ElButton>
+            <ElButton type="danger" link :icon="Delete" @click="batchRemove">
+              删除
+            </ElButton>
+          </div>
+          <ElButton type="primary" :icon="Plus" @click="showDialog({})">
+            本地上传
+          </ElButton>
+        </div>
       </div>
     </ElHeader>
     <ElMain class="!px-8 !py-6">
-      <div class="flex flex-col items-center gap-5">
-        <List v-show="viewType === 'list'" :data="assetList" />
-        <Grid v-show="viewType === 'grid'" :data="assetList" />
-        <ElPagination
-          :page-sizes="[10, 20, 30, 50, 100]"
-          :background="false"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="400"
-        />
-      </div>
+      <PageData
+        ref="pageDataRef"
+        page-url="/api/v1/aiResource/page"
+        :page-size="10"
+      >
+        <template #default="{ pageList }">
+          <div class="flex flex-col items-center gap-5">
+            <List
+              :on-checked-change="setCheckedItem"
+              v-show="viewType === 'list'"
+              :data="pageList"
+              :on-download="download"
+              :on-edit="showDialog"
+              :on-preview="preview"
+              :on-remove="remove"
+            />
+            <Grid
+              :on-checked-change="setCheckedItem"
+              v-show="viewType === 'grid'"
+              :data="pageList"
+            />
+          </div>
+        </template>
+      </PageData>
     </ElMain>
+    <PreviewModal ref="previewDialog" />
+    <AiResourceModal ref="saveDialog" @reload="reset" />
   </ElContainer>
 </template>
+<style scoped>
+.operation-div {
+  border: 1px solid #e6e9ee;
+  border-radius: 5px;
+  padding: 5px 10px;
+}
+</style>

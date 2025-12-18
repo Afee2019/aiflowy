@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import type { CheckboxValueType } from 'element-plus';
 
-import type { Asset } from './index.vue';
-
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import { cn } from '@aiflowy/utils';
 
-import { ElCheckbox, ElCheckboxGroup, ElSpace, ElTag } from 'element-plus';
+import { ElCheckbox, ElCheckboxGroup, ElSpace } from 'element-plus';
 
-import docxIcon from '#/assets/assetLibrary/docx.webp';
 import { Card, CardContent, CardTitle } from '#/components/card';
+import Tag from '#/components/tag/Tag.vue';
+import { useDictStore } from '#/store';
+import {
+  getResourceOriginColor,
+  getResourceTypeColor,
+  getSrc,
+} from '#/utils/resource';
 
 interface GridProps {
-  data: Asset[];
+  data: any[];
+  onCheckedChange?: (ids: any[]) => void;
 }
 
 const props = defineProps<GridProps>();
@@ -24,12 +29,25 @@ const checkedIds = ref<number[]>([]);
 const handleCheckAllChange = (val: CheckboxValueType) => {
   checkedIds.value = val ? props.data.map((asset) => asset.id) : [];
   isIndeterminate.value = false;
+  props.onCheckedChange?.(checkedItems());
 };
 const handleCheckedIdsChange = (value: CheckboxValueType[]) => {
   const checkedCount = value.length;
   checkAll.value = checkedCount === props.data.length;
   isIndeterminate.value = checkedCount > 0 && checkedCount < props.data.length;
+  props.onCheckedChange?.(checkedItems());
 };
+onMounted(() => {
+  initDict();
+});
+const dictStore = useDictStore();
+function initDict() {
+  dictStore.fetchDictionary('resourceType');
+  dictStore.fetchDictionary('resourceOriginType');
+}
+function checkedItems() {
+  return props.data.filter((asset) => checkedIds.value.includes(asset.id));
+}
 </script>
 
 <template>
@@ -54,18 +72,30 @@ const handleCheckedIdsChange = (value: CheckboxValueType[]) => {
         <div
           class="flex h-[174px] w-full items-center justify-center rounded-lg bg-[#F9F8F8]"
         >
-          <img class="shrink-0 object-cover" :src="docxIcon" />
+          <img class="shrink-0 object-cover w-[100px] h-[100px]" :src="getSrc(asset)" />
         </div>
         <CardContent class="w-full gap-3">
           <CardTitle class="font-medium text-[#1A1A1A]">
-            {{ asset.name }}
+            {{ asset.resourceName }}
           </CardTitle>
           <div class="flex items-center justify-between">
             <ElSpace :size="10">
-              <ElTag type="primary">{{ asset.source }}</ElTag>
-              <ElTag color="#E6F9FF" style="--el-tag-text-color: #0099cc">
-                {{ asset.type }}
-              </ElTag>
+              <Tag
+                size="small"
+                :background-color="`${getResourceOriginColor(asset)}15`"
+                :text-color="getResourceOriginColor(asset)"
+                :text="
+                  dictStore.getDictLabel('resourceOriginType', asset.origin)
+                "
+              />
+              <Tag
+                size="small"
+                :background-color="`${getResourceTypeColor(asset)}15`"
+                :text-color="getResourceTypeColor(asset)"
+                :text="
+                  dictStore.getDictLabel('resourceType', asset.resourceType)
+                "
+              />
             </ElSpace>
             <span class="text-xs text-[#969799]">{{ asset.size }}</span>
           </div>
