@@ -14,7 +14,7 @@ defineOptions({
 withDefaults(defineProps<Props>(), {
   companyName: 'AIFlowy Usercenter',
   companySiteLink: '',
-  date: '2024',
+  date: '2026',
   icp: '',
   icpLink: '',
 });
