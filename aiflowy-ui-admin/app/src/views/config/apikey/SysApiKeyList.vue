@@ -3,14 +3,13 @@ import type { FormInstance } from 'element-plus';
 
 import { markRaw, ref } from 'vue';
 
-import { Delete, Edit, MoreFilled, Plus } from '@element-plus/icons-vue';
+import { Delete, MoreFilled, Plus } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElDialog,
   ElDropdown,
   ElDropdownItem,
   ElDropdownMenu,
-  ElIcon,
   ElMessage,
   ElMessageBox,
   ElTable,
@@ -169,32 +168,29 @@ function addNewApiKey() {
             </ElTableColumn>
             <ElTableColumn
               :label="$t('common.handle')"
-              width="80"
+              width="100"
               align="center"
             >
               <template #default="{ row }">
-                <ElDropdown>
-                  <ElButton link>
-                    <ElIcon>
-                      <MoreFilled />
-                    </ElIcon>
+                <div class="flex items-center gap-3">
+                  <ElButton link type="primary" @click="showDialog(row)">
+                    {{ $t('button.edit') }}
                   </ElButton>
 
-                  <template #dropdown>
-                    <ElDropdownMenu>
-                      <ElDropdownItem @click="showDialog(row)">
-                        <ElButton :icon="Edit" link>
-                          {{ $t('button.edit') }}
-                        </ElButton>
-                      </ElDropdownItem>
-                      <ElDropdownItem @click="remove(row)">
-                        <ElButton type="danger" :icon="Delete" link>
-                          {{ $t('button.delete') }}
-                        </ElButton>
-                      </ElDropdownItem>
-                    </ElDropdownMenu>
-                  </template>
-                </ElDropdown>
+                  <ElDropdown>
+                    <ElButton link :icon="MoreFilled" />
+
+                    <template #dropdown>
+                      <ElDropdownMenu>
+                        <ElDropdownItem @click="remove(row)">
+                          <ElButton link :icon="Delete" type="danger">
+                            {{ $t('button.delete') }}
+                          </ElButton>
+                        </ElDropdownItem>
+                      </ElDropdownMenu>
+                    </template>
+                  </ElDropdown>
+                </div>
               </template>
             </ElTableColumn>
           </ElTable>

@@ -7,7 +7,6 @@ import {
   CaretRight,
   CircleCloseFilled,
   Delete,
-  Edit,
   MoreFilled,
   Plus,
   Tickets,
@@ -17,7 +16,6 @@ import {
   ElDropdown,
   ElDropdownItem,
   ElDropdownMenu,
-  ElIcon,
   ElMessage,
   ElMessageBox,
   ElTable,
@@ -216,60 +214,55 @@ function toLogPage(row: any) {
             </ElTableColumn>
             <ElTableColumn
               :label="$t('common.handle')"
-              width="80"
+              width="100"
               align="center"
             >
               <template #default="{ row }">
-                <ElDropdown>
-                  <ElButton link>
-                    <ElIcon>
-                      <MoreFilled />
-                    </ElIcon>
+                <div class="flex items-center gap-3">
+                  <ElButton link type="primary" @click="showDialog(row)">
+                    {{ $t('button.edit') }}
                   </ElButton>
 
-                  <template #dropdown>
-                    <ElDropdownMenu>
-                      <div v-access:code="'/api/v1/sysJob/save'">
-                        <ElDropdownItem @click="start(row)">
-                          <ElButton :icon="CaretRight" link>
-                            {{ $t('button.start') }}
-                          </ElButton>
-                        </ElDropdownItem>
-                      </div>
-                      <div
-                        v-if="row.status === 1"
-                        v-access:code="'/api/v1/sysJob/save'"
-                      >
-                        <ElDropdownItem @click="stop(row)">
-                          <ElButton :icon="CircleCloseFilled" link>
-                            {{ $t('button.stop') }}
-                          </ElButton>
-                        </ElDropdownItem>
-                      </div>
-                      <div v-access:code="'/api/v1/sysJob/query'">
-                        <ElDropdownItem @click="toLogPage(row)">
-                          <ElButton :icon="Tickets" link>
-                            {{ $t('button.log') }}
-                          </ElButton>
-                        </ElDropdownItem>
-                      </div>
-                      <div v-access:code="'/api/v1/sysJob/save'">
-                        <ElDropdownItem @click="showDialog(row)">
-                          <ElButton :icon="Edit" link>
-                            {{ $t('button.edit') }}
-                          </ElButton>
-                        </ElDropdownItem>
-                      </div>
-                      <div v-access:code="'/api/v1/sysJob/remove'">
-                        <ElDropdownItem @click="remove(row)">
-                          <ElButton type="danger" :icon="Delete" link>
-                            {{ $t('button.delete') }}
-                          </ElButton>
-                        </ElDropdownItem>
-                      </div>
-                    </ElDropdownMenu>
-                  </template>
-                </ElDropdown>
+                  <ElDropdown>
+                    <ElButton link :icon="MoreFilled" />
+
+                    <template #dropdown>
+                      <ElDropdownMenu>
+                        <div v-access:code="'/api/v1/sysJob/save'">
+                          <ElDropdownItem @click="start(row)">
+                            <ElButton :icon="CaretRight" link>
+                              {{ $t('button.start') }}
+                            </ElButton>
+                          </ElDropdownItem>
+                        </div>
+                        <div
+                          v-if="row.status === 1"
+                          v-access:code="'/api/v1/sysJob/save'"
+                        >
+                          <ElDropdownItem @click="stop(row)">
+                            <ElButton :icon="CircleCloseFilled" link>
+                              {{ $t('button.stop') }}
+                            </ElButton>
+                          </ElDropdownItem>
+                        </div>
+                        <div v-access:code="'/api/v1/sysJob/query'">
+                          <ElDropdownItem @click="toLogPage(row)">
+                            <ElButton :icon="Tickets" link>
+                              {{ $t('button.log') }}
+                            </ElButton>
+                          </ElDropdownItem>
+                        </div>
+                        <div v-access:code="'/api/v1/sysJob/remove'">
+                          <ElDropdownItem @click="remove(row)">
+                            <ElButton type="danger" :icon="Delete" link>
+                              {{ $t('button.delete') }}
+                            </ElButton>
+                          </ElDropdownItem>
+                        </div>
+                      </ElDropdownMenu>
+                    </template>
+                  </ElDropdown>
+                </div>
               </template>
             </ElTableColumn>
           </ElTable>

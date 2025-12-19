@@ -4,13 +4,12 @@ import { ref } from 'vue';
 import { $t } from '@aiflowy/locales';
 import { downloadFileFromBlob } from '@aiflowy/utils';
 
-import { Delete, Download, MoreFilled, View } from '@element-plus/icons-vue';
+import { Delete, Download, MoreFilled } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElDropdown,
   ElDropdownItem,
   ElDropdownMenu,
-  ElIcon,
   ElImage,
   ElMessage,
   ElMessageBox,
@@ -96,50 +95,32 @@ const handleDelete = (row: any) => {
             </div>
           </template>
         </ElTableColumn>
-        <ElTableColumn :label="$t('common.handle')" width="80">
+        <ElTableColumn :label="$t('common.handle')" width="100" align="center">
           <template #default="{ row }">
-            <ElDropdown>
-              <ElButton link>
-                <ElIcon>
-                  <MoreFilled />
-                </ElIcon>
+            <div class="flex items-center gap-3">
+              <ElButton link type="primary" @click="handleView(row)">
+                {{ $t('button.view') }}
               </ElButton>
 
-              <template #dropdown>
-                <ElDropdownMenu>
-                  <div>
-                    <ElDropdownItem @click="handleView(row)">
-                      <ElButton link>
-                        <ElIcon class="mr-1">
-                          <View />
-                        </ElIcon>
-                        {{ $t('button.view') }}
-                      </ElButton>
-                    </ElDropdownItem>
-                  </div>
-                  <div @click="handleDownload(row)">
-                    <ElDropdownItem>
-                      <ElButton link>
-                        <ElIcon class="mr-1">
-                          <Download />
-                        </ElIcon>
+              <ElDropdown>
+                <ElButton link :icon="MoreFilled" />
+
+                <template #dropdown>
+                  <ElDropdownMenu>
+                    <ElDropdownItem @click="handleDownload(row)">
+                      <ElButton link :icon="Download">
                         {{ $t('button.download') }}
                       </ElButton>
                     </ElDropdownItem>
-                  </div>
-                  <div @click="handleDelete(row)">
-                    <ElDropdownItem>
-                      <ElButton link type="danger">
-                        <ElIcon class="mr-1">
-                          <Delete />
-                        </ElIcon>
+                    <ElDropdownItem @click="handleDelete(row)">
+                      <ElButton link :icon="Delete" type="danger">
                         {{ $t('button.delete') }}
                       </ElButton>
                     </ElDropdownItem>
-                  </div>
-                </ElDropdownMenu>
-              </template>
-            </ElDropdown>
+                  </ElDropdownMenu>
+                </template>
+              </ElDropdown>
+            </div>
           </template>
         </ElTableColumn>
       </ElTable>

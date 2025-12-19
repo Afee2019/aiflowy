@@ -5,14 +5,7 @@ import { onMounted, ref } from 'vue';
 
 import { formatBytes } from '@aiflowy/utils';
 
-import {
-  Delete,
-  Download,
-  Edit,
-  MoreFilled,
-  Plus,
-  View,
-} from '@element-plus/icons-vue';
+import { Delete, Download, MoreFilled, Plus } from '@element-plus/icons-vue';
 import {
   ElAvatar,
   ElButton,
@@ -238,45 +231,39 @@ function download(row: any) {
             <ElTableColumn
               align="center"
               :label="$t('common.handle')"
-              width="80"
+              width="150"
             >
               <template #default="{ row }">
-                <ElDropdown>
-                  <ElButton link>
-                    <ElIcon>
-                      <MoreFilled />
-                    </ElIcon>
-                  </ElButton>
+                <div class="flex items-center gap-3">
+                  <div class="flex items-center">
+                    <ElButton link type="primary" @click="preview(row)">
+                      {{ $t('button.view') }}
+                    </ElButton>
+                    <ElButton link type="primary" @click="showDialog(row)">
+                      {{ $t('button.edit') }}
+                    </ElButton>
+                  </div>
+                  <ElDropdown>
+                    <ElButton link :icon="MoreFilled" />
 
-                  <template #dropdown>
-                    <ElDropdownMenu>
-                      <ElDropdownItem @click="preview(row)">
-                        <ElButton :icon="View" link>
-                          {{ $t('button.view') }}
-                        </ElButton>
-                      </ElDropdownItem>
-                      <ElDropdownItem @click="download(row)">
-                        <ElButton :icon="Download" link>
-                          {{ $t('button.download') }}
-                        </ElButton>
-                      </ElDropdownItem>
-                      <div v-access:code="'/api/v1/aiResource/save'">
-                        <ElDropdownItem @click="showDialog(row)">
-                          <ElButton :icon="Edit" link>
-                            {{ $t('button.edit') }}
+                    <template #dropdown>
+                      <ElDropdownMenu>
+                        <ElDropdownItem @click="download(row)">
+                          <ElButton :icon="Download" link>
+                            {{ $t('button.download') }}
                           </ElButton>
                         </ElDropdownItem>
-                      </div>
-                      <div v-access:code="'/api/v1/aiResource/remove'">
-                        <ElDropdownItem @click="remove(row)">
-                          <ElButton type="danger" :icon="Delete" link>
-                            {{ $t('button.delete') }}
-                          </ElButton>
-                        </ElDropdownItem>
-                      </div>
-                    </ElDropdownMenu>
-                  </template>
-                </ElDropdown>
+                        <div v-access:code="'/api/v1/aiResource/remove'">
+                          <ElDropdownItem @click="remove(row)">
+                            <ElButton type="danger" :icon="Delete" link>
+                              {{ $t('button.delete') }}
+                            </ElButton>
+                          </ElDropdownItem>
+                        </div>
+                      </ElDropdownMenu>
+                    </template>
+                  </ElDropdown>
+                </div>
               </template>
             </ElTableColumn>
           </ElTable>

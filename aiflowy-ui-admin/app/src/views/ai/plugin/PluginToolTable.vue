@@ -4,13 +4,12 @@ import { useRouter } from 'vue-router';
 
 import { $t } from '@aiflowy/locales';
 
-import { Delete, Edit, MoreFilled } from '@element-plus/icons-vue';
+import { Delete, MoreFilled } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElDropdown,
   ElDropdownItem,
   ElDropdownMenu,
-  ElIcon,
   ElMessage,
   ElMessageBox,
   ElTable,
@@ -92,30 +91,29 @@ const pluginToolReload = () => {
         <ElTableColumn
           fixed="right"
           :label="$t('common.handle')"
-          width="80"
+          width="100"
           align="center"
         >
           <template #default="scope">
-            <ElDropdown>
-              <ElIcon>
-                <MoreFilled />
-              </ElIcon>
+            <div class="flex items-center gap-3">
+              <ElButton link type="primary" @click="handleEdit(scope.row)">
+                {{ $t('button.edit') }}
+              </ElButton>
 
-              <template #dropdown>
-                <ElDropdownMenu>
-                  <ElDropdownItem @click="handleEdit(scope.row)">
-                    <ElButton :icon="Edit" link>
-                      {{ $t('button.edit') }}
-                    </ElButton>
-                  </ElDropdownItem>
-                  <ElDropdownItem @click="handleDelete(scope.row)">
-                    <ElButton type="danger" :icon="Delete" link>
-                      {{ $t('button.delete') }}
-                    </ElButton>
-                  </ElDropdownItem>
-                </ElDropdownMenu>
-              </template>
-            </ElDropdown>
+              <ElDropdown>
+                <ElButton link :icon="MoreFilled" />
+
+                <template #dropdown>
+                  <ElDropdownMenu>
+                    <ElDropdownItem @click="handleDelete(scope.row)">
+                      <ElButton link :icon="Delete" type="danger">
+                        {{ $t('button.delete') }}
+                      </ElButton>
+                    </ElDropdownItem>
+                  </ElDropdownMenu>
+                </template>
+              </ElDropdown>
+            </div>
           </template>
         </ElTableColumn>
       </ElTable>

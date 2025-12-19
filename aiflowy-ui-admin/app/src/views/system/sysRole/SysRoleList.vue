@@ -3,13 +3,12 @@ import type { FormInstance } from 'element-plus';
 
 import { markRaw, onMounted, ref } from 'vue';
 
-import { Delete, Edit, MoreFilled, Plus } from '@element-plus/icons-vue';
+import { Delete, MoreFilled, Plus } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElDropdown,
   ElDropdownItem,
   ElDropdownMenu,
-  ElIcon,
   ElMessage,
   ElMessageBox,
   ElTable,
@@ -131,36 +130,31 @@ function remove(row: any) {
             </ElTableColumn>
             <ElTableColumn
               :label="$t('common.handle')"
-              width="80"
+              width="100"
               align="center"
             >
               <template #default="{ row }">
-                <ElDropdown v-if="!isAdminRole(row)">
-                  <ElButton link>
-                    <ElIcon>
-                      <MoreFilled />
-                    </ElIcon>
+                <div class="flex items-center gap-3" v-if="!isAdminRole(row)">
+                  <ElButton link type="primary" @click="showDialog(row)">
+                    {{ $t('button.edit') }}
                   </ElButton>
 
-                  <template #dropdown>
-                    <ElDropdownMenu>
-                      <div v-access:code="'/api/v1/sysRole/save'">
-                        <ElDropdownItem @click="showDialog(row)">
-                          <ElButton :icon="Edit" link>
-                            {{ $t('button.edit') }}
-                          </ElButton>
-                        </ElDropdownItem>
-                      </div>
-                      <div v-access:code="'/api/v1/sysRole/remove'">
-                        <ElDropdownItem @click="remove(row)">
-                          <ElButton type="danger" :icon="Delete" link>
-                            {{ $t('button.delete') }}
-                          </ElButton>
-                        </ElDropdownItem>
-                      </div>
-                    </ElDropdownMenu>
-                  </template>
-                </ElDropdown>
+                  <ElDropdown>
+                    <ElButton link :icon="MoreFilled" />
+
+                    <template #dropdown>
+                      <ElDropdownMenu>
+                        <div v-access:code="'/api/v1/sysRole/remove'">
+                          <ElDropdownItem @click="remove(row)">
+                            <ElButton type="danger" :icon="Delete" link>
+                              {{ $t('button.delete') }}
+                            </ElButton>
+                          </ElDropdownItem>
+                        </div>
+                      </ElDropdownMenu>
+                    </template>
+                  </ElDropdown>
+                </div>
               </template>
             </ElTableColumn>
           </ElTable>

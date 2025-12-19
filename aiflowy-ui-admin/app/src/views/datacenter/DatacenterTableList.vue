@@ -3,13 +3,12 @@ import type { FormInstance } from 'element-plus';
 
 import { markRaw, onMounted, ref } from 'vue';
 
-import { Delete, Edit, MoreFilled, Plus, View } from '@element-plus/icons-vue';
+import { Delete, MoreFilled, Plus } from '@element-plus/icons-vue';
 import {
   ElButton,
   ElDropdown,
   ElDropdownItem,
   ElDropdownMenu,
-  ElIcon,
   ElMessage,
   ElMessageBox,
   ElTable,
@@ -136,43 +135,34 @@ function toDetailPage(row: any) {
             </ElTableColumn>
             <ElTableColumn
               :label="$t('common.handle')"
-              width="80"
+              width="150"
               align="center"
             >
               <template #default="{ row }">
-                <ElDropdown>
-                  <ElButton link>
-                    <ElIcon>
-                      <MoreFilled />
-                    </ElIcon>
-                  </ElButton>
+                <div class="flex items-center gap-3">
+                  <div class="flex items-center">
+                    <ElButton link type="primary" @click="toDetailPage(row)">
+                      {{ $t('button.view') }}
+                    </ElButton>
+                    <ElButton link type="primary" @click="showDialog(row)">
+                      {{ $t('button.edit') }}
+                    </ElButton>
+                  </div>
 
-                  <template #dropdown>
-                    <ElDropdownMenu>
-                      <div v-access:code="'/api/v1/datacenterTable/query'">
-                        <ElDropdownItem @click="toDetailPage(row)">
-                          <ElButton :icon="View" link>
-                            {{ $t('button.view') }}
-                          </ElButton>
-                        </ElDropdownItem>
-                      </div>
-                      <div v-access:code="'/api/v1/datacenterTable/save'">
-                        <ElDropdownItem @click="showDialog(row)">
-                          <ElButton :icon="Edit" link>
-                            {{ $t('button.edit') }}
-                          </ElButton>
-                        </ElDropdownItem>
-                      </div>
-                      <div v-access:code="'/api/v1/datacenterTable/remove'">
+                  <ElDropdown>
+                    <ElButton link :icon="MoreFilled" />
+
+                    <template #dropdown>
+                      <ElDropdownMenu>
                         <ElDropdownItem @click="remove(row)">
-                          <ElButton type="danger" :icon="Delete" link>
+                          <ElButton link :icon="Delete" type="danger">
                             {{ $t('button.delete') }}
                           </ElButton>
                         </ElDropdownItem>
-                      </div>
-                    </ElDropdownMenu>
-                  </template>
-                </ElDropdown>
+                      </ElDropdownMenu>
+                    </template>
+                  </ElDropdown>
+                </div>
               </template>
             </ElTableColumn>
           </ElTable>
