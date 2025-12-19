@@ -18,6 +18,7 @@ import {
 
 import { getLlmProviderList } from '#/api/ai/llm.js';
 import { api } from '#/api/request.js';
+import ManageIcon from '#/components/icons/ManageIcon.vue';
 import PageSide from '#/components/page/PageSide.vue';
 import AddLlmModal from '#/views/ai/llm/AddLlmModal.vue';
 import AddLlmProviderModal from '#/views/ai/llm/AddLlmProviderModal.vue';
@@ -275,12 +276,13 @@ const handleTest = () => {
     <div class="llm-table-container">
       <div class="llm-form-container">
         <div class="title">{{ selectCategory.providerName }}</div>
-        <ElForm ref="llmProviderFormRef" :model="llmProviderForm" status-icon>
-          <ElFormItem
-            prop="apiKey"
-            style="display: flex; align-items: center"
-            :label="$t('llmProvider.apiKey')"
-          >
+        <ElForm
+          ref="llmProviderFormRef"
+          :model="llmProviderForm"
+          status-icon
+          label-position="top"
+        >
+          <ElFormItem prop="apiKey" :label="$t('llmProvider.apiKey')">
             <ElInput
               v-model="llmProviderForm.apiKey"
               @blur="handleFormBlur"
@@ -405,7 +407,11 @@ const handleTest = () => {
             </div>
 
             <div class="model-operation-container">
-              <ElButton type="primary" @click="handleManageLlm(model.value)">
+              <ElButton
+                type="primary"
+                @click="handleManageLlm(model.value)"
+                :icon="ManageIcon"
+              >
                 {{ $t('llm.button.management') }}
               </ElButton>
               <ElButton :icon="Plus" @click="handleAddLlm(model.value)">
@@ -448,7 +454,7 @@ const handleTest = () => {
   display: flex;
   flex-direction: row;
   padding: 20px;
-  height: 100%;
+  height: calc(100vh - 90px);
   gap: 20px;
 }
 
@@ -467,6 +473,8 @@ const handleTest = () => {
   padding: 24px;
   background-color: var(--el-bg-color);
   border-radius: 8px;
+  overflow: auto;
+  border: 1px solid #f0f0f0;
 }
 
 .llm-form-container {
@@ -486,31 +494,65 @@ const handleTest = () => {
   margin: 20px 0;
 }
 
+/* 折叠面板容器 */
+:deep(.el-collapse) {
+  border: none;
+  border-radius: 8px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 折叠面板项目 - 确保高度统一 */
+:deep(.el-collapse-item) {
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
+/* 折叠面板头部 - 固定高度38px */
 :deep(.el-collapse-item__header) {
   background-color: #f9fafc;
-  padding: 0 9px 0 24px;
+  padding: 0 9px 0 17px;
   border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  height: 20px !important; /* 强制设置高度为38px */
+  line-height: 20px !important; /* 垂直居中 */
+  font-size: 14px;
+  color: #333333;
 }
 
-:deep(.el-collapse) {
-  border-radius: 8px !important;
-  overflow: hidden !important;
-  box-sizing: border-box;
+/* 折叠面板箭头图标位置调整 */
+:deep(.el-collapse-item__arrow) {
+  line-height: 38px;
+  margin-right: 8px;
 }
 
-:deep(.el-collapse-item__header) {
-  border-bottom: 1px solid #e4e7ed;
-  border-radius: 0;
+/* 折叠面板内容区域 */
+:deep(.el-collapse-item__wrap) {
+  border: none;
+  background: transparent;
 }
 
-:deep(.el-collapse-item:last-child .el-collapse-item__header) {
-  border-bottom: none;
-}
-
+/* 折叠面板内容 - 可以设置滚动 */
 :deep(.el-collapse-item__content) {
   border: 1px solid #f0f0f0;
   background: #ffffff;
-  border-radius: 0px 0px 8px 8px;
+  border-radius: 0 0 8px 8px;
+  padding: 12px;
+  max-height: 300px; /* 设置最大高度，超出滚动 */
+  overflow-y: auto;
+  box-sizing: border-box;
+  border-top: none; /* 去掉顶部边框，与头部无缝连接 */
+}
+
+/* 最后一个折叠面板项目的头部 */
+:deep(.el-collapse-item:last-child) {
+  margin-bottom: 0;
+}
+
+:deep(.el-collapse-item:last-child .el-collapse-item__header) {
+  border-radius: 8px;
 }
 
 .model-operation-container {
@@ -519,5 +561,11 @@ const handleTest = () => {
   align-items: center;
   gap: 8px;
   margin-top: 12px;
+}
+
+/* 确保自定义标题区域也符合38px高度 */
+.flex.items-center.justify-between.pr-2 {
+  height: 100%;
+  width: 100%;
 }
 </style>

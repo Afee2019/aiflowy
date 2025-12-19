@@ -22,9 +22,15 @@ import {
   ElRow,
   ElSelect,
   ElSlider,
+  ElSwitch,
 } from 'element-plus';
 
-import { getPerQuestions, updateLlmId, updateLlmOptions } from '#/api';
+import {
+  getPerQuestions,
+  updateBotOptions,
+  updateLlmId,
+  updateLlmOptions,
+} from '#/api';
 import { api } from '#/api/request';
 import ProblemPresupposition from '#/components/chat/ProblemPresupposition.vue';
 import PublishWxOfficalAccount from '#/components/chat/PublishWxOfficalAccount.vue';
@@ -46,9 +52,11 @@ const llmConfig = ref({
   temperature: 0,
   topK: 0,
   topP: 0,
-  welcomeMessage: '',
 });
-
+const dialogueSettings = ref({
+  welcomeMessage: '',
+  enableDeepThinking: false,
+});
 watch(
   props,
   (newValue) => {
@@ -125,6 +133,7 @@ const getBotDetail = async () => {
     .then((res) => {
       if (res.errorCode === 0) {
         botInfo.value = res.data;
+        dialogueSettings.value = res.data.options;
         if (res.data.options?.presetQuestions) {
           botStore.setPresetQuestions(res.data?.options?.presetQuestions);
         }
@@ -178,11 +187,14 @@ const handleLlmOptionsChange = useDebounceFn(
   300,
 );
 
-const handleLlmOptionsStrChange = useDebounceFn(
-  (key: keyof typeof llmConfig.value, value: string) => {
-    updateLlmOptions({
+const handleDialogOptionsStrChange = useDebounceFn(
+  (
+    key: keyof typeof dialogueSettings.value,
+    value: boolean | number | string,
+  ) => {
+    updateBotOptions({
       id: props.bot?.id || '',
-      llmOptions: {
+      options: {
         [key]: value,
       },
     });
@@ -659,11 +671,24 @@ const handleUpdatePublishWx = () => {
           <ElCollapseItem title="欢迎语">
             <div>
               <ElInput
-                v-model="llmConfig.welcomeMessage"
+                v-model="dialogueSettings.welcomeMessage"
                 placeholder="请输入欢迎语"
                 type="textarea"
                 @change="
-                  (value) => handleLlmOptionsStrChange('welcomeMessage', value)
+                  (value) =>
+                    handleDialogOptionsStrChange('welcomeMessage', value)
+                "
+              />
+            </div>
+          </ElCollapseItem>
+          <ElCollapseItem title="深度思考">
+            <div class="enable-think-container">
+              <div>是否启用深度思考</div>
+              <ElSwitch
+                v-model="dialogueSettings.enableDeepThinking"
+                @change="
+                  (value: string | number | boolean) =>
+                    handleDialogOptionsStrChange('enableDeepThinking', value)
                 "
               />
             </div>
@@ -830,6 +855,13 @@ const handleUpdatePublishWx = () => {
 :deep(.el-slider__button) {
   width: 14px;
   height: 14px;
+}
+.enable-think-container {
+  background-color: #f5f5f5 !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px 12px 12px;
 }
 .publish-wx-container {
   background-color: #f5f5f5 !important;

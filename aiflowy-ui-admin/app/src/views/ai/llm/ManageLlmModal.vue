@@ -195,7 +195,7 @@ const handleRefresh = () => {
     width="762"
   >
     <div class="manage-llm-container">
-      <div>
+      <div class="form-container">
         <ElForm ref="formDataRef" :model="searchFormDada" status-icon>
           <ElFormItem prop="searchText">
             <div class="search-container">
@@ -290,7 +290,9 @@ const handleRefresh = () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 18px;
+}
+.form-container {
+  height: 30px;
 }
 .search-container {
   width: 100%;

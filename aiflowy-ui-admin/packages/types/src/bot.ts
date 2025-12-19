@@ -21,6 +21,7 @@ interface BotInfo {
   modifiedBy: number;
   options: {
     anonymousEnabled: boolean;
+    enableDeepThinking: boolean;
     EncodingAESKey: string;
     presetQuestions: presetQuestionsType[];
     reActModeEnabled: boolean;
@@ -29,7 +30,7 @@ interface BotInfo {
     weChatMpAppId: string;
     weChatMpSecret: string;
     weChatMpToken: string;
-    welcomeMessage: string;
+    welcomeMessage?: string;
   };
   tenantId: number;
   title: string;

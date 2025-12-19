@@ -76,8 +76,21 @@ export interface UpdateLlmOptionsParams {
     [key: string]: any;
   };
 }
+export interface UpdateBotOptionsParams {
+  id: string;
+  options: {
+    [key: string]: any;
+  };
+}
+
 export const updateLlmOptions = (params: UpdateLlmOptionsParams) => {
   return api.post<RequestResult>('/api/v1/aiBot/updateLlmOptions', {
+    ...params,
+  });
+};
+
+export const updateBotOptions = (params: UpdateBotOptionsParams) => {
+  return api.post<RequestResult>('/api/v1/aiBot/updateOptions', {
     ...params,
   });
 };
