@@ -12,7 +12,7 @@
     "modified": "最后修改时间",
     "modifiedBy": "最后修改的人",
     "englishName": "英文名称",
-    "status": "是否在用户中心显示",
+    "status": "在用户中心显示",
     "categoryId": "分类",
     "params": "执行参数",
     "steps": "执行步骤",

@@ -100,7 +100,7 @@ defineExpose({
         <ElInput type="textarea" :rows="3" v-model="formData.description" />
       </ElFormItem>
       <ElFormItem prop="status" :label="$t('aiWorkflow.status')">
-        <DictSelect v-model="formData.status" dict-code="yesOrNo" />
+        <DictSelect v-model="formData.status" dict-code="showOrNot" />
       </ElFormItem>
     </ElForm>
 

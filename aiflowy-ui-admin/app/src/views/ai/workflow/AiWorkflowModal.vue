@@ -118,7 +118,7 @@ function closeDialog() {
         <ElInput v-model.trim="entity.description" />
       </ElFormItem>
       <ElFormItem prop="status" :label="$t('aiWorkflow.status')">
-        <DictSelect v-model="entity.status" dict-code="yesOrNo" />
+        <DictSelect v-model="entity.status" dict-code="showOrNot" />
       </ElFormItem>
     </ElForm>
     <template #footer>
