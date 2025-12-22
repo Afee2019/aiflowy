@@ -11,7 +11,7 @@ import com.mybatisflex.annotation.Table;
  * @since 2024-08-28
  */
 
-@Table("tb_bot_knowledge")
+@Table("tb_bot_document_collection")
 public class AiBotKnowledge extends AiBotKnowledgeBase {
 
     @RelationOneToOne(selfField = "knowledgeId", targetField = "id")

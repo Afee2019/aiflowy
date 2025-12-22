@@ -57,10 +57,10 @@ CREATE TABLE `tb_bot_conversation`
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
--- Table structure for tb_bot_knowledge
+-- Table structure for tb_bot_document_collection
 -- ----------------------------
-DROP TABLE IF EXISTS `tb_bot_knowledge`;
-CREATE TABLE `tb_bot_knowledge`
+DROP TABLE IF EXISTS `tb_bot_document_collection`;
+CREATE TABLE `tb_bot_document_collection`
 (
     `id`           bigint UNSIGNED NOT NULL AUTO_INCREMENT,
     `bot_id`       bigint UNSIGNED NULL DEFAULT NULL,
