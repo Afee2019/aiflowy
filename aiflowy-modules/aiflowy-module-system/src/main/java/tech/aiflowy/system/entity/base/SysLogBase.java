@@ -73,9 +73,9 @@ public class SysLogBase implements Serializable {
     private String actionBody;
 
     /**
-     * 操作状态 1 成功 9 失败
+     * 数据状态
      */
-    @Column(comment = "操作状态 1 成功 9 失败")
+    @Column(comment = "数据状态")
     private Integer status;
 
     /**

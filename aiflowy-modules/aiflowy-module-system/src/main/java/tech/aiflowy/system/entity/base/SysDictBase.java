@@ -52,9 +52,9 @@ public class SysDictBase extends DateEntity implements Serializable {
     private Integer sortNo;
 
     /**
-     * 是否启用
+     * 数据状态
      */
-    @Column(comment = "是否启用")
+    @Column(comment = "数据状态")
     private Integer status;
 
     /**

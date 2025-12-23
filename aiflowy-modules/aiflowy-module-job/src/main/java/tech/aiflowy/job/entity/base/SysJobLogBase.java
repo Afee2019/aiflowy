@@ -51,9 +51,9 @@ public class SysJobLogBase implements Serializable {
     private String errorInfo;
 
     /**
-     * 执行状态
+     * 数据状态
      */
-    @Column(comment = "执行状态")
+    @Column(comment = "数据状态")
     private Integer status;
 
     /**

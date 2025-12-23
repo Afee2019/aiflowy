@@ -103,7 +103,7 @@ public class BotBase extends DateEntity implements Serializable {
      * 数据状态
      */
     @Column(comment = "数据状态")
-    private Boolean status;
+    private Integer status;
 
     /**
      * 分类ID
@@ -223,11 +223,11 @@ public class BotBase extends DateEntity implements Serializable {
         this.modifiedBy = modifiedBy;
     }
 
-    public Boolean getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(Boolean status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 

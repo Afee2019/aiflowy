@@ -31,9 +31,9 @@ public class SysApiKeyBase implements Serializable {
     private Date created;
 
     /**
-     * 状态1启用 2失效
+     * 数据状态
      */
-    @Column(comment = "状态1启用 2失效")
+    @Column(comment = "数据状态")
     private Integer status;
 
     /**

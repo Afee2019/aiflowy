@@ -68,9 +68,9 @@ public class SysDictItemBase extends DateEntity implements Serializable {
     private String remark;
 
     /**
-     * 状态
+     * 数据状态
      */
-    @Column(comment = "状态")
+    @Column(comment = "数据状态")
     private Integer status;
 
     /**
