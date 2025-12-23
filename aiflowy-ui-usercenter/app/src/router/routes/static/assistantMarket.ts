@@ -6,7 +6,7 @@ const routes: RouteRecordRaw[] = [
     path: '/assistantMarket',
     component: () => import('#/views/assistantMarket/index.vue'),
     meta: {
-      icon: 'mdi:storefront-outline',
+      icon: 'svg:app-store',
       order: 4,
       title: '助理应用市场',
     },

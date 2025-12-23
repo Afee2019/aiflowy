@@ -6,7 +6,7 @@ const routes: RouteRecordRaw[] = [
     path: '/workflow',
     component: () => import('#/views/bots/index.vue'),
     meta: {
-      icon: 'mdi:robot-outline',
+      icon: 'svg:bot',
       order: 1,
       title: '智能体',
     },

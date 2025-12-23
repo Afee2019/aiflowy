@@ -9,6 +9,7 @@ const routes: RouteRecordRaw[] = [
       icon: 'mdi:account-outline',
       order: 5,
       title: '个人中心',
+      hideInMenu: true,
     },
   },
 ];

@@ -6,7 +6,7 @@ const routes: RouteRecordRaw[] = [
     path: '/chatAssistant',
     component: () => import('#/views/chatAssistant/index.vue'),
     meta: {
-      icon: 'mdi:message-text-outline',
+      icon: 'svg:chat-assistant',
       order: 0,
       title: '聊天助理',
     },

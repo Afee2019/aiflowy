@@ -6,7 +6,7 @@ const routes: RouteRecordRaw[] = [
     path: '/assetLibrary',
     component: () => import('#/views/assetLibrary/index.vue'),
     meta: {
-      icon: 'mdi:folder-open-outline',
+      icon: 'svg:asset-library',
       order: 3,
       title: '素材库',
     },

@@ -6,7 +6,7 @@ const routes: RouteRecordRaw[] = [
     path: '/execHistory',
     component: () => import('#/views/execHistory/index.vue'),
     meta: {
-      icon: 'mdi:history',
+      icon: 'svg:exec-history',
       order: 2,
       title: '执行记录',
     },
