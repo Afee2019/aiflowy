@@ -234,5 +234,12 @@ public class ModelServiceImpl extends ServiceImpl<ModelMapper, Model> implements
         return aillm;
     }
 
-
+    @Override
+    public void updateByEntity(Model entity) {
+        QueryWrapper queryWrapper = QueryWrapper.create().eq(Model::getProviderId, entity.getProviderId())
+                .eq(Model::getGroupName, entity.getGroupName());
+        Model model = new Model();
+        model.setWithUsed(entity.getWithUsed());
+        modelMapper.updateByQuery(model, queryWrapper);
+    }
 }

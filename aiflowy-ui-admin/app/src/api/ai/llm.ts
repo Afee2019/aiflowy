@@ -33,6 +33,7 @@ export interface llmType {
     providerName: string;
     providerType: string;
   };
+  withUsed: boolean;
   llmModel: string;
   icon: string;
   description: string;

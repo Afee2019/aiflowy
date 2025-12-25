@@ -22,11 +22,14 @@ import ManageIcon from '#/components/icons/ManageIcon.vue';
 import PageSide from '#/components/page/PageSide.vue';
 import AddLlmModal from '#/views/ai/llm/AddLlmModal.vue';
 import AddLlmProviderModal from '#/views/ai/llm/AddLlmProviderModal.vue';
-import { getIconByValue, isSvgString } from '#/views/ai/llm/llmUtils/defaultIcon.ts';
+import {
+  getIconByValue,
+  isSvgString,
+} from '#/views/ai/llm/llmUtils/defaultIcon.ts';
+import { modelTypes } from '#/views/ai/llm/llmUtils/modelTypes.ts';
 import LlmVerifyConfig from '#/views/ai/llm/LlmVerifyConfig.vue';
 import LlmViewItemOperation from '#/views/ai/llm/LlmViewItemOperation.vue';
 import ManageLlmModal from '#/views/ai/llm/ManageLlmModal.vue';
-import { modelTypes } from '#/views/ai/llm/llmUtils/modelTypes.ts';
 
 const brandListData = ref([]);
 const defaultSelectProviderId = ref('');
@@ -50,7 +53,7 @@ const rerankModelListData = ref([]);
 
 const getLlmDetailList = (providerId) => {
   api
-    .get(`/api/v1/model/getList?providerId=${providerId}&added=true`, {})
+    .get(`/api/v1/model/getList?providerId=${providerId}&withUsed=true`, {})
     .then((res) => {
       if (res.errorCode === 0) {
         modelListData.value = res.data;
@@ -211,24 +214,18 @@ const handleEditLlm = (id) => {
   });
 };
 
-const handleGroupNameDelete = (groupName) => {
-  ElMessageBox.confirm($t('message.deleteAlert'), $t('message.noticeTitle'), {
-    confirmButtonText: $t('message.ok'),
-    cancelButtonText: $t('message.cancel'),
-    type: 'warning',
-  }).then(() => {
-    api
-      .post('/api/v1/model/removeByEntity', {
-        providerId: defaultSelectProviderId.value,
-        groupName,
-      })
-      .then((res) => {
-        if (res.errorCode === 0) {
-          ElMessage.success($t('message.deleteOkMessage'));
-          getLlmDetailList(defaultSelectProviderId.value);
-        }
-      });
-  });
+const handleGroupNameUpdateModel = (groupName) => {
+  api
+    .post('/api/v1/model/updateByEntity', {
+      providerId: defaultSelectProviderId.value,
+      groupName,
+      withUsed: false,
+    })
+    .then((res) => {
+      if (res.errorCode === 0) {
+        getLlmDetailList(defaultSelectProviderId.value);
+      }
+    });
 };
 
 // 输入框失去焦点时更新配置
@@ -265,6 +262,14 @@ const handleFormBlur = async () => {
 };
 const handleTest = () => {
   llmVerifyConfigRef.value.openDialog(defaultSelectProviderId.value);
+};
+
+const handleUpdateLlm = (id) => {
+  api.post('/api/v1/model/update', { id, withUsed: false }).then((res) => {
+    if (res.errorCode === 0) {
+      getLlmDetailList(defaultSelectProviderId.value);
+    }
+  });
 };
 </script>
 
@@ -368,7 +373,9 @@ const handleTest = () => {
                       <span>{{ group.groupName }}</span>
                       <span>
                         <ElIcon
-                          @click.stop="handleGroupNameDelete(group.groupName)"
+                          @click.stop="
+                            handleGroupNameUpdateModel(group.groupName)
+                          "
                         >
                           <Minus />
                         </ElIcon>
@@ -380,6 +387,7 @@ const handleTest = () => {
                     :icon="defaultIcon"
                     @delete-llm="handleDeleteLlm"
                     @edit-llm="handleEditLlm"
+                    @update-with-used="handleUpdateLlm"
                   />
                 </ElCollapseItem>
               </ElCollapse>
@@ -403,7 +411,9 @@ const handleTest = () => {
                     <div class="flex items-center justify-between pr-2">
                       <span>{{ group.groupName }}</span>
                       <span
-                        @click.stop="handleGroupNameDelete(group.groupName)"
+                        @click.stop="
+                          handleGroupNameUpdateModel(group.groupName)
+                        "
                       >
                         <ElIcon>
                           <Minus />
@@ -416,6 +426,7 @@ const handleTest = () => {
                     :icon="defaultIcon"
                     @delete-llm="handleDeleteLlm"
                     @edit-llm="handleEditLlm"
+                    @update-with-used="handleUpdateLlm"
                   />
                 </ElCollapseItem>
               </ElCollapse>
@@ -439,7 +450,9 @@ const handleTest = () => {
                     <div class="flex items-center justify-between pr-2">
                       <span>{{ group.groupName }}</span>
                       <span
-                        @click.stop="handleGroupNameDelete(group.groupName)"
+                        @click.stop="
+                          handleGroupNameUpdateModel(group.groupName)
+                        "
                       >
                         <ElIcon>
                           <Minus />
@@ -452,6 +465,7 @@ const handleTest = () => {
                     :icon="defaultIcon"
                     @delete-llm="handleDeleteLlm"
                     @edit-llm="handleEditLlm"
+                    @update-with-used="handleUpdateLlm"
                   />
                 </ElCollapseItem>
               </ElCollapse>

@@ -91,6 +91,13 @@ public class ModelController extends BaseCurdController<ModelService, Model> {
         return Result.ok();
     }
 
+    @PostMapping("/updateByEntity")
+    @SaCheckPermission("/api/v1/model/save")
+    public Result<?> updateByEntity(@RequestBody Model entity) {
+        modelService.updateByEntity(entity);
+        return Result.ok();
+    }
+
     @GetMapping("/selectLlmByProviderCategory")
     @SaCheckPermission("/api/v1/model/query")
     public Result<Map<String, List<Model>>> selectLlmByProviderCategory(Model entity, String sortKey, String sortType) {

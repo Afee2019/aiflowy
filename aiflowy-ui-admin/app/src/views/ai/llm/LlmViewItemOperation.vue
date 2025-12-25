@@ -32,7 +32,7 @@ defineProps({
   },
 });
 
-const emit = defineEmits(['deleteLlm', 'editLlm', 'addLlm']);
+const emit = defineEmits(['deleteLlm', 'editLlm', 'addLlm', 'updateWithUsed']);
 
 const handleDeleteLlm = (id: string) => {
   emit('deleteLlm', id);
@@ -44,6 +44,11 @@ const handleAddLlm = (id: string) => {
 
 const handleEditLlm = (id: string) => {
   emit('editLlm', id);
+};
+
+// 修改该模型为未使用状态，修改数据库的with_used字段为false
+const handleUpdateWithUsedLlm = (id: string) => {
+  emit('updateWithUsed', id);
 };
 
 /**
@@ -111,7 +116,7 @@ const getSelectedAbilityTagsForLlm = (llm: llmType): ModelAbilityItem[] => {
         <template v-if="!isManagement">
           <ElIcon
             size="16"
-            @click="handleDeleteLlm(llm.id)"
+            @click="handleUpdateWithUsedLlm(llm.id)"
             style="cursor: pointer"
           >
             <Minus />
@@ -120,7 +125,7 @@ const getSelectedAbilityTagsForLlm = (llm: llmType): ModelAbilityItem[] => {
 
         <template v-if="isManagement">
           <ElIcon
-            v-if="llm.added"
+            v-if="llm.withUsed"
             size="16"
             @click="handleDeleteLlm(llm.id)"
             style="cursor: pointer"

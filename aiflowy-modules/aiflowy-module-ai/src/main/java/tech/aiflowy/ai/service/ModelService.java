@@ -24,4 +24,6 @@ public interface ModelService extends IService<Model> {
     void removeByEntity(Model entity);
 
     Model getLlmInstance(BigInteger llmId);
+
+    void updateByEntity(Model entity);
 }

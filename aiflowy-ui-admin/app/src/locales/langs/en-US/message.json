@@ -28,5 +28,7 @@
     "title": "Click or drag and drop files here to upload",
     "description": "TXT, PDF, DOCX, MD, PPT, PPTX, and XLSX files are supported. Each upload allows one file only, with a maximum size of 20M per file."
   },
-  "uploadFileFirst": "Please upload the file first"
+  "uploadFileFirst": "Please upload the file first",
+  "deleteModelAlert": "This operation will delete the large model. Are you sure to delete it?",
+  "deleteModelGroupAlert": "This operation will delete all large models under this group. Are you sure to delete them?"
 }

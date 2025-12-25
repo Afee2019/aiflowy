@@ -15,6 +15,7 @@ import {
   ElFormItem,
   ElIcon,
   ElInput,
+  ElMessageBox,
   ElTabPane,
   ElTabs,
   ElTooltip,
@@ -138,31 +139,51 @@ const handleTabClick = async () => {
 };
 const activeName = ref('all');
 const handleGroupNameDelete = (groupName: string) => {
-  api
-    .post(`/api/v1/model/removeByEntity`, {
-      groupName,
-      providerId: selectedProviderId.value,
-    })
-    .then((res) => {
+  ElMessageBox.confirm(
+    $t('message.deleteModelGroupAlert'),
+    $t('message.noticeTitle'),
+    {
+      confirmButtonText: $t('message.ok'),
+      cancelButtonText: $t('message.cancel'),
+      type: 'warning',
+    },
+  ).then(() => {
+    api
+      .post(`/api/v1/model/removeByEntity`, {
+        groupName,
+        providerId: selectedProviderId.value,
+      })
+      .then((res) => {
+        if (res.errorCode === 0) {
+          getLlmList(providerInfo.value.id, activeName.value);
+          emit('reload');
+        }
+      });
+  });
+};
+const handleDeleteLlm = (id: any) => {
+  ElMessageBox.confirm(
+    $t('message.deleteModelAlert'),
+    $t('message.noticeTitle'),
+    {
+      confirmButtonText: $t('message.ok'),
+      cancelButtonText: $t('message.cancel'),
+      type: 'warning',
+    },
+  ).then(() => {
+    api.post(`/api/v1/model/removeLlmByIds`, { id }).then((res) => {
       if (res.errorCode === 0) {
         getLlmList(providerInfo.value.id, activeName.value);
         emit('reload');
       }
     });
-};
-const handleDeleteLlm = (id: any) => {
-  api.post(`/api/v1/model/removeLlmByIds`, { id }).then((res) => {
-    if (res.errorCode === 0) {
-      getLlmList(providerInfo.value.id, activeName.value);
-      emit('reload');
-    }
   });
 };
 const handleAddLlm = (id: string) => {
   api
     .post(`/api/v1/model/update`, {
       id,
-      added: true,
+      withUsed: true,
     })
     .then((res) => {
       if (res.errorCode === 0) {
@@ -178,7 +199,7 @@ const handleAddAllLlm = () => {
   api
     .post(`/api/v1/model/addAllLlm`, {
       providerId: selectedProviderId.value,
-      added: true,
+      withUsed: true,
     })
     .then((res) => {
       if (res.errorCode === 0) {
