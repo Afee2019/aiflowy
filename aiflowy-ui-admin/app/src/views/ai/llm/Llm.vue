@@ -23,7 +23,6 @@ import PageSide from '#/components/page/PageSide.vue';
 import AddLlmModal from '#/views/ai/llm/AddLlmModal.vue';
 import AddLlmProviderModal from '#/views/ai/llm/AddLlmProviderModal.vue';
 import { getIconByValue, isSvgString } from '#/views/ai/llm/defaultIcon.js';
-import LlmModal from '#/views/ai/llm/LlmModal.vue';
 import LlmVerifyConfig from '#/views/ai/llm/LlmVerifyConfig.vue';
 import LlmViewItemOperation from '#/views/ai/llm/LlmViewItemOperation.vue';
 import ManageLlmModal from '#/views/ai/llm/ManageLlmModal.vue';
@@ -32,7 +31,6 @@ import { modelTypes } from '#/views/ai/llm/modelTypes.js';
 const brandListData = ref([]);
 const defaultSelectProviderId = ref('');
 const defaultIcon = ref('');
-const LlmAddOrUpdateDialog = ref(false);
 const modelListData = ref([]);
 onMounted(() => {
   getLlmProviderListData();
@@ -119,9 +117,6 @@ const handleCategoryClick = (category) => {
   getLlmDetailList(category.id);
 };
 
-const LlmAddOrUpdateDialogRef = ref(null);
-
-const pageDataRef = ref();
 // 添加模型供应商
 const addLlmProviderRef = ref();
 // 模型管理ref
@@ -148,12 +143,8 @@ const handleDeleteProvider = (row) => {
       });
   });
 };
-const editRecord = ref({});
 const llmProviderForm = ref({});
 const llmProviderFormRef = ref();
-const handleSuccess = () => {
-  pageDataRef.value.setQuery();
-};
 const isEdit = ref(false);
 const dialogAddProviderVisible = ref(false);
 const controlBtns = [
@@ -483,13 +474,6 @@ const handleTest = () => {
       </div>
     </div>
 
-    <!--   大模型模态框-->
-    <LlmModal
-      :edit-record="editRecord"
-      ref="LlmAddOrUpdateDialogRef"
-      @success="handleSuccess"
-      @close="LlmAddOrUpdateDialog = false"
-    />
     <!--添加模型供应商模态框-->
     <AddLlmProviderModal
       ref="addLlmProviderRef"

@@ -43,7 +43,7 @@ const formData = reactive({
   providerName: '',
   provider: '',
   apiKey: '',
-  endPoint: '',
+  endpoint: '',
   chatPath: '',
   embedPath: '',
   rerankPath: '',
@@ -99,7 +99,7 @@ const handleChangeProvider = (val: string) => {
     return;
   }
   formData.providerName = tempProvider.label;
-  formData.endPoint = providerOptions.value.find(
+  formData.endpoint = providerOptions.value.find(
     (item) => item.value === val,
   )?.options.llmEndpoint;
   formData.chatPath = providerOptions.value.find(
@@ -151,8 +151,8 @@ const handleChangeProvider = (val: string) => {
       <ElFormItem prop="apiKey" :label="$t('llmProvider.apiKey')">
         <ElInput v-model.trim="formData.apiKey" />
       </ElFormItem>
-      <ElFormItem prop="endPoint" :label="$t('llmProvider.endPoint')">
-        <ElInput v-model.trim="formData.endPoint" />
+      <ElFormItem prop="endpoint" :label="$t('llmProvider.endpoint')">
+        <ElInput v-model.trim="formData.endpoint" />
       </ElFormItem>
       <ElFormItem prop="chatPath" :label="$t('llmProvider.chatPath')">
         <ElInput v-model.trim="formData.chatPath" />

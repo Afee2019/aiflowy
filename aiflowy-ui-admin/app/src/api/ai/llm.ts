@@ -1,10 +1,5 @@
 import { api } from '#/api/request.js';
 
-// 获取LLM品牌列表
-export async function getLlmBrandList() {
-  return api.get('/api/v1/modelBrand/list?asTree=true');
-}
-
 // 获取LLM供应商
 export async function getLlmProviderList() {
   return api.get('/api/v1/modelProvider/list');

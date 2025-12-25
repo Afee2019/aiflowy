@@ -195,9 +195,7 @@ public class DocumentServiceImpl extends ServiceImpl<DocumentMapper, Document> i
             aiDocument.setCreated(new Date());
             aiDocument.setModifiedBy(BigInteger.valueOf(StpUtil.getLoginIdAsLong()));
             aiDocument.setModified(new Date());
-            if (document != null) {
-                aiDocument.setContent(document.getContent());
-            }
+            aiDocument.setContent(document.getContent());
             aiDocument.setChunkSize(chunkSize);
             aiDocument.setOverlapSize(overlapSize);
             aiDocument.setTitle(originalFilename);
