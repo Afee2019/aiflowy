@@ -1,4 +1,4 @@
-package tech.aiflowy.ai.utils;
+package tech.aiflowy.ai.tinyflow.service;
 
 import dev.tinyflow.core.filestoreage.FileStorageManager;
 import dev.tinyflow.core.filestoreage.FileStorageProvider;
