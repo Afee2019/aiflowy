@@ -26,28 +26,10 @@ public class ModelProviderBase extends DateEntity implements Serializable {
     private String providerName;
 
     /**
-     * 创建时间
+     * 不同的 client 实现，默认为 openai
      */
-    @Column(comment = "创建时间")
-    private Date created;
-
-    /**
-     * 创建者
-     */
-    @Column(comment = "创建者")
-    private BigInteger createdBy;
-
-    /**
-     * 修改时间
-     */
-    @Column(comment = "修改时间")
-    private Date modified;
-
-    /**
-     * 修改者
-     */
-    @Column(comment = "修改者")
-    private BigInteger modifiedBy;
+    @Column(comment = "不同的 client 实现，默认为 openai")
+    private String providerType;
 
     /**
      * 图标
@@ -86,10 +68,28 @@ public class ModelProviderBase extends DateEntity implements Serializable {
     private String rerankPath;
 
     /**
-     * 供应商
+     * 创建时间
      */
-    @Column(comment = "供应商")
-    private String provider;
+    @Column(comment = "创建时间")
+    private Date created;
+
+    /**
+     * 创建者
+     */
+    @Column(comment = "创建者")
+    private BigInteger createdBy;
+
+    /**
+     * 修改时间
+     */
+    @Column(comment = "修改时间")
+    private Date modified;
+
+    /**
+     * 修改者
+     */
+    @Column(comment = "修改者")
+    private BigInteger modifiedBy;
 
     public BigInteger getId() {
         return id;
@@ -107,36 +107,12 @@ public class ModelProviderBase extends DateEntity implements Serializable {
         this.providerName = providerName;
     }
 
-    public Date getCreated() {
-        return created;
+    public String getProviderType() {
+        return providerType;
     }
 
-    public void setCreated(Date created) {
-        this.created = created;
-    }
-
-    public BigInteger getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(BigInteger createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getModified() {
-        return modified;
-    }
-
-    public void setModified(Date modified) {
-        this.modified = modified;
-    }
-
-    public BigInteger getModifiedBy() {
-        return modifiedBy;
-    }
-
-    public void setModifiedBy(BigInteger modifiedBy) {
-        this.modifiedBy = modifiedBy;
+    public void setProviderType(String providerType) {
+        this.providerType = providerType;
     }
 
     public String getIcon() {
@@ -187,12 +163,36 @@ public class ModelProviderBase extends DateEntity implements Serializable {
         this.rerankPath = rerankPath;
     }
 
-    public String getProvider() {
-        return provider;
+    public Date getCreated() {
+        return created;
     }
 
-    public void setProvider(String provider) {
-        this.provider = provider;
+    public void setCreated(Date created) {
+        this.created = created;
+    }
+
+    public BigInteger getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(BigInteger createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Date getModified() {
+        return modified;
+    }
+
+    public void setModified(Date modified) {
+        this.modified = modified;
+    }
+
+    public BigInteger getModifiedBy() {
+        return modifiedBy;
+    }
+
+    public void setModifiedBy(BigInteger modifiedBy) {
+        this.modifiedBy = modifiedBy;
     }
 
 }

@@ -32,16 +32,16 @@ public class ModelBase implements Serializable {
     private BigInteger tenantId;
 
     /**
+     * 供应商id
+     */
+    @Column(comment = "供应商id")
+    private BigInteger providerId;
+
+    /**
      * 标题或名称
      */
     @Column(comment = "标题或名称")
     private String title;
-
-    /**
-     * 品牌
-     */
-    @Column(comment = "品牌")
-    private String brand;
 
     /**
      * ICON
@@ -98,22 +98,22 @@ public class ModelBase implements Serializable {
     private String groupName;
 
     /**
-     * 模型类型
+     * 模型类型: chat/embedding/rerank/orc..
      */
-    @Column(comment = "模型类型")
+    @Column(comment = "模型类型: chat/embedding/rerank/orc..")
     private String modelType;
 
     /**
-     * 供应商
+     * 是否使用
      */
-    @Column(comment = "供应商")
-    private String provider;
+    @Column(comment = "是否使用")
+    private Boolean withUsed;
 
     /**
      * 是否支持推理
      */
     @Column(comment = "是否支持推理")
-    private Boolean supportReasoning;
+    private Boolean supportThinking;
 
     /**
      * 是否支持工具
@@ -122,28 +122,28 @@ public class ModelBase implements Serializable {
     private Boolean supportTool;
 
     /**
-     * 是否支持嵌入
+     * 是否支持图片
      */
-    @Column(comment = "是否支持嵌入")
-    private Boolean supportEmbedding;
+    @Column(comment = "是否支持图片")
+    private Boolean supportImage;
 
     /**
-     * 是否支持重排
+     * 仅支持 base64 的图片类型
      */
-    @Column(comment = "是否支持重排")
-    private Boolean supportRerank;
+    @Column(comment = "仅支持 base64 的图片类型")
+    private Boolean supportImageB64Only;
 
     /**
-     * 供应商id
+     * 是否支持视频
      */
-    @Column(comment = "供应商id")
-    private BigInteger providerId;
+    @Column(comment = "是否支持视频")
+    private Boolean supportVideo;
 
     /**
-     * 是否添加
+     * 是否支持音频
      */
-    @Column(comment = "是否添加")
-    private Boolean added;
+    @Column(comment = "是否支持音频")
+    private Boolean supportAudio;
 
     /**
      * 是否免费
@@ -175,20 +175,20 @@ public class ModelBase implements Serializable {
         this.tenantId = tenantId;
     }
 
+    public BigInteger getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(BigInteger providerId) {
+        this.providerId = providerId;
+    }
+
     public String getTitle() {
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getBrand() {
-        return brand;
-    }
-
-    public void setBrand(String brand) {
-        this.brand = brand;
     }
 
     public String getIcon() {
@@ -271,20 +271,20 @@ public class ModelBase implements Serializable {
         this.modelType = modelType;
     }
 
-    public String getProvider() {
-        return provider;
+    public Boolean getWithUsed() {
+        return withUsed;
     }
 
-    public void setProvider(String provider) {
-        this.provider = provider;
+    public void setWithUsed(Boolean withUsed) {
+        this.withUsed = withUsed;
     }
 
-    public Boolean getSupportReasoning() {
-        return supportReasoning;
+    public Boolean getSupportThinking() {
+        return supportThinking;
     }
 
-    public void setSupportReasoning(Boolean supportReasoning) {
-        this.supportReasoning = supportReasoning;
+    public void setSupportThinking(Boolean supportThinking) {
+        this.supportThinking = supportThinking;
     }
 
     public Boolean getSupportTool() {
@@ -295,36 +295,36 @@ public class ModelBase implements Serializable {
         this.supportTool = supportTool;
     }
 
-    public Boolean getSupportEmbedding() {
-        return supportEmbedding;
+    public Boolean getSupportImage() {
+        return supportImage;
     }
 
-    public void setSupportEmbedding(Boolean supportEmbedding) {
-        this.supportEmbedding = supportEmbedding;
+    public void setSupportImage(Boolean supportImage) {
+        this.supportImage = supportImage;
     }
 
-    public Boolean getSupportRerank() {
-        return supportRerank;
+    public Boolean getSupportImageB64Only() {
+        return supportImageB64Only;
     }
 
-    public void setSupportRerank(Boolean supportRerank) {
-        this.supportRerank = supportRerank;
+    public void setSupportImageB64Only(Boolean supportImageB64Only) {
+        this.supportImageB64Only = supportImageB64Only;
     }
 
-    public BigInteger getProviderId() {
-        return providerId;
+    public Boolean getSupportVideo() {
+        return supportVideo;
     }
 
-    public void setProviderId(BigInteger providerId) {
-        this.providerId = providerId;
+    public void setSupportVideo(Boolean supportVideo) {
+        this.supportVideo = supportVideo;
     }
 
-    public Boolean getAdded() {
-        return added;
+    public Boolean getSupportAudio() {
+        return supportAudio;
     }
 
-    public void setAdded(Boolean added) {
-        this.added = added;
+    public void setSupportAudio(Boolean supportAudio) {
+        this.supportAudio = supportAudio;
     }
 
     public Boolean getSupportFree() {
