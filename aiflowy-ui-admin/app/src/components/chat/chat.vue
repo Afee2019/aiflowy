@@ -17,7 +17,6 @@ import { ElButton, ElIcon, ElMessage, ElSpace } from 'element-plus';
 
 import { getMessageList, getPerQuestions } from '#/api';
 import { api, sseClient } from '#/api/request';
-import MarkdownRenderer from '#/components/chat/MarkdownRenderer.vue';
 import SendEnableIcon from '#/components/icons/SendEnableIcon.vue';
 import SendIcon from '#/components/icons/SendIcon.vue';
 
@@ -318,7 +317,7 @@ const handleRefresh = () => {
             />
           </template>
           <template #content="{ item }">
-            <MarkdownRenderer :content="item.content" />
+            <XMarkdown :markdown="item.content" />
           </template>
           <!-- 自定义底部 -->
           <template #footer="{ item }">
