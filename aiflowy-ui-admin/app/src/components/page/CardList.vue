@@ -156,8 +156,8 @@ const hiddenActions = computed(() => {
 
 .item-desc {
   font-size: clamp(8px, 1vw, 14px);
-  line-height: 16px;
-  height: 32px;
+  line-height: 20px;
+  height: 40px;
   color: #75808d;
 }
 

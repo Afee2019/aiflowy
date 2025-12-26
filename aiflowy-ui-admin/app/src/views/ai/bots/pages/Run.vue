@@ -2,7 +2,6 @@
 import type { BotInfo, Session } from '@aiflowy/types';
 
 import { onMounted, ref, watchEffect } from 'vue';
-import { Conversations } from 'vue-element-plus-x';
 import { useRoute, useRouter } from 'vue-router';
 
 import { IconifyIcon } from '@aiflowy/icons';
@@ -116,7 +115,7 @@ const updateActive = (_sessionId?: number | string) => {
         $t('common.history')
       }}</span>
       <div class="w-full max-w-[208px] flex-1 overflow-hidden">
-        <Conversations
+        <el-conversations
           v-show="sessionList.length > 0"
           class="!w-full !shadow-none"
           v-model:active="sessionId"

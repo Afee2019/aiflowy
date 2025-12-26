@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import type { Sender } from 'vue-element-plus-x';
 import type { BubbleListProps } from 'vue-element-plus-x/types/BubbleList';
 import type { TypewriterInstance } from 'vue-element-plus-x/types/Typewriter';
 
 import type { BotInfo, ChatMessage } from '@aiflowy/types';
 
 import { onMounted, ref, watchEffect } from 'vue';
-import { BubbleList, Sender } from 'vue-element-plus-x';
 import { useRoute, useRouter } from 'vue-router';
 
 import { $t } from '@aiflowy/locales';
@@ -296,7 +296,7 @@ const handleRefresh = () => {
         v-if="conversationId || bubbleItems.length > 0"
         class="message-container w-full flex-1 overflow-hidden"
       >
-        <BubbleList
+        <el-bubble-list
           class="!h-full"
           :list="bubbleItems"
           max-height="none"
@@ -335,7 +335,7 @@ const handleRefresh = () => {
               </ElSpace>
             </ElSpace>
           </template>
-        </BubbleList>
+        </el-bubble-list>
       </div>
 
       <!-- 新对话显示bot信息 -->
@@ -361,7 +361,7 @@ const handleRefresh = () => {
         </ElButton>
       </div>
       <!-- Sender -->
-      <Sender
+      <el-sender
         ref="senderRef"
         class="w-full"
         v-model="senderValue"
@@ -399,7 +399,7 @@ const handleRefresh = () => {
             </template>
           </ElSpace>
         </template>
-      </Sender>
+      </el-sender>
     </div>
   </div>
 </template>
