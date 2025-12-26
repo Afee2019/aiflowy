@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import { cn } from '@aiflowy-core/shared/utils';
+
 import { AIFlowyAvatar } from '../avatar';
 
 interface Props {
@@ -56,6 +58,9 @@ const props = withDefaults(defineProps<Props>(), {
  * @zh_CN 根据主题选择合适的 logo 图标
  */
 const logoSrc = computed(() => {
+  if (props.collapsed) {
+    return '/logoMini.svg';
+  }
   // 如果是暗色主题且提供了 srcDark，则使用暗色主题的 logo
   if (props.theme === 'dark' && props.srcDark) {
     return props.srcDark;
@@ -68,15 +73,20 @@ const logoSrc = computed(() => {
 <template>
   <div :class="theme" class="flex h-full items-center text-lg">
     <a
-      :class="$attrs.class"
       :href="href"
-      class="flex h-full items-center gap-2 overflow-hidden px-5 text-lg leading-normal transition-all duration-500"
+      :class="
+        cn(
+          $attrs.class as string,
+          'flex h-full items-center gap-2 overflow-hidden px-6 text-lg leading-normal transition-all duration-500',
+          collapsed && 'px-5',
+        )
+      "
     >
       <AIFlowyAvatar
         v-if="logoSrc"
         :alt="text"
         :src="logoSrc"
-        :size="logoSize"
+        :size="collapsed ? 20 : logoSize"
         :fit="fit"
         class="relative rounded-none bg-transparent"
       />
