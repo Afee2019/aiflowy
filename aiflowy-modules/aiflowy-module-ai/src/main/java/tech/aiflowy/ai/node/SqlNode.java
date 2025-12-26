@@ -11,7 +11,6 @@ import net.sf.jsqlparser.statement.select.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
-import tech.aiflowy.common.util.Maps;
 import tech.aiflowy.common.web.exceptions.BusinessException;
 
 import java.util.*;
@@ -45,15 +44,15 @@ public class SqlNode extends BaseNode {
         Map<String, Object> res = new HashMap<>();
 
 
-        Map<String, Object> formatSqlMap = formatSql(sql,map);
-        String formatSql = (String)formatSqlMap.get("replacedSql");
+        Map<String, Object> formatSqlMap = formatSql(sql, map);
+        String formatSql = (String) formatSqlMap.get("replacedSql");
 
         Statement statement = null;
         try {
-            statement  = CCJSqlParserUtil.parse(formatSql);
+            statement = CCJSqlParserUtil.parse(formatSql);
 
         } catch (JSQLParserException e) {
-            logger.error("sql 解析报错：",e);
+            logger.error("sql 解析报错：", e);
             throw new BusinessException("SQL解析失败，请确认SQL语法无误");
         }
 
@@ -76,7 +75,7 @@ public class SqlNode extends BaseNode {
             return Collections.emptyMap();
         }
 
-        res.put("queryData",rows);
+        res.put("queryData", rows);
         return res;
     }
 
