@@ -46,7 +46,7 @@ import {
 } from '#/utils/resource';
 import PreviewModal from '#/views/ai/resource/PreviewModal.vue';
 
-import AiResourceModal from './AiResourceModal.vue';
+import ResourceModal from './ResourceModal.vue';
 
 onMounted(() => {
   initDict();
@@ -251,7 +251,7 @@ const getSideList = async () => {
 <template>
   <div class="flex h-full flex-col gap-1.5 p-6">
     <PreviewModal ref="previewDialog" />
-    <AiResourceModal ref="saveDialog" @reload="reset" />
+    <ResourceModal ref="saveDialog" @reload="reset" />
     <div class="flex items-center justify-between">
       <ElForm ref="formRef" inline :model="formInline">
         <ElFormItem prop="resourceType" class="!mr-3">

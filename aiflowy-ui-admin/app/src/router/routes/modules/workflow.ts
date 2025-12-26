@@ -36,7 +36,7 @@ const routes: RouteRecordRaw[] = [
     name: 'ExecRecord',
     path: '/ai/workflow/executeRecords',
     component: () =>
-      import('#/views/ai/workflow/execRecord/AiWorkflowExecRecordList.vue'),
+      import('#/views/ai/workflow/execute/WorkflowExecResultList.vue'),
   },
   {
     meta: {
@@ -48,7 +48,7 @@ const routes: RouteRecordRaw[] = [
     name: 'RecordStep',
     path: '/ai/workflow/executeSteps',
     component: () =>
-      import('#/views/ai/workflow/execRecord/AiWorkflowRecordStepList.vue'),
+      import('#/views/ai/workflow/execute/WorkflowExecStepList.vue'),
   },
 ];
 

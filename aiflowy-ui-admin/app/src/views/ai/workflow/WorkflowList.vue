@@ -41,7 +41,7 @@ import { $t } from '#/locales';
 import { router } from '#/router';
 import { useDictStore } from '#/store';
 
-import AiWorkflowModal from './AiWorkflowModal.vue';
+import WorkflowModal from './WorkflowModal.vue';
 
 interface FieldDefinition {
   // 字段名称
@@ -360,7 +360,7 @@ const getSideList = async () => {
 
 <template>
   <div class="flex h-full flex-col gap-6 p-6">
-    <AiWorkflowModal ref="saveDialog" @reload="reset" />
+    <WorkflowModal ref="saveDialog" @reload="reset" />
     <HeaderSearch
       :buttons="headerButtons"
       @search="handleSearch"
