@@ -1,4 +1,5 @@
 import { createApp, watchEffect } from 'vue';
+import { BubbleList, Conversations, Sender } from 'vue-element-plus-x';
 
 import { registerAccessDirective } from '@aiflowy/access';
 import { registerLoadingDirective } from '@aiflowy/common-ui';
@@ -36,6 +37,10 @@ async function bootstrap(namespace: string) {
 
   // 注册Element Plus提供的v-loading指令
   app.directive('loading', ElLoading.directive);
+
+  app.component('ElBubbleList', BubbleList);
+  app.component('ElConversations', Conversations);
+  app.component('ElSender', Sender);
 
   // 注册AIFlowy提供的v-loading和v-spinning指令
   registerLoadingDirective(app, {

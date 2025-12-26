@@ -54,9 +54,9 @@ const hasChildren = computed(() => {
   </MenuItem>
   <!-- 扁平化菜单 -->
   <div v-else :class="cn('mb-6 flex flex-col gap-3', collapse && 'm-0')">
-    <span :class="cn('pl-6 text-sm text-[#C7C7C7]', collapse && 'hidden')">{{
-      menu.name
-    }}</span>
+    <span :class="cn('pl-6 text-sm text-[#C7C7C7]', collapse && 'hidden')">
+      {{ menu.name }}
+    </span>
     <div>
       <template v-for="childItem in menu.children || []" :key="childItem.path">
         <SubMenu :menu="childItem" :collapse="collapse" />
