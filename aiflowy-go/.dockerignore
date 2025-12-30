@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+
+# Build artifacts
+build/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test files
+*_test.go
+tests/
+coverage.txt
+coverage.html
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Uploads (user data)
+uploads/
+
+# Local configs (use ConfigMap in K8s)
+configs/config.dev.yaml
+configs/config.local.yaml
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Temporary files
+tmp/
+*.tmp
+*.bak
+*.backup
+
+# OS files
+.DS_Store
+Thumbs.db

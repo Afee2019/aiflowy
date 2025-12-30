@@ -68,7 +68,7 @@ onMounted(() => {
 const fetchBotDetail = async (id: string) => {
   const [, res] = await tryit(getBotDetails(id));
 
-  if (res?.errorCode === 0) {
+  if (res?.code === 0) {
     bot.value = res.data;
   }
 };
@@ -80,7 +80,7 @@ const fetchSessionList = async (id: string) => {
     }),
   );
 
-  if (res?.errorCode === 0) {
+  if (res?.code === 0) {
     sessionList.value = res.data.cons;
   }
 };

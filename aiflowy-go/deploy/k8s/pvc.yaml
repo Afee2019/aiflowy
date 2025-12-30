@@ -1,0 +1,17 @@
+# AIFlowy Go Backend - Persistent Volume Claim
+# For storing uploaded files
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: aiflowy-uploads-pvc
+  namespace: aiflowy
+  labels:
+    app: aiflowy-go
+spec:
+  accessModes:
+    - ReadWriteMany  # RWX for multi-pod access
+  storageClassName: standard  # Change to your storage class
+  resources:
+    requests:
+      storage: 10Gi

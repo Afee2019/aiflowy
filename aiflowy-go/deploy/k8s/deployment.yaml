@@ -1,0 +1,125 @@
+# AIFlowy Go Backend - Kubernetes Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aiflowy-go
+  namespace: aiflowy
+  labels:
+    app: aiflowy-go
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: aiflowy-go
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: aiflowy-go
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8213"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: aiflowy-go
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+
+      containers:
+        - name: aiflowy-go
+          image: aiflowy-go:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8213
+              protocol: TCP
+
+          # Environment variables from ConfigMap and Secret
+          envFrom:
+            - configMapRef:
+                name: aiflowy-go-config
+            - secretRef:
+                name: aiflowy-go-secret
+
+          # Resource limits
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+
+          # Liveness probe - Is the container alive?
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8213
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          # Readiness probe - Is the container ready to serve traffic?
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8213
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          # Startup probe - For slow-starting containers
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8213
+            initialDelaySeconds: 2
+            periodSeconds: 2
+            timeoutSeconds: 2
+            failureThreshold: 15  # 30 seconds max startup time
+
+          # Volume mounts
+          volumeMounts:
+            - name: config
+              mountPath: /app/configs/config.yaml
+              subPath: config.yaml
+              readOnly: true
+            - name: logs
+              mountPath: /app/logs
+            - name: uploads
+              mountPath: /app/uploads
+
+      volumes:
+        - name: config
+          configMap:
+            name: aiflowy-go-config-file
+        - name: logs
+          emptyDir: {}
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: aiflowy-uploads-pvc
+
+      # Pod anti-affinity - spread across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: aiflowy-go
+                topologyKey: kubernetes.io/hostname
+
+      # Graceful termination
+      terminationGracePeriodSeconds: 30

@@ -1,0 +1,36 @@
+# AIFlowy Go Backend - Kubernetes Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: aiflowy-go
+  namespace: aiflowy
+  labels:
+    app: aiflowy-go
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8213
+      targetPort: 8213
+      protocol: TCP
+  selector:
+    app: aiflowy-go
+
+---
+# ServiceAccount for the application
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aiflowy-go
+  namespace: aiflowy
+  labels:
+    app: aiflowy-go
+
+---
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aiflowy
+  labels:
+    name: aiflowy

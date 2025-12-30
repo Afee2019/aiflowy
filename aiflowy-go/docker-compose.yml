@@ -1,0 +1,95 @@
+# AIFlowy Go Backend - Docker Compose
+# For local development and testing
+version: '3.8'
+
+services:
+  # AIFlowy Go Backend
+  aiflowy-go:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${VERSION:-dev}
+        BUILD_TIME: ${BUILD_TIME:-unknown}
+    image: aiflowy-go:latest
+    container_name: aiflowy-go
+    ports:
+      - "8213:8213"
+    environment:
+      # Database
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=aiflowy123
+      - DB_NAME=aiflowy
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      # JWT
+      - JWT_SECRET=aiflowy-jwt-secret-key-dev
+      # Environment
+      - AIFLOWY_ENV=production
+    volumes:
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - aiflowy-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8213/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: aiflowy-mysql
+    ports:
+      - "3307:3306"  # Use 3307 to avoid conflict with local MySQL
+    environment:
+      - MYSQL_ROOT_PASSWORD=aiflowy123
+      - MYSQL_DATABASE=aiflowy
+      - MYSQL_CHARSET=utf8mb4
+      - MYSQL_COLLATION=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ../sql/aiflowy-v2.ddl.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ../sql/aiflowy-v2.data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+    networks:
+      - aiflowy-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-paiflowy123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: aiflowy-redis
+    ports:
+      - "6380:6379"  # Use 6380 to avoid conflict with local Redis
+    volumes:
+      - redis-data:/data
+    networks:
+      - aiflowy-network
+    restart: unless-stopped
+
+networks:
+  aiflowy-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  redis-data:

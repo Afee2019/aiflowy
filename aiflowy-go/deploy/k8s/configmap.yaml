@@ -1,0 +1,79 @@
+# AIFlowy Go Backend - Kubernetes ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aiflowy-go-config
+  namespace: aiflowy
+  labels:
+    app: aiflowy-go
+data:
+  # Database connection (non-sensitive)
+  DB_HOST: "mysql.aiflowy.svc.cluster.local"
+  DB_PORT: "3306"
+  DB_NAME: "aiflowy"
+
+  # Redis connection (non-sensitive)
+  REDIS_HOST: "redis.aiflowy.svc.cluster.local"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+
+  # Application settings
+  AIFLOWY_ENV: "production"
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+
+---
+# Configuration file
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aiflowy-go-config-file
+  namespace: aiflowy
+  labels:
+    app: aiflowy-go
+data:
+  config.yaml: |
+    # AIFlowy Go Backend Configuration
+    # Environment: Kubernetes Production
+
+    server:
+      port: 8213
+      host: "0.0.0.0"
+      mode: "release"
+
+    database:
+      driver: "mysql"
+      host: "${DB_HOST:mysql.aiflowy.svc.cluster.local}"
+      port: 3306
+      username: "${DB_USER:root}"
+      password: "${DB_PASSWORD:}"
+      database: "${DB_NAME:aiflowy}"
+      charset: "utf8mb4"
+      max_idle_conns: 20
+      max_open_conns: 200
+      conn_max_lifetime: 3600
+
+    redis:
+      host: "${REDIS_HOST:redis.aiflowy.svc.cluster.local}"
+      port: 6379
+      password: "${REDIS_PASSWORD:}"
+      db: 0
+
+    jwt:
+      secret: "${JWT_SECRET:aiflowy-jwt-secret-key}"
+      expire: 86400
+      issuer: "aiflowy"
+
+    log:
+      level: "info"
+      format: "json"
+      output: "console"
+
+    storage:
+      type: "local"
+      local:
+        path: "/app/uploads"
+
+    snowflake:
+      worker_id: 1
+      datacenter_id: 1

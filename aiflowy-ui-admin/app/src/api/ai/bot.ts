@@ -20,11 +20,16 @@ export interface GetSessionListParams {
   tempUserId: string;
 }
 /** 获取bot对话列表 */
-export const getSessionList = (params: GetSessionListParams) => {
-  return api.get<RequestResult<{ cons: Session[] }>>(
-    '/api/v1/conversation/externalList',
-    { params },
+export const getSessionList = async (params: GetSessionListParams) => {
+  const res = await api.get<RequestResult<Session[]>>(
+    '/api/v1/botConversation/list',
+    { params: { botId: params.botId } },
   );
+  // 适配返回格式: Go 返回数组，前端期望 { cons: [...] }
+  if (res.code === 0 && res.data) {
+    return { ...res, data: { cons: res.data } };
+  }
+  return { ...res, data: { cons: [] } };
 };
 
 export interface SaveBotParams {
@@ -61,7 +66,7 @@ export interface GetMessageListParams {
 /** 获取单个对话的信息列表 */
 export const getMessageList = (params: GetMessageListParams) => {
   return api.get<RequestResult<ChatMessage[]>>(
-    '/api/v1/botMessage/messageList',
+    '/api/v1/botMessage/list',
     {
       params,
     },

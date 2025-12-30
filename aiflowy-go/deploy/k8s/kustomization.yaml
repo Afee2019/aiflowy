@@ -1,0 +1,39 @@
+# AIFlowy Go Backend - Kustomization
+# Usage: kubectl apply -k deploy/k8s/
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: aiflowy
+
+resources:
+  - service.yaml      # Namespace, ServiceAccount, Service
+  - configmap.yaml    # ConfigMaps
+  - secret.yaml       # Secrets (use external-secrets in prod)
+  - pvc.yaml          # PersistentVolumeClaim
+  - deployment.yaml   # Deployment
+  - hpa.yaml          # HorizontalPodAutoscaler
+  # - ingress.yaml    # Uncomment when ready for external access
+
+commonLabels:
+  app.kubernetes.io/name: aiflowy-go
+  app.kubernetes.io/part-of: aiflowy
+  app.kubernetes.io/managed-by: kustomize
+
+# Image customization
+images:
+  - name: aiflowy-go
+    newName: your-registry.io/aiflowy-go
+    newTag: latest
+
+# Config generation (alternative to static configmaps)
+# configMapGenerator:
+#   - name: aiflowy-go-config
+#     envs:
+#       - .env.prod
+
+# Secret generation (alternative to static secrets)
+# secretGenerator:
+#   - name: aiflowy-go-secret
+#     envs:
+#       - .env.secret

@@ -1,0 +1,302 @@
+#!/usr/bin/env python3
+"""
+AIFlowy API 客户端工具
+简化API调用，自动处理token、JSON格式化、错误处理等
+
+用法示例:
+    # 登录（特殊命令，会保存token）
+    ./scripts/api login admin 123456
+
+    # GET请求 - 获取Bot列表
+    ./scripts/api GET bot/list
+
+    # POST请求 - Bot聊天
+    ./scripts/api POST bot/chat -d '{"botId":"xxx","message":"你好","stream":false}'
+
+    # 提取特定字段
+    ./scripts/api GET auth/getUserInfo -f data.nickname
+
+    # 显示详细信息
+    ./scripts/api GET bot/list -v
+"""
+
+import argparse
+import json
+import sys
+import os
+from pathlib import Path
+
+try:
+    import requests
+except ImportError:
+    print("错误: 缺少 requests 库", file=sys.stderr)
+    print("安装: pip3 install requests", file=sys.stderr)
+    sys.exit(1)
+
+# ============================================================================
+# 配置 - AIFlowy 项目专用
+# ============================================================================
+API_BASE = os.environ.get("AIFLOWY_API_BASE", "http://localhost:8213/api/v1")
+TOKEN_FILE = "/tmp/.aiflowy.token"
+TOKEN_HEADER = "aiflowy-token"  # AIFlowy 使用自定义 header
+
+
+def save_token(token):
+    """保存token到文件"""
+    token_path = Path(TOKEN_FILE)
+    token_path.write_text(token)
+    token_path.chmod(0o600)
+    print(f"✅ Token 已保存到 {TOKEN_FILE}", file=sys.stderr)
+
+
+def get_token():
+    """读取API token"""
+    token_path = Path(TOKEN_FILE)
+    if not token_path.exists():
+        print(f"❌ 错误: token文件不存在: {TOKEN_FILE}", file=sys.stderr)
+        print("请先运行: make login 或 ./scripts/api login <account> <password>", file=sys.stderr)
+        sys.exit(1)
+    return token_path.read_text().strip()
+
+
+def do_login(account, password, verbose=False):
+    """执行登录并保存token"""
+    url = f"{API_BASE}/auth/login"
+
+    if verbose:
+        print(f"📡 登录: POST {url}", file=sys.stderr)
+
+    try:
+        response = requests.post(
+            url,
+            json={"account": account, "password": password},
+            headers={"Content-Type": "application/json"},
+            timeout=30
+        )
+
+        if response.status_code == 200:
+            data = response.json()
+            # AIFlowy 的 token 在 data.token 中
+            token = data.get("data", {}).get("token")
+            if token:
+                save_token(token)
+                print(f"✅ 登录成功: {account}", file=sys.stderr)
+                print(f"💡 Token 有效期: 24小时", file=sys.stderr)
+                return True
+
+        print(f"❌ 登录失败: {response.text}", file=sys.stderr)
+        return False
+
+    except Exception as e:
+        print(f"❌ 登录失败: {e}", file=sys.stderr)
+        return False
+
+
+def parse_query_params(args):
+    """解析命令行中的查询参数 (key=value格式)"""
+    params = {}
+    for arg in args:
+        if '=' in arg and not arg.startswith('-'):
+            key, value = arg.split('=', 1)
+            params[key] = value
+    return params
+
+
+def make_request(method, path, data=None, params=None, verbose=False):
+    """发送HTTP请求"""
+    token = get_token()
+    url = f"{API_BASE}/{path.lstrip('/')}"
+
+    # AIFlowy 使用 aiflowy-token header
+    headers = {
+        TOKEN_HEADER: token,
+        "Content-Type": "application/json"
+    }
+
+    if verbose:
+        print(f"📡 请求: {method.upper()} {url}", file=sys.stderr)
+        if params:
+            print(f"📋 参数: {params}", file=sys.stderr)
+        if data:
+            print(f"📦 数据:\n{json.dumps(data, indent=2, ensure_ascii=False)}", file=sys.stderr)
+
+    try:
+        response = requests.request(
+            method=method.upper(),
+            url=url,
+            json=data,
+            params=params,
+            headers=headers,
+            timeout=30
+        )
+
+        if verbose:
+            print(f"✅ 状态码: {response.status_code}", file=sys.stderr)
+
+        return response
+
+    except requests.exceptions.Timeout:
+        print("❌ 请求超时", file=sys.stderr)
+        sys.exit(1)
+    except requests.exceptions.ConnectionError:
+        print(f"❌ 连接失败: 无法连接到 {API_BASE}", file=sys.stderr)
+        print("提示: 请确保后端服务正在运行 (make start)", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ 请求失败: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def extract_field(data, field_path):
+    """从JSON中提取字段 (支持点分隔路径)"""
+    result = data
+    for key in field_path.split('.'):
+        if isinstance(result, dict):
+            result = result.get(key)
+        elif isinstance(result, list) and key.isdigit():
+            result = result[int(key)]
+        else:
+            return None
+    return result
+
+
+def format_output(response, args):
+    """格式化输出"""
+    # 原始输出
+    if args.raw:
+        print(response.text)
+        return
+
+    # 检查响应内容类型
+    content_type = response.headers.get('Content-Type', '')
+
+    # 如果不是JSON类型，直接输出文本
+    if 'application/json' not in content_type and response.text:
+        print(response.text)
+        return
+
+    # JSON输出
+    try:
+        json_data = response.json()
+
+        # 提取特定字段
+        if args.field:
+            result = extract_field(json_data, args.field)
+            if result is None:
+                print(f"❌ 字段不存在: {args.field}", file=sys.stderr)
+                sys.exit(1)
+
+            # 如果是简单类型，直接输出
+            if isinstance(result, (str, int, float, bool)):
+                print(result)
+            else:
+                print(json.dumps(result, indent=2, ensure_ascii=False))
+        else:
+            # 美化JSON输出
+            print(json.dumps(json_data, indent=2, ensure_ascii=False))
+
+    except (json.JSONDecodeError, ValueError) as e:
+        if not args.quiet:
+            print(f"⚠️  响应不是有效的JSON: {e}", file=sys.stderr)
+        print(response.text)
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="AIFlowy API 客户端 - 简化API调用",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+示例:
+  %(prog)s login admin 123456           # 登录并保存token
+  %(prog)s GET bot/list                 # 获取Bot列表
+  %(prog)s GET auth/getUserInfo         # 获取当前用户信息
+  %(prog)s POST bot/chat -d '{"botId":"xxx","message":"你好","stream":false}'
+  %(prog)s GET bot/getDetail id=xxx -f data.title
+        """
+    )
+
+    parser.add_argument(
+        "method",
+        help="HTTP方法 (GET/POST/PUT/DELETE/PATCH) 或 'login' 命令"
+    )
+    parser.add_argument(
+        "path",
+        nargs="?",
+        default="",
+        help="API路径 (例如: bot/list, auth/getUserInfo) 或登录时的账号"
+    )
+    parser.add_argument(
+        "params",
+        nargs="*",
+        help="查询参数 (格式: key=value) 或登录时的密码"
+    )
+    parser.add_argument(
+        "-d", "--data",
+        help="请求体JSON数据"
+    )
+    parser.add_argument(
+        "-f", "--field",
+        help="提取特定字段 (例如: data.id, data.0.name)"
+    )
+    parser.add_argument(
+        "-r", "--raw",
+        action="store_true",
+        help="输出原始响应（不格式化JSON）"
+    )
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="显示详细信息（请求详情、状态码等）"
+    )
+    parser.add_argument(
+        "-q", "--quiet",
+        action="store_true",
+        help="静默模式（仅输出结果，不输出错误）"
+    )
+
+    args = parser.parse_args()
+
+    # 处理 login 命令
+    if args.method.lower() == "login":
+        account = args.path
+        password = args.params[0] if args.params else ""
+        if not account or not password:
+            print("用法: ./scripts/api login <account> <password>", file=sys.stderr)
+            sys.exit(1)
+        success = do_login(account, password, args.verbose)
+        sys.exit(0 if success else 1)
+
+    # 验证 HTTP 方法
+    valid_methods = ["GET", "POST", "PUT", "DELETE", "PATCH"]
+    if args.method.upper() not in valid_methods:
+        print(f"❌ 无效的HTTP方法: {args.method}", file=sys.stderr)
+        print(f"有效方法: {', '.join(valid_methods)} 或 login", file=sys.stderr)
+        sys.exit(1)
+
+    # 解析数据和参数
+    data = None
+    if args.data:
+        try:
+            data = json.loads(args.data)
+        except json.JSONDecodeError as e:
+            if not args.quiet:
+                print(f"❌ JSON格式错误: {e}", file=sys.stderr)
+            sys.exit(1)
+
+    params = parse_query_params(args.params) if args.params else None
+
+    # 发送请求
+    response = make_request(args.method, args.path, data, params, args.verbose)
+
+    # 格式化输出
+    format_output(response, args)
+
+    # 错误状态码时退出码非0
+    if response.status_code >= 400:
+        if not args.quiet:
+            print(f"❌ HTTP {response.status_code}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

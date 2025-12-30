@@ -1,0 +1,39 @@
+# AIFlowy Go Backend Configuration
+# Environment: development
+
+server:
+  port: 8213
+  host: "0.0.0.0"
+  mode: "debug"
+
+database:
+  driver: "mysql"
+  host: "127.0.0.1"
+  port: 3306
+  username: "root"
+  password: "root"
+  database: "aiflowy"
+  charset: "utf8mb4"
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: 3600
+
+redis:
+  host: "127.0.0.1"
+  port: 6379
+  password: ""
+  db: 0
+
+jwt:
+  secret: "aiflowy-jwt-secret-key-dev-2025"
+  expire: 86400
+  issuer: "aiflowy"
+
+log:
+  level: "debug"
+  format: "console"
+  output: "stdout"
+  file_path: "logs/aiflowy.log"
+  max_size: 100
+  max_backups: 3
+  max_age: 7

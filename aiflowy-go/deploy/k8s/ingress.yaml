@@ -1,0 +1,46 @@
+# AIFlowy Go Backend - Kubernetes Ingress
+# Requires: ingress-nginx controller or similar
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aiflowy-go
+  namespace: aiflowy
+  labels:
+    app: aiflowy-go
+  annotations:
+    # Nginx Ingress Controller annotations
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    # Enable SSE (Server-Sent Events) support
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+    # CORS
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, PUT, POST, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,aiflowy-token"
+    # TLS (uncomment and configure for production)
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  # TLS configuration (uncomment for HTTPS)
+  # tls:
+  #   - hosts:
+  #       - api.aiflowy.io
+  #     secretName: aiflowy-tls-secret
+  rules:
+    - host: api.aiflowy.io  # Change to your domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: aiflowy-go
+                port:
+                  number: 8213

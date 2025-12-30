@@ -12,12 +12,12 @@ export default defineConfig(async () => {
         }),
       ],
       server: {
+        port: 8212,
         proxy: {
           '/api': {
             changeOrigin: true,
-            rewrite: (path) => path.replace(/^\/api/, ''),
-            // mock代理目标地址
-            target: 'http://localhost:5320/api',
+            // 后端API地址 (不需要 rewrite，直接转发)
+            target: 'http://localhost:8211',
             ws: true,
           },
         },

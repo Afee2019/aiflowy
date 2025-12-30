@@ -74,10 +74,20 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
     },
   });
 
+  // 兼容 Go 后端: code -> errorCode (业务代码中仍使用 errorCode)
+  client.addResponseInterceptor({
+    fulfilled: (response) => {
+      if (response.data && 'code' in response.data) {
+        response.data.errorCode = response.data.code;
+      }
+      return response;
+    },
+  });
+
   // 处理返回的响应数据格式
   client.addResponseInterceptor(
     defaultResponseInterceptor({
-      codeField: 'errorCode',
+      codeField: 'code',
       dataField: 'data',
       showErrorMessage: (message) => {
         ElMessage.error(message);
